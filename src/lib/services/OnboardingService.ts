@@ -123,12 +123,21 @@ export class OnboardingService {
             where: { id: moderator.guild.id }
         });
 
-        if (!config || !config.unverifiedRoleId) return;
+        if (!config) return;
+
+        // Hardcoded IDs provided by user (FALLBACKS)
+        const FALLBACK_UNVERIFIED_ROLE_ID = '1371788188087226428';
+        const FALLBACK_MEMBER_ROLE_ID = '1370396828490666135';
+
+        // @ts-ignore
+        const unverifiedRoleId = config.unverifiedRoleId || FALLBACK_UNVERIFIED_ROLE_ID;
 
         try {
             // Remove unverified role
-            // @ts-ignore
-            await target.roles.remove(config.unverifiedRoleId);
+            await target.roles.remove(unverifiedRoleId).catch(() => null);
+
+            // Add member role
+            await target.roles.add(FALLBACK_MEMBER_ROLE_ID).catch(() => null);
 
             await channel.send({
                 embeds: [EmbedUtils.success('Access Granted', `Welcome to the server, <@${target.id}>! You have been approved by <@${moderator.id}>.`)]
