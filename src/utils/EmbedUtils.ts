@@ -11,7 +11,7 @@ export const Colors = {
 };
 
 export class EmbedUtils {
-    private static FOOTER_TEXT = 'SkySentinel v6.1.0 • Supreme Design Edition';
+    private static FOOTER_TEXT = 'SkySentinel v7.0.1 ALPHA • Onboarding & Suggestions Edition';
     private static BRAND_ICON = 'https://i.imgur.com/vHqXvU6.png'; // Placeholder
 
     private static base(color: ColorResolvable, type: string): EmbedBuilder {

@@ -73,7 +73,7 @@ export default {
             };
 
             const embed = EmbedUtils.info('📚 SkySentinel Administrative Center', `Total Commands: **${commands.size}**\n\n*Select a category below to browse the supreme command suite.*`)
-                .setFooter({ text: 'SkySentinel • v6.1.0 Supreme Design Edition' });
+                .setFooter({ text: 'SkySentinel • v7.0.1 ALPHA Onboarding & Suggestions Edition' });
 
             const components = buildRows(categories);
 
