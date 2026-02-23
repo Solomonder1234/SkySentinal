@@ -1,4 +1,4 @@
-import { DisTube, Queue, Song, Events } from 'distube';
+import { DisTube, Queue, Song } from 'distube';
 import { YtDlpPlugin } from '@distube/yt-dlp';
 import { SkyClient } from '../structures/SkyClient';
 import { Logger } from '../../utils/Logger';
@@ -28,31 +28,29 @@ export class MusicService {
 
     private setupEvents() {
         this.distube
-            .on(Events.PLAY_SONG, async (queue: Queue, song: Song) => {
+            .on('playSong', async (queue: Queue, song: Song) => {
                 this.logger.info(`[Supreme Music] Playing: ${song.name}`);
                 await this.updateController(queue, song);
             })
-            .on(Events.ADD_SONG, (queue: Queue, song: Song) => {
+            .on('addSong', (queue: Queue, song: Song) => {
                 this.logger.info(`[Supreme Music] Added to queue: ${song.name}`);
                 // Optional: Send a temporary "Added to Queue" message
             })
-            .on(Events.ERROR, (error: Error, queue: Queue, song?: Song) => {
+            .on('error', (channel: any, error: Error) => {
                 this.logger.error(`[Supreme Music] Error:`, error);
-                const channel = queue.textChannel;
-                if (channel) {
+                if (channel && channel.send) {
                     channel.send(`❌ **Supreme Engine Error:** \`${error.message.slice(0, 1500)}\``);
                 }
-                this.clearController(queue.id);
             })
-            .on(Events.FINISH, (queue: Queue) => {
+            .on('finish', (queue: Queue) => {
                 this.logger.info(`[Supreme Music] Queue finished.`);
                 this.clearController(queue.id);
             })
-            .on(Events.DISCONNECT, (queue: Queue) => {
+            .on('disconnect', (queue: Queue) => {
                 this.logger.info(`[Supreme Music] Disconnected.`);
                 this.clearController(queue.id);
             })
-            .on(Events.DELETE_QUEUE, (queue: Queue) => {
+            .on('deleteQueue', (queue: Queue) => {
                 this.clearController(queue.id);
             });
     }
