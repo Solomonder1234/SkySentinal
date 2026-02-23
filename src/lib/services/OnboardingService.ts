@@ -21,7 +21,7 @@ export class OnboardingService {
         if (!config) return;
 
         // Hardcoded IDs provided by user (FALLBACKS)
-        const FALLBACK_CATEGORY_ID = '1475582380864442581';
+        const FALLBACK_CATEGORY_ID = '1475582320718118963';
         const FALLBACK_UNVERIFIED_ROLE_ID = '1373474789653741649';
 
         // @ts-ignore
