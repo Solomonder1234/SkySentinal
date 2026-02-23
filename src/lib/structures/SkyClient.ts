@@ -65,6 +65,13 @@ export class SkyClient extends Client {
             await this.database.connect();
             await this.commandHandler.load();
             await this.eventHandler.load();
+
+            if (process.argv.includes('--verify-only')) {
+                this.logger.info('Verification successful! Exiting as requested by --verify-only flag.');
+                await this.database.disconnect();
+                process.exit(0);
+            }
+
             await this.login(process.env.DISCORD_TOKEN);
             this.logger.info(`Logged in as ${this.user?.tag}`);
             this.terminal.start();

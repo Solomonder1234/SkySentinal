@@ -136,6 +136,12 @@ export class OnboardingService {
         // @ts-ignore
         const unverifiedRoleId = config.unverifiedRoleId || FALLBACK_UNVERIFIED_ROLE_ID;
 
+        // Check if user already has member role (prevents duplication)
+        if (target.roles.cache.has(FALLBACK_MEMBER_ROLE_ID)) {
+            this.client.logger.info(`[Approve] ${target.user.username} already verified, skipping duplicates.`);
+            return;
+        }
+
         try {
             // Remove unverified role
             await target.roles.remove(unverifiedRoleId).catch(() => null);
