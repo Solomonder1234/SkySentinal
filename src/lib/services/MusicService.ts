@@ -15,12 +15,10 @@ export class MusicService {
         this.client = client;
         this.logger = client.logger;
 
-        this.distube = new DisTube(client, {
+        const distubeOptions: any = {
             emitNewSongOnly: true,
             savePreviousSongs: true,
             nsfw: true,
-            // @ts-ignore
-            youtubeCookie: process.env.YOUTUBE_COOKIE || null,
             // @ts-ignore - DisTube v4 option for ytdl-core
             ytdlOptions: {
                 highWaterMark: 1 << 64, // Massive buffer to prevent code 234
@@ -29,7 +27,13 @@ export class MusicService {
                 dlChunkSize: 0,
                 liveBuffer: 60000,
             }
-        });
+        };
+
+        if (process.env.YOUTUBE_COOKIE) {
+            distubeOptions.youtubeCookie = process.env.YOUTUBE_COOKIE;
+        }
+
+        this.distube = new DisTube(client, distubeOptions);
 
         this.setupEvents();
     }
