@@ -51,6 +51,8 @@ export class CommandHandler {
         const command = this.client.commands.get(interaction.commandName);
         if (!command) return;
 
+        this.client.logger.info(`[Slash Command] ${interaction.commandName} requested by ${interaction.user.tag} (${interaction.user.id}) in guild ${interaction.guild?.name || 'DM'}`);
+
         // Cooldown enforcement
         if (!OWNER_IDS.includes(interaction.user.id)) {
             if (!this.cooldowns.has(command.name)) {
@@ -101,6 +103,8 @@ export class CommandHandler {
             this.client.commands.find(cmd => cmd.aliases?.includes(commandName));
 
         if (!command) return;
+
+        this.client.logger.info(`[Prefix Command] ${commandName} requested by ${message.author.tag} (${message.author.id}) in guild ${message.guild?.name || 'DM'}`);
 
         // Check permissions for message commands
         if (command.defaultMemberPermissions) {

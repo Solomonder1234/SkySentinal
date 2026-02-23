@@ -5,10 +5,12 @@ import { EmbedUtils } from '../../utils/EmbedUtils';
 export default {
     name: 'approve',
     description: 'Approve a member and grant access to the server.',
-    permissions: [PermissionFlagsBits.ManageRoles],
+    defaultMemberPermissions: PermissionFlagsBits.ManageRoles,
     aliases: ['verify'],
     category: 'Moderation',
     run: async (client, interaction) => {
+        const author = (interaction instanceof Message) ? interaction.author : interaction.user;
+        client.logger.info(`[Approve] Command triggered by ${author.username} in channel ${interaction.channelId}`);
         if (!interaction.guild || !interaction.member || !(interaction instanceof Message)) return;
 
         const args = interaction.content.split(' ').slice(1);

@@ -82,6 +82,10 @@ export class OnboardingService {
 
         if (!config) return;
 
+        // Ignore messages starting with the prefix (they are commands)
+        const prefix = config.prefix || '!';
+        if (message.content.startsWith(prefix)) return;
+
         // @ts-ignore
         const questions = JSON.parse(config.onboardingQuestions || '[]');
         if (questions.length === 0) return;
