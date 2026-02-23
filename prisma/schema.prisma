@@ -28,6 +28,12 @@ model GuildConfig {
   aiGlobalChat    Boolean  @default(false)
   aiModeration    Boolean  @default(false)
 
+  // Onboarding
+  onboardingChannelId String?
+  unverifiedRoleId    String?
+  onboardingQuestions String   @default("[]") // JSON array of questions
+  onboardingGreeting  String?  @default("Welcome to the server! Please answer the following questions to gain access.")
+
   // Starboard
   starboardChannelId String?
   starboardThreshold Int      @default(5)
@@ -40,8 +46,20 @@ model GuildConfig {
   reactionRoles   ReactionRole[]
   starredMessages StarredMessage[]
   roleRewards     RoleReward[]
+  suggestions     Suggestion[]
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+}
+
+model Suggestion {
+  id        Int      @id @default(autoincrement())
+  guildId   String
+  guild     GuildConfig @relation(fields: [guildId], references: [id])
+  userId    String
+  channelId String   @unique // The private ticket channel
+  content   String
+  status    String   @default("PENDING") // PENDING, ACCEPTED, DENIED
+  createdAt DateTime @default(now())
 }
 
 model RoleReward {
