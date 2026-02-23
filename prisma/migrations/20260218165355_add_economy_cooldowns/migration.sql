@@ -1,0 +1,7 @@
+-- AlterTable
+ALTER TABLE "UserProfile" ADD COLUMN "lastBeg" DATETIME;
+ALTER TABLE "UserProfile" ADD COLUMN "lastCrime" DATETIME;
+ALTER TABLE "UserProfile" ADD COLUMN "lastDig" DATETIME;
+ALTER TABLE "UserProfile" ADD COLUMN "lastFish" DATETIME;
+ALTER TABLE "UserProfile" ADD COLUMN "lastHunt" DATETIME;
+ALTER TABLE "UserProfile" ADD COLUMN "lastSearch" DATETIME;

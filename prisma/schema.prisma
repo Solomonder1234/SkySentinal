@@ -1,0 +1,209 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model GuildConfig {
+  id              String   @id // Guild ID
+  prefix          String   @default("!")
+  modLogChannelId String?
+  watchLogChannelId String?
+  adminRoleId     String?
+  modRoleId       String?
+  
+  // Feature flags
+  enableAutomod   Boolean  @default(false)
+  enableLogging   Boolean  @default(false)
+  enableWelcome   Boolean  @default(false)
+
+  // AI
+  aiChatChannelId String?
+  aiGlobalChat    Boolean  @default(false)
+  aiModeration    Boolean  @default(false)
+
+  // Starboard
+  starboardChannelId String?
+  starboardThreshold Int      @default(5)
+
+  // Leveling V2
+  levelUpChannelId   String?
+
+  // Relations
+  cases           Case[]
+  reactionRoles   ReactionRole[]
+  starredMessages StarredMessage[]
+  roleRewards     RoleReward[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model RoleReward {
+  id        Int      @id @default(autoincrement())
+  guildId   String
+  guild     GuildConfig @relation(fields: [guildId], references: [id])
+  level     Int
+  roleId    String
+
+  @@unique([guildId, level])
+}
+
+model StarredMessage {
+  id               Int      @id @default(autoincrement())
+  guildId          String
+  guild            GuildConfig @relation(fields: [guildId], references: [id])
+  originalMessageId String   @unique
+  starboardMessageId String   @unique
+  stars            Int
+  
+  createdAt        DateTime @default(now())
+}
+
+model ReactionRole {
+  id        Int      @id @default(autoincrement())
+  guildId   String
+  guild     GuildConfig @relation(fields: [guildId], references: [id])
+  messageId String
+  emoji     String
+  roleId    String
+
+  @@index([messageId])
+}
+
+model Case {
+  id              Int      @id @default(autoincrement())
+  guildId         String
+  guild           GuildConfig @relation(fields: [guildId], references: [id])
+  targetId        String   // User ID of the person being punished
+  moderatorId     String   // User ID of the moderator
+  type            String   // WARN, KICK, BAN, MUTE, UNBAN, UNMUTE
+  reason          String?
+  duration        Int?     // Duration in milliseconds (for mutes/tempbans)
+  active          Boolean  @default(true) // For mutes/bans that can expire
+  
+  createdAt       DateTime @default(now())
+}
+
+model UserProfile {
+  id              String   @id // User ID
+  xp              BigInt   @default(0)
+  level           Int      @default(0)
+  
+  // Verification
+  isVerified      Boolean  @default(false)
+  
+  // Troll
+  isSkulled       Boolean  @default(false)
+  isClowned       Boolean  @default(false)
+  isNerded        Boolean  @default(false)
+  isFished        Boolean  @default(false)
+  isMocked        Boolean  @default(false)
+  isImmune        Boolean  @default(false)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Economy
+  balance         BigInt   @default(0)
+  bank            BigInt   @default(0)
+  lastDaily       DateTime?
+  lastWork        DateTime?
+  lastRob         DateTime?
+  lastBeg         DateTime?
+  lastCrime       DateTime?
+  lastSearch      DateTime?
+  lastFish        DateTime?
+  lastHunt        DateTime?
+  lastDig         DateTime?
+  
+  inventory       InventoryItem[]
+}
+
+model ShopItem {
+  id              Int      @id @default(autoincrement())
+  guildId         String
+  name            String
+  description     String?
+  price           Int
+  roleId          String?  // Optional role reward
+  stock           Int?     // Null means infinite
+  
+  createdAt       DateTime @default(now())
+}
+
+model InventoryItem {
+  id              Int      @id @default(autoincrement())
+  userId          String
+  user            UserProfile @relation(fields: [userId], references: [id])
+  itemId          Int
+  name            String   // Snapshot of item name
+  amount          Int      @default(1)
+}
+
+model Ticket {
+  id        Int      @id @default(autoincrement())
+  channelId String   @unique
+  userId    String
+  guildId   String
+  open      Boolean  @default(true)
+  createdAt DateTime @default(now())
+  closedAt  DateTime?
+}
+
+model WatchedUser {
+  id          Int      @id @default(autoincrement())
+  guildId     String
+  userId      String
+  moderatorId String
+  reason      String?
+  createdAt   DateTime @default(now())
+
+  @@unique([guildId, userId])
+}
+
+model ApplicationSettings {
+  guildId           String   @id
+  isOpen            Boolean  @default(false)
+  openedAt          DateTime?
+  applicationCount  Int      @default(0)
+  dropdownMessageId String?
+  dropdownChannelId String?
+}
+
+model Application {
+  id               Int      @id @default(autoincrement())
+  guildId          String
+  userId           String
+  channelId        String   @unique // The private interview channel
+  type             String   // 'PR' or 'TRIAL_STAFF'
+  status           String   @default("IN_PROGRESS") // 'IN_PROGRESS', 'COMPLETED', 'PENDING_REVIEW', 'ACCEPTED', 'DENIED'
+  currentQuestion  Int      @default(0) // Which question they are currently answering
+  answers          String   @default("[]") // JSON stringified array of answers
+  submittedAt      DateTime?
+  aiProposedResult String?   // The AI's recommended result and reasoning
+  reviewedBy       String?   // User ID of the staff who reviewed it
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Suspension {
+  id           Int      @id @default(autoincrement())
+  guildId      String
+  userId       String
+  moderatorId  String
+  reason       String?
+  originalName String   // The user's original display name before the [S] prefix
+  roles        String   // JSON string of role IDs that were stripped
+  suspendedAt  DateTime @default(now())
+  expiresAt    DateTime?
+  active       Boolean  @default(true)
+
+  @@index([guildId, userId])
+}
