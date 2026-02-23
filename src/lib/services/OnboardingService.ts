@@ -20,17 +20,21 @@ export class OnboardingService {
 
         if (!config) return;
 
-        // Hardcoded IDs provided by user
-        const ONBOARDING_CATEGORY_ID = '1475582380864442581';
+        // Hardcoded IDs provided by user (FALLBACKS)
+        const FALLBACK_CATEGORY_ID = '1475582380864442581';
+        const FALLBACK_UNVERIFIED_ROLE_ID = '1373474789653741649';
+
         // @ts-ignore
-        const UNVERIFIED_ROLE_ID = config.unverifiedRoleId || '1373474789653741649'; // Fallback or use config
+        const categoryId = config.onboardingChannelId || FALLBACK_CATEGORY_ID;
+        // @ts-ignore
+        const unverifiedRoleId = config.unverifiedRoleId || FALLBACK_UNVERIFIED_ROLE_ID;
 
         try {
             // Create the private channel
             const channel = await guild.channels.create({
                 name: `onboard-${member.user.username.toLowerCase()}`,
                 type: ChannelType.GuildText,
-                parent: ONBOARDING_CATEGORY_ID,
+                parent: categoryId,
                 permissionOverwrites: [
                     { id: guild.id, deny: ['ViewChannel'] },
                     { id: member.id, allow: ['ViewChannel', 'SendMessages', 'ReadMessageHistory'] },
@@ -39,7 +43,7 @@ export class OnboardingService {
             });
 
             // Assign unverified role
-            await member.roles.add(UNVERIFIED_ROLE_ID).catch(() => null);
+            await member.roles.add(unverifiedRoleId).catch(() => null);
 
             // Send greeting
             const embed = EmbedUtils.info(
