@@ -7,6 +7,20 @@ export default {
     run: async (client) => {
         client.logger.info(`Ready! Logged in as ${client.user?.tag}`);
 
+        // Debug Startup Message
+        if (process.env.NODE_ENV === 'development') {
+            const GENERAL_CHAT_ID = '1329128469166297159';
+            try {
+                const channel = await client.channels.fetch(GENERAL_CHAT_ID);
+                if (channel && channel.isTextBased()) {
+                    // @ts-ignore
+                    await channel.send('⚠️ **BOT IS IN DEBUG MODE ON STARTUP** ⚠️');
+                }
+            } catch (err) {
+                client.logger.error('Failed to send debug startup message:', err);
+            }
+        }
+
         // Scheduler for Tempbans
         setInterval(async () => {
             try {

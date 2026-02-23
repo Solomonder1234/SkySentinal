@@ -21,14 +21,6 @@ export class MusicService {
             savePreviousSongs: true,
             nsfw: true,
             plugins: [new YtDlpPlugin()],
-            // @ts-ignore - DisTube v4 option for ytdl-core
-            ytdlOptions: {
-                highWaterMark: 1 << 25, // 32MB buffer - corrected from overflowing value
-                filter: 'audioonly',
-                quality: 'highestaudio',
-                dlChunkSize: 0,
-                liveBuffer: 60000,
-            }
         };
 
         if (process.env.YOUTUBE_COOKIE) {
