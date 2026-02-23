@@ -9,6 +9,8 @@ import { AIService } from '../services/AIService';
 import { ApplicationService } from '../services/ApplicationService';
 import { TerminalService } from '../services/TerminalService';
 import { MusicService } from '../services/MusicService';
+import { OnboardingService } from '../services/OnboardingService';
+import { SuggestionService } from '../services/SuggestionService';
 
 export class SkyClient extends Client {
     public logger: Logger;
@@ -21,6 +23,8 @@ export class SkyClient extends Client {
     public commandHandler: CommandHandler;
     public eventHandler: EventHandler;
     public terminal: TerminalService;
+    public onboarding: OnboardingService;
+    public suggestions: SuggestionService;
 
     constructor() {
         super({
@@ -52,6 +56,8 @@ export class SkyClient extends Client {
         this.applicationService = new ApplicationService(this);
         this.terminal = new TerminalService(this);
         this.music = new MusicService(this);
+        this.onboarding = new OnboardingService(this);
+        this.suggestions = new SuggestionService(this);
     }
 
     public async start() {

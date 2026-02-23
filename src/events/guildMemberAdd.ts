@@ -5,6 +5,9 @@ import { Logger } from '../utils/Logger';
 export default {
     name: Events.GuildMemberAdd,
     run: async (client, member: GuildMember) => {
+        // Trigger Onboarding
+        await client.onboarding.handleMemberJoin(member);
+
         await Logger.log(
             member.guild,
             'Member Joined',

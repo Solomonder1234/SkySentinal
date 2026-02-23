@@ -11,6 +11,9 @@ export default {
     run: async (client: SkyClient, message: Message) => {
         if (message.author.bot) return;
 
+        // Hook into Onboarding Service
+        await client.onboarding.handleMessage(message);
+
         // Process Applications
         await client.applicationService.handleMessage(message);
 

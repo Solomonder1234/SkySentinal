@@ -23,10 +23,11 @@ export class MusicService {
             youtubeCookie: process.env.YOUTUBE_COOKIE || null,
             // @ts-ignore - DisTube v4 option for ytdl-core
             ytdlOptions: {
-                highWaterMark: 1 << 25,
+                highWaterMark: 1 << 64, // Massive buffer to prevent code 234
                 filter: 'audioonly',
                 quality: 'highestaudio',
-                dlChunkSize: 0
+                dlChunkSize: 0,
+                liveBuffer: 60000,
             }
         });
 
