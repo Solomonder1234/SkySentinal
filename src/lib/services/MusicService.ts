@@ -1,4 +1,5 @@
 import { DisTube, Queue, Song } from 'distube';
+import { YtDlpPlugin } from '@distube/yt-dlp';
 import { SkyClient } from '../structures/SkyClient';
 import { Logger } from '../../utils/Logger';
 import { MusicController } from '../../utils/MusicController';
@@ -19,9 +20,10 @@ export class MusicService {
             emitNewSongOnly: true,
             savePreviousSongs: true,
             nsfw: true,
+            plugins: [new YtDlpPlugin()],
             // @ts-ignore - DisTube v4 option for ytdl-core
             ytdlOptions: {
-                highWaterMark: 1 << 64, // Massive buffer to prevent code 234
+                highWaterMark: 1 << 25, // 32MB buffer - corrected from overflowing value
                 filter: 'audioonly',
                 quality: 'highestaudio',
                 dlChunkSize: 0,
