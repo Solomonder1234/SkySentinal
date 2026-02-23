@@ -48,12 +48,12 @@ export default {
                     { name: 'Command', value: `\`\`\`bash\n${command}\n\`\`\`` },
                     { name: 'Output', value: `\`\`\`bash\n${cleanOutput}\n\`\`\`` }
                 )
-                .setFooter({ text: 'SkySentinel Supreme • Kernel Access' });
+                .setFooter({ text: 'SkySentinel AV • Kernel Access' });
 
             return interaction.reply({ embeds: [embed] });
         } catch (error: any) {
             const embed = EmbedUtils.error('Shell Execution - Error', `System process exited with an error.\n\n**Command:**\n\`\`\`bash\n${command}\n\`\`\`\n**Error:**\n\`\`\`bash\n${error.message}\n\`\`\``)
-                .setFooter({ text: 'SkySentinel Supreme • Kernel Error' });
+                .setFooter({ text: 'SkySentinel AV • Kernel Error' });
 
             return interaction.reply({ embeds: [embed] });
         }

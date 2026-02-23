@@ -74,7 +74,7 @@ export default {
                         if (!visionResult.safe) {
                             try {
                                 await message.delete().catch(() => { });
-                                const alert = await (message.channel as TextChannel).send(`🚨 **Supreme Intelligence Warning:** ${message.author.toString()}, your attachment was flagged as unsafe: \`${visionResult.reason || 'Restricted Content'}\`. Manual review requested.`);
+                                const alert = await (message.channel as TextChannel).send(`🚨 **AV Intelligence Warning:** ${message.author.toString()}, your attachment was flagged as unsafe: \`${visionResult.reason || 'Restricted Content'}\`. Manual review requested.`);
                                 setTimeout(() => alert.delete().catch(() => { }), 10000);
 
                                 if (config.modLogChannelId) {

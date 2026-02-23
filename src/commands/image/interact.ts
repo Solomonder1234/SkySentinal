@@ -74,7 +74,7 @@ export default {
             const authorName = interaction instanceof Message ? interaction.author.username : interaction.user.username;
             const embed = EmbedUtils.info(`${action.charAt(0).toUpperCase() + action.slice(1)}!`, descriptions[action] || `**${targetUser.username}** got ${action}ed!`)
                 .setImage(url)
-                .setFooter({ text: `From ${authorName} • SkySentinel Supreme` });
+                .setFooter({ text: `From ${authorName} • SkySentinel AV` });
 
             await interaction.reply({ embeds: [embed] });
 

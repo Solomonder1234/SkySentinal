@@ -11,7 +11,7 @@ import {
 
 export default {
     name: 'music',
-    description: 'Play music from YouTube using the DisTube Supreme Engine.',
+    description: 'Play music from YouTube using the DisTube AV Engine.',
     category: 'Voice',
     aliases: ['play', 'p', 'stop', 'skip', 'queue', 'q', 'vol', 'volume', 'loop', 'filter', 'filters'],
     type: ApplicationCommandType.ChatInput,
@@ -165,7 +165,7 @@ export default {
 
             const currentSong = queue.songs[0];
             const queueList = queue.songs.slice(1, 11).map((song, i) => `${i + 1}. **${song.name}** - \`${song.formattedDuration}\``).join('\n');
-            const response = `🎵 **Supreme Music Queue**\n\n**Now Playing:** ${currentSong ? currentSong.name : 'Unknown'}\n\n${queueList || '*Empty*'}${queue.songs.length > 11 ? `\n*...and ${queue.songs.length - 11} more*` : ''}`;
+            const response = `🎵 **AV Music Queue**\n\n**Now Playing:** ${currentSong ? currentSong.name : 'Unknown'}\n\n${queueList || '*Empty*'}${queue.songs.length > 11 ? `\n*...and ${queue.songs.length - 11} more*` : ''}`;
 
             return interaction.reply({ content: response });
         }

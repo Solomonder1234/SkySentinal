@@ -19,7 +19,7 @@ export default {
         const embed = EmbedUtils.info(`Servers List (${client.guilds.cache.size})`, 'Full directory of all active clusters and user nodes.')
             .setDescription(`\n${guilds.join('\n').substring(0, 4000) || 'None'}\n`)
             .addFields({ name: 'Total Users', value: `\`${totalMembers.toLocaleString()}\``, inline: true })
-            .setFooter({ text: `SkySentinel Supreme • Total Nodes: ${client.guilds.cache.size}` });
+            .setFooter({ text: `SkySentinel AV • Total Nodes: ${client.guilds.cache.size}` });
 
         return interaction.reply({ embeds: [embed] });
     },

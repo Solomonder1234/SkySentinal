@@ -16,7 +16,7 @@ export default {
         const emojiList = emojis.map(e => e.toString()).join(' ').slice(0, 2000);
 
         const embed = EmbedUtils.info(`Server Emojis (${emojis.size})`, `\n${emojiList}\n`)
-            .setFooter({ text: `SkySentinel Supreme • Total Emojis: ${emojis.size}` });
+            .setFooter({ text: `SkySentinel AV • Total Emojis: ${emojis.size}` });
 
         if (interaction instanceof Message) {
             await interaction.reply({ embeds: [embed] });

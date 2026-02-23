@@ -146,7 +146,7 @@ export default {
                     { name: 'Created At', value: `<t:${Math.floor(chan.createdTimestamp / 1000)}:R>`, inline: true },
                     { name: 'Topic', value: chan.topic || 'No topic set' }
                 ])
-                .setFooter({ text: `SkySentinel Supreme • ${chan.id}` });
+                .setFooter({ text: `SkySentinel AV • ${chan.id}` });
 
             return interaction.reply({ embeds: [embed] });
         }

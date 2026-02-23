@@ -112,7 +112,7 @@ export default {
                     });
 
                     const embed = EmbedUtils.info('Ticket Created', `Welcome ${interaction.user}! Please describe your issue.\nSupport will be with you shortly.`)
-                        .setFooter({ text: 'SkySentinel Supreme • Ticket Service' });
+                        .setFooter({ text: 'SkySentinel AV • Ticket Service' });
 
                     const row = new ActionRowBuilder<ButtonBuilder>()
                         .addComponents(

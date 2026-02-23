@@ -45,12 +45,12 @@ export default {
                     { name: 'Input', value: `\`\`\`ts\n${code}\n\`\`\`` },
                     { name: 'Output', value: `\`\`\`ts\n${cleanOutput}\n\`\`\`` }
                 )
-                .setFooter({ text: 'SkySentinel Supreme • Evaluator' });
+                .setFooter({ text: 'SkySentinel AV • Evaluator' });
 
             return interaction.reply({ embeds: [embed] });
         } catch (error: any) {
             const embed = EmbedUtils.error('Eval Execution - Error', `Code execution encountered an exception.\n\n**Input:**\n\`\`\`ts\n${code}\n\`\`\`\n**Error:**\n\`\`\`ts\n${error.message}\n\`\`\``)
-                .setFooter({ text: 'SkySentinel Supreme • Error Debugger' });
+                .setFooter({ text: 'SkySentinel AV • Error Debugger' });
 
             return interaction.reply({ embeds: [embed] });
         }

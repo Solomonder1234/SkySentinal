@@ -51,7 +51,7 @@ export default {
 
             if (profile.isImmune) {
                 return interaction.reply({
-                    content: `🛡️ **${targetUser.tag}** is protected by Supreme Immunity. They cannot be mocked.`,
+                    content: `🛡️ **${targetUser.tag}** is protected by AV Immunity. They cannot be mocked.`,
                     ephemeral: true
                 });
             }

@@ -20,7 +20,7 @@ export default {
         const isOwner = interaction.guild?.ownerId === (interaction instanceof Message ? interaction.author.id : interaction.user.id);
 
         if (!isOwner) {
-            const err = EmbedUtils.error('Access Denied', 'This command is reserved for the Supreme Owner.');
+            const err = EmbedUtils.error('Access Denied', 'This command is reserved for the AV Owner.');
             return interaction.reply({ embeds: [err], ephemeral: true });
         }
 

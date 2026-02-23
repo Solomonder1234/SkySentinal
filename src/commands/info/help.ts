@@ -72,8 +72,8 @@ export default {
                 return rows;
             };
 
-            const embed = EmbedUtils.info('📚 SkySentinel Administrative Center', `Total Commands: **${commands.size}**\n\n*Select a category below to browse the supreme command suite.*`)
-                .setFooter({ text: 'SkySentinel • v7.0.4 ALPHA Development Mode' });
+            const embed = EmbedUtils.info('📚 SkySentinel Administrative Center', `Total Commands: **${commands.size}**\n\n*Select a category below to browse the AV command suite.*`)
+                .setFooter({ text: 'SkySentinel • v7.0.5 ALPHA AV Engine Transition' });
 
             const components = buildRows(categories);
 

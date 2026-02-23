@@ -35,25 +35,25 @@ export class MusicService {
     private setupEvents() {
         this.distube
             .on('playSong', async (queue: Queue, song: Song) => {
-                this.logger.info(`[Supreme Music] Playing: ${song.name}`);
+                this.logger.info(`[AV Music] Playing: ${song.name}`);
                 await this.updateController(queue, song);
             })
             .on('addSong', (queue: Queue, song: Song) => {
-                this.logger.info(`[Supreme Music] Added to queue: ${song.name}`);
+                this.logger.info(`[AV Music] Added to queue: ${song.name}`);
                 // Optional: Send a temporary "Added to Queue" message
             })
             .on('error', (channel: any, error: Error) => {
-                this.logger.error(`[Supreme Music] Error:`, error);
+                this.logger.error(`[AV Music] Error:`, error);
                 if (channel && channel.send) {
-                    channel.send(`❌ **Supreme Engine Error:** \`${error.message.slice(0, 1500)}\``);
+                    channel.send(`❌ **AV Engine Error:** \`${error.message.slice(0, 1500)}\``);
                 }
             })
             .on('finish', (queue: Queue) => {
-                this.logger.info(`[Supreme Music] Queue finished.`);
+                this.logger.info(`[AV Music] Queue finished.`);
                 this.clearController(queue.id);
             })
             .on('disconnect', (queue: Queue) => {
-                this.logger.info(`[Supreme Music] Disconnected.`);
+                this.logger.info(`[AV Music] Disconnected.`);
                 this.clearController(queue.id);
             })
             .on('deleteQueue', (queue: Queue) => {

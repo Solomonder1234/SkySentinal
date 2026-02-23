@@ -14,7 +14,7 @@ export default {
 
         const embed = EmbedUtils.info(guild.name, 'Comprehensive server statistics and configuration summary.')
             .setThumbnail(guild.iconURL({ size: 1024 }) || null)
-            .setFooter({ text: `SkySentinel Supreme • ${guild.id}` })
+            .setFooter({ text: `SkySentinel AV • ${guild.id}` })
             .addFields(
                 { name: 'Owner', value: `${owner.user.tag}`, inline: true },
                 { name: 'ID', value: guild.id, inline: true },

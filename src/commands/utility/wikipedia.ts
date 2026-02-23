@@ -45,7 +45,7 @@ export default {
 
             const embed = EmbedUtils.info(`Wikipedia: ${title}`, `\n${snippet}...\n`)
                 .setURL(pageUrl)
-                .setFooter({ text: 'Wikipedia • SkySentinel Supreme Edition', iconURL: 'https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Wikipedia-logo-v2.svg/1200px-Wikipedia-logo-v2.svg.png' });
+                .setFooter({ text: 'Wikipedia • SkySentinel AV Edition', iconURL: 'https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Wikipedia-logo-v2.svg/1200px-Wikipedia-logo-v2.svg.png' });
 
             await interaction.reply({ embeds: [embed] });
 

@@ -19,7 +19,7 @@ export default {
             const embed = EmbedUtils.info(data.title, `Fresh from **r/${data.subreddit}**`)
                 .setURL(data.postLink)
                 .setImage(data.url)
-                .setFooter({ text: `r/${data.subreddit} | 👍 ${data.ups} • SkySentinel Supreme Edition` });
+                .setFooter({ text: `r/${data.subreddit} | 👍 ${data.ups} • SkySentinel AV Edition` });
 
             if (interaction instanceof Message) {
                 await interaction.reply({ embeds: [embed] });

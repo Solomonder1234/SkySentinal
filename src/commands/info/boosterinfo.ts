@@ -20,7 +20,7 @@ export default {
                 { name: 'Total Boosts', value: `\`${count}\``, inline: true },
                 { name: 'Boosters', value: boosters.size > 0 ? boosters.map(m => m.user.tag).join(', ').slice(0, 1000) : 'None', inline: false }
             )
-            .setFooter({ text: 'SkySentinel Supreme • Boosting Service' });
+            .setFooter({ text: 'SkySentinel AV • Boosting Service' });
 
         if (interaction instanceof Message) {
             await interaction.reply({ embeds: [embed] });

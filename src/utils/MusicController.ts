@@ -11,11 +11,11 @@ import { Song, Queue } from 'distube';
 
 export class MusicController {
     /**
-     * Create a Supreme Tier "Now Playing" embed.
+     * Create a AV Tier "Now Playing" embed.
      */
     public static createNowPlayingEmbed(song: Song, queue: Queue) {
         const embed = new EmbedBuilder()
-            .setTitle(`🎶 Supreme Playback: ${song.name}`)
+            .setTitle(`🎶 AV Playback: ${song.name}`)
             .setURL(song.url ?? null)
             .setThumbnail(song.thumbnail ?? null)
             .setColor('#2F3136' as ColorResolvable)
@@ -25,7 +25,7 @@ export class MusicController {
                 { name: '👀 Views', value: song.views?.toLocaleString() || 'N/A', inline: true },
                 { name: '🙋 Requested By', value: song.user?.toString() || 'Unknown', inline: true }
             )
-            .setFooter({ text: `SkySentinel Supreme • Vol: ${queue.volume}% • Filter: ${queue.filters.names.join(', ') || 'None'}`, iconURL: 'https://i.imgur.com/8Q9Pj6x.png' })
+            .setFooter({ text: `SkySentinel AV • Vol: ${queue.volume}% • Filter: ${queue.filters.names.join(', ') || 'None'}`, iconURL: 'https://i.imgur.com/8Q9Pj6x.png' })
             .setTimestamp();
 
         return embed;

@@ -22,7 +22,7 @@ export default {
 
         const embed = EmbedUtils.info(`${guild.name}'s Icon`, 'High-resolution server identification view.')
             .setImage(iconUrl)
-            .setFooter({ text: `SkySentinel Supreme • Requested by ${interaction instanceof Message ? interaction.author.tag : interaction.user.tag}` });
+            .setFooter({ text: `SkySentinel AV • Requested by ${interaction instanceof Message ? interaction.author.tag : interaction.user.tag}` });
 
         if (interaction instanceof Message) {
             await interaction.reply({ embeds: [embed] });

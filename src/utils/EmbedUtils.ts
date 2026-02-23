@@ -7,11 +7,11 @@ export const Colors = {
     Warning: '#FFD700' as ColorResolvable, // Gold
     Primary: '#2B2D31' as ColorResolvable, // Discord's New Dark
     Premium: '#7289DA' as ColorResolvable, // Blurple for v6.1
-    Supreme: '#FFD700' as ColorResolvable  // Gold for Supreme
+    AV: '#FFD700' as ColorResolvable,  // Gold for AV Engine (formerly Supreme)
 };
 
 export class EmbedUtils {
-    private static FOOTER_TEXT = 'SkySentinel v7.0.4 ALPHA • Development Mode';
+    private static FOOTER_TEXT = 'SkySentinel v7.0.5 ALPHA • AV Engine Active';
     private static BRAND_ICON = 'https://i.imgur.com/vHqXvU6.png'; // Placeholder
 
     private static base(color: ColorResolvable, type: string): EmbedBuilder {
@@ -53,7 +53,7 @@ export class EmbedUtils {
     }
 
     public static premium(title: string, description: string): EmbedBuilder {
-        return this.base(Colors.Supreme, 'Supreme Intelligence')
+        return this.base(Colors.AV, 'AV Intelligence')
             .setTitle(`💎 ${title}`)
             .setDescription(`\n${description}\n`);
     }

@@ -44,7 +44,7 @@ export default {
 
         const embed = EmbedUtils.info(`${member.user.username}'s Roles`, roles || 'No roles')
             .setColor(member.displayColor || 'Blue')
-            .setFooter({ text: `SkySentinel Supreme • Total Roles: ${member.roles.cache.size - 1}` });
+            .setFooter({ text: `SkySentinel AV • Total Roles: ${member.roles.cache.size - 1}` });
 
         if (interaction instanceof Message) {
             await interaction.reply({ embeds: [embed] });

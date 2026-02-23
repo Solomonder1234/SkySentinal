@@ -1,6 +1,6 @@
 {
   "name": "discord-mod-bot",
-  "version": "7.0.4-ALPHA",
+  "version": "7.0.5-ALPHA",
   "main": "dist/index.js",
   "scripts": {
     "dev": "ts-node src/index.ts",

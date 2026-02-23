@@ -14,7 +14,7 @@ export default {
                 { name: 'Channels', value: `\`${client.channels.cache.size}\``, inline: true },
                 { name: 'Commands', value: `\`${client.commands.size}\``, inline: true }
             )
-            .setFooter({ text: 'SkySentinel Supreme • Live Metrics' });
+            .setFooter({ text: 'SkySentinel AV • Live Metrics' });
 
         if (interaction instanceof Message) {
             await interaction.reply({ embeds: [embed] });

@@ -37,7 +37,7 @@ export default {
             if (imageUrl.startsWith('http')) {
                 const embed = EmbedUtils.premium('SkySentinel Art Generation', `**Prompt:** ${prompt}`)
                     .setImage(imageUrl)
-                    .setFooter({ text: `Generated for ${interaction.member?.user.username} • SkySentinel Supreme Art` });
+                    .setFooter({ text: `Generated for ${interaction.member?.user.username} • SkySentinel AV Art` });
 
                 return (interaction as any).editReply({ content: null, embeds: [embed] });
             } else {

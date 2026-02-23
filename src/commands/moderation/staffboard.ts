@@ -10,13 +10,13 @@ export default {
     defaultMemberPermissions: PermissionFlagsBits.Administrator, // Only Admin+ can see the full dashboard
     run: async (client, interaction) => {
         // Only allow Founder/Co-Founder/HOS if roles are managed that way, or just stick to Administrator permission
-        // For SkySentinel, we'll check for the "Supreme Authority" (Owner or Admin)
+        // For SkySentinel, we'll check for the "AV Authority" (Owner or Admin)
         const isOwner = interaction.guild?.ownerId === (interaction instanceof Message ? interaction.author.id : interaction.user.id);
         const member = interaction.member as GuildMember;
         const isAdmin = member?.permissions.has(PermissionFlagsBits.Administrator);
 
         if (!isOwner && !isAdmin) {
-            const err = EmbedUtils.error('Access Denied', 'The Supreme Staff Dashboard is reserved for High Leadership (Administrator+).');
+            const err = EmbedUtils.error('Access Denied', 'The AV Staff Dashboard is reserved for High Leadership (Administrator+).');
             return interaction.reply({ embeds: [err], ephemeral: true });
         }
 
@@ -55,7 +55,7 @@ export default {
             const formattedUptime = `${hours}h ${minutes}m`;
 
             const embed = new EmbedBuilder()
-                .setTitle('📊 SkySentinel Supreme: Global Staff Dashboard')
+                .setTitle('📊 SkySentinel AV: Global Staff Dashboard')
                 .setThumbnail(client.user?.displayAvatarURL() || null)
                 .setColor('#2F3136' as ColorResolvable)
                 .addFields(
@@ -75,7 +75,7 @@ export default {
                         inline: false
                     }
                 )
-                .setFooter({ text: 'Confidential Staff Overview • Supreme Design Edition' })
+                .setFooter({ text: 'Confidential Staff Overview • AV Design Edition' })
                 .setTimestamp();
 
             if (interaction instanceof Message) {
