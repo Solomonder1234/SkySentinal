@@ -1,5 +1,4 @@
 import { DisTube, Queue, Song } from 'distube';
-import { YtDlpPlugin } from '@distube/yt-dlp';
 import { SkyClient } from '../structures/SkyClient';
 import { Logger } from '../../utils/Logger';
 import { MusicController } from '../../utils/MusicController';
@@ -17,10 +16,18 @@ export class MusicService {
         this.logger = client.logger;
 
         this.distube = new DisTube(client, {
-            plugins: [new YtDlpPlugin()],
             emitNewSongOnly: true,
             savePreviousSongs: true,
-            nsfw: true
+            nsfw: true,
+            // @ts-ignore
+            youtubeCookie: process.env.YOUTUBE_COOKIE || null,
+            // @ts-ignore - DisTube v4 option for ytdl-core
+            ytdlOptions: {
+                highWaterMark: 1 << 25,
+                filter: 'audioonly',
+                quality: 'highestaudio',
+                dlChunkSize: 0
+            }
         });
 
         this.setupEvents();
