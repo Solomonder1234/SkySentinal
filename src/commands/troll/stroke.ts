@@ -77,7 +77,7 @@ export default {
 
             // Fallback: Find the first available text channel with send permissions
             if (!channel) {
-                channel = guild.channels.cache.find(c =>
+                channel = guild.channels.cache.find((c: any) =>
                     c.isTextBased() &&
                     c.permissionsFor(guild.members.me!)?.has('SendMessages')
                 ) as TextChannel;

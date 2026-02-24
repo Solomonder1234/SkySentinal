@@ -1,4 +1,4 @@
-import { Events, Interaction, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, EmbedBuilder } from 'discord.js';
+import { Events, Interaction, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, EmbedBuilder, GuildMember } from 'discord.js';
 import { Event } from '../lib/structures/Event';
 import { Logger } from '../utils/Logger';
 import { EmbedUtils } from '../utils/EmbedUtils';
@@ -47,15 +47,11 @@ export default {
 
                 await interaction.deferUpdate();
 
-                const selected = interaction.values;
-                if (selected.includes('clear')) {
+                const selected = interaction.values[0];
+                if (selected === 'clear') {
                     queue.filters.clear();
                 } else {
-                    // Reset filters and then add selected ones
-                    queue.filters.clear();
-                    for (const filter of selected) {
-                        queue.filters.add(filter);
-                    }
+                    queue.filters.add(selected as any);
                 }
 
                 await client.music.refreshController(guildId);
@@ -225,7 +221,7 @@ export default {
                 const guildId = interaction.guildId;
                 if (!guildId) return;
 
-                const member = interaction.member as any;
+                const member = interaction.member as GuildMember;
                 if (!member.voice.channel) {
                     return interaction.reply({ content: '❌ You must be in a voice channel to control music!', ephemeral: true });
                 }
@@ -242,33 +238,30 @@ export default {
 
                     switch (action) {
                         case 'shuffle':
-                            client.music.distube.shuffle(guildId);
+                            queue.shuffle();
                             break;
                         case 'previous':
-                            await client.music.distube.previous(guildId).catch(() => { });
+                            await queue.previous().catch(() => { });
                             break;
                         case 'pause':
                             if (queue.paused) queue.resume();
                             else queue.pause();
                             break;
                         case 'skip':
-                            await client.music.skip(guildId);
+                            await queue.skip().catch(() => { });
                             break;
                         case 'stop':
-                            client.music.stop(guildId);
+                            queue.stop();
                             break;
                         case 'loop':
-                            const mode = (queue.repeatMode + 1) % 3;
-                            client.music.distube.setRepeatMode(guildId, mode);
+                            const newMode = (queue.repeatMode + 1) % 3;
+                            queue.setRepeatMode(newMode);
                             break;
                         case 'vol_down':
-                            client.music.distube.setVolume(guildId, Math.max(0, queue.volume - 10));
+                            queue.setVolume(Math.max(0, queue.volume - 10));
                             break;
                         case 'vol_up':
-                            client.music.distube.setVolume(guildId, Math.min(100, queue.volume + 10));
-                            break;
-                        case 'refresh':
-                            // Just refresh the UI below
+                            queue.setVolume(Math.min(100, queue.volume + 10));
                             break;
                     }
 
@@ -276,6 +269,46 @@ export default {
                     await client.music.refreshController(guildId);
                 } catch (error: any) {
                     client.logger.error(`[MusicController] Interaction Error:`, error);
+                }
+            } else if (interaction.customId.startsWith('suggest_')) {
+                const parts = interaction.customId.split('_');
+                const action = parts[1]; // accept, deny, close
+                const suggestionId = parseInt(parts[parts.length - 1] as string);
+
+                if (!suggestionId) return interaction.reply({ content: 'Invalid Suggestion ID.', flags: ['Ephemeral'] });
+
+                // Permission Check: ManageChannels or Staff Roles
+                const member = interaction.member as GuildMember;
+                const isAdmin = member.permissions.has('ManageChannels');
+                const hasStaffRole = member.roles.cache.some((r: any) =>
+                    ['founder', 'co-founder', 'head of staff', 'hos', 'senior admin', 'sr. admin', 'moderator', 'sr. moderator', 'admin', 'staff'].some(role => r.name.toLowerCase().includes(role))
+                );
+
+                if (!isAdmin && !hasStaffRole) {
+                    return interaction.reply({ content: '❌ Only staff members can review suggestions.', flags: ['Ephemeral'] });
+                }
+
+                try {
+                    await interaction.deferUpdate();
+                } catch (e) {
+                    return interaction.reply({ content: '❌ Interaction expired. Please try again.', flags: ['Ephemeral'] }).catch(() => { });
+                }
+
+                const decision = action === 'accept' ? 'ACCEPTED' : (action === 'deny' ? 'DENIED' : 'CLOSED');
+                const result = await client.suggestions.processDecision(suggestionId, member, decision as any);
+
+                if (result.success) {
+                    if (decision !== 'CLOSED') {
+                        const originalEmbed = interaction.message.embeds[0];
+                        if (originalEmbed) {
+                            const embed = EmbedBuilder.from(originalEmbed);
+                            embed.setColor(decision === 'ACCEPTED' ? '#00ff00' : '#ff0000');
+                            embed.addFields({ name: 'Decision', value: `${decision} by <@${interaction.user.id}>` });
+                            await interaction.message.edit({ embeds: [embed], components: [] });
+                        }
+                    }
+                } else {
+                    await interaction.followUp({ content: `❌ ${result.message}`, flags: ['Ephemeral'] });
                 }
             }
         }

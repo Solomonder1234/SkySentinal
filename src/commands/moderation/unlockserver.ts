@@ -28,7 +28,8 @@ export default {
 
         if (!interaction.guild) return;
 
-        const channels = interaction.guild.channels.cache.filter(c => c.isTextBased() && c.manageable);
+        const channels = interaction.guild.channels.cache.filter((c: any) =>
+            c.isTextBased() && c.manageable);
         let unlockedCount = 0;
 
         await interaction.reply({ content: `Unlocking ${channels.size} channels... This may take a moment.` });

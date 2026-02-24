@@ -9,3 +9,4 @@ prisma/dev.db-journal
 *-base.js
 *-player-script.js
 *.mp3
+logs/

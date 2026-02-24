@@ -7,6 +7,9 @@ export default {
     run: async (client) => {
         client.logger.info(`Ready! Logged in as ${client.user?.tag}`);
 
+        // Initialize Bump Service (Persistence)
+        await client.bump.init().catch(err => client.logger.error('[BumpService] Init Error:', err));
+
         // Debug Startup Message
         if (process.env.NODE_ENV === 'development') {
             const GENERAL_CHAT_ID = '1329128469166297159';

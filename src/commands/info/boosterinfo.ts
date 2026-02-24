@@ -9,7 +9,7 @@ export default {
     run: async (client, interaction) => {
         if (!interaction.guild) return;
 
-        const boosters = interaction.guild.members.cache.filter(m => m.premiumSince !== null);
+        const boosters = interaction.guild.members.cache.filter((m: any) => m.premiumSince !== null);
         const count = interaction.guild.premiumSubscriptionCount || 0;
         const level = interaction.guild.premiumTier;
 
@@ -18,7 +18,7 @@ export default {
             .addFields(
                 { name: 'Level', value: `\`${level}\``, inline: true },
                 { name: 'Total Boosts', value: `\`${count}\``, inline: true },
-                { name: 'Boosters', value: boosters.size > 0 ? boosters.map(m => m.user.tag).join(', ').slice(0, 1000) : 'None', inline: false }
+                { name: 'Boosters', value: boosters.size > 0 ? boosters.map((m: any) => m.user.tag).join(', ').slice(0, 1000) : 'None', inline: false }
             )
             .setFooter({ text: 'SkySentinel AV • Boosting Service' });
 

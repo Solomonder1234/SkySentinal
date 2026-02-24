@@ -11,6 +11,6 @@ export interface Command extends ChatInputApplicationCommandData {
     aliases?: string[];
     prefixOnly?: boolean;
     cooldown?: number;
-    run: (client: SkyClient, interaction: CommandInteraction | Message) => Promise<any>;
+    run: (client: SkyClient, interaction: any, args: string[]) => Promise<any>;
     autocomplete?: (client: SkyClient, interaction: AutocompleteInteraction) => Promise<any>;
 }

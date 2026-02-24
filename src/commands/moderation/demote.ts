@@ -34,7 +34,7 @@ export default {
         } else if (interaction.member && interaction.guild) {
             const memberRoles = interaction.member.roles as any;
             const guildRoles = interaction.guild.roles.cache;
-            const hosRole = guildRoles.find(r => r.name.toLowerCase() === 'head of staff' || r.name.toLowerCase() === 'hos');
+            const hosRole = guildRoles.find((r: any) => r.name.toLowerCase() === 'head of staff' || r.name.toLowerCase() === 'hos');
 
             if (memberRoles.cache && memberRoles.cache.some((r: any) => r.permissions && r.permissions.has(PermissionFlagsBits.Administrator))) {
                 hasPermission = true;
@@ -106,12 +106,12 @@ export default {
             ];
 
             // 1. Identify Target Rank Definition
-            const targetRankDef = rankHierarchy.find(r => r.roleName.toLowerCase() === targetRole.name.toLowerCase());
+            const targetRankDef = rankHierarchy.find((r: any) => r.roleName.toLowerCase() === targetRole.name.toLowerCase());
 
             // 2. Clear ALL existing staff roles from hierarchy (Derank)
             const rolesToRemove = [];
             for (const rank of rankHierarchy) {
-                const role = guild.roles.cache.find(r => r.name.toLowerCase() === rank.roleName.toLowerCase());
+                const role = guild.roles.cache.find((r: any) => r.name.toLowerCase() === rank.roleName.toLowerCase());
                 if (role && targetMember.roles.cache.has(role.id)) {
                     rolesToRemove.push(role.id);
                 }

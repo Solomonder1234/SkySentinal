@@ -5,35 +5,61 @@ import {
     ButtonStyle,
     ColorResolvable,
     StringSelectMenuBuilder,
-    StringSelectMenuOptionBuilder
+    StringSelectMenuOptionBuilder,
+    Message,
+    TextChannel
 } from 'discord.js';
-import { Song, Queue } from 'distube';
+import { Queue, Song } from 'distube';
 
 export class MusicController {
+    // Track the persistent message per guild
+    private static controllers: Map<string, Message> = new Map();
+
     /**
-     * Create a AV Tier "Now Playing" embed.
+     * Create/Update the "Now Playing" controller.
      */
+    public static async updateNowPlaying(queue: Queue, song: Song) {
+        const guildId = queue.textChannel?.guildId;
+        if (!guildId) return;
+
+        const embed = this.createNowPlayingEmbed(song, queue);
+        const components = this.createButtonRow(queue);
+
+        try {
+            const oldMessage = this.controllers.get(guildId);
+            const channel = queue.textChannel as TextChannel;
+
+            if (oldMessage && channel) {
+                await oldMessage.edit({ embeds: [embed], components }).catch(async () => {
+                    const newMessage = await channel.send({ embeds: [embed], components });
+                    this.controllers.set(guildId, newMessage);
+                });
+            } else if (channel) {
+                const newMessage = await channel.send({ embeds: [embed], components });
+                this.controllers.set(guildId, newMessage);
+            }
+        } catch (error) {
+            console.error(`[MusicController] Failed to update:`, error);
+        }
+    }
+
     public static createNowPlayingEmbed(song: Song, queue: Queue) {
         const embed = new EmbedBuilder()
-            .setTitle(`🎶 AV Playback: ${song.name}`)
-            .setURL(song.url ?? null)
+            .setTitle(`🎶 AV Playback: ${song.name || 'Unknown'}`)
+            .setURL(song.url || null)
             .setThumbnail(song.thumbnail ?? null)
             .setColor('#2F3136' as ColorResolvable)
             .addFields(
-                { name: '👤 Uploader', value: song.uploader.name || 'Unknown', inline: true },
-                { name: '⏱️ Duration', value: `\`${song.formattedDuration}\``, inline: true },
-                { name: '👀 Views', value: song.views?.toLocaleString() || 'N/A', inline: true },
+                { name: '👤 Author', value: song.uploader.name || 'Unknown', inline: true },
+                { name: '⏱️ Duration', value: `\`${song.formattedDuration || 'Live'}\``, inline: true },
                 { name: '🙋 Requested By', value: song.user?.toString() || 'Unknown', inline: true }
             )
-            .setFooter({ text: `SkySentinel AV • Vol: ${queue.volume}% • Filter: ${queue.filters.names.join(', ') || 'None'}`, iconURL: 'https://i.imgur.com/8Q9Pj6x.png' })
+            .setFooter({ text: `AV Engine v8.0.1 ALPHA • Vol: ${queue.volume}% • Filter: ${queue.filters.names.join(', ') || 'None'}`, iconURL: 'https://i.imgur.com/8Q9Pj6x.png' })
             .setTimestamp();
 
         return embed;
     }
 
-    /**
-     * Create the interactive button rows and select menu for playback control.
-     */
     public static createButtonRow(queue: Queue) {
         const row1 = new ActionRowBuilder<ButtonBuilder>().addComponents(
             new ButtonBuilder()
@@ -61,7 +87,7 @@ export class MusicController {
         const row2 = new ActionRowBuilder<ButtonBuilder>().addComponents(
             new ButtonBuilder()
                 .setCustomId('music_loop')
-                .setLabel(queue.repeatMode === 0 ? '🔁 Off' : queue.repeatMode === 1 ? '🔂 Song' : '🔁 Queue')
+                .setLabel(queue.repeatMode === 0 ? '🔁 Off' : queue.repeatMode === 1 ? '🔂 Track' : '🔁 Queue')
                 .setStyle(queue.repeatMode === 0 ? ButtonStyle.Secondary : ButtonStyle.Success),
             new ButtonBuilder()
                 .setCustomId('music_vol_down')
@@ -79,37 +105,24 @@ export class MusicController {
 
         const filterMenu = new StringSelectMenuBuilder()
             .setCustomId('music_filters_select')
-            .setPlaceholder('✨ Select Audio Filters (Toggle)')
+            .setPlaceholder('✨ Select Audio Filters')
             .setMinValues(0)
-            .setMaxValues(3)
+            .setMaxValues(1)
             .addOptions(
                 new StringSelectMenuOptionBuilder()
                     .setLabel('Bassboost')
-                    .setDescription('Deepen the frequency response.')
                     .setValue('bassboost')
-                    .setEmoji('🎸')
-                    .setDefault(queue.filters.has('bassboost')),
+                    .setEmoji('🎸'),
                 new StringSelectMenuOptionBuilder()
                     .setLabel('Nightcore')
-                    .setDescription('Faster and higher pitch.')
                     .setValue('nightcore')
-                    .setEmoji('✨')
-                    .setDefault(queue.filters.has('nightcore')),
+                    .setEmoji('✨'),
                 new StringSelectMenuOptionBuilder()
                     .setLabel('Vaporwave')
-                    .setDescription('Slow and low pitch.')
                     .setValue('vaporwave')
-                    .setEmoji('🌊')
-                    .setDefault(queue.filters.has('vaporwave')),
-                new StringSelectMenuOptionBuilder()
-                    .setLabel('Surround')
-                    .setDescription('3D spatial audio effect.')
-                    .setValue('surround')
-                    .setEmoji('🔊')
-                    .setDefault(queue.filters.has('surround')),
+                    .setEmoji('🌊'),
                 new StringSelectMenuOptionBuilder()
                     .setLabel('Clear')
-                    .setDescription('Remove all active filters.')
                     .setValue('clear')
                     .setEmoji('🧹')
             );

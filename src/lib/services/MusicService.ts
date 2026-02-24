@@ -1,150 +1,144 @@
-import { DisTube, Queue, Song } from 'distube';
+import { DisTube, Song, Queue } from 'distube';
 import { YtDlpPlugin } from '@distube/yt-dlp';
+import { YouTubePlugin } from '@distube/youtube';
 import { SkyClient } from '../structures/SkyClient';
 import { Logger } from '../../utils/Logger';
 import { MusicController } from '../../utils/MusicController';
-import { Message, TextChannel } from 'discord.js';
+import { TextChannel, GuildMember, VoiceBasedChannel } from 'discord.js';
+
+// Import ffmpeg-static for a guaranteed stable binary path
+const ffmpegPath = require('ffmpeg-static');
 
 export class MusicService {
     private client: SkyClient;
     private logger: Logger;
     public distube: DisTube;
-    // Map to track the persistent "Now Playing" message per guild
-    private controllers: Map<string, Message> = new Map();
 
     constructor(client: SkyClient) {
         this.client = client;
         this.logger = client.logger;
 
-        const distubeOptions: any = {
+        this.logger.info(`[AV Music] Using FFmpeg binary: ${ffmpegPath}`);
+
+        this.distube = new DisTube(client, {
             emitNewSongOnly: true,
-            savePreviousSongs: true,
-            nsfw: true,
-            plugins: [new YtDlpPlugin()],
-        };
-
-        if (process.env.YOUTUBE_COOKIE) {
-            distubeOptions.youtubeCookie = process.env.YOUTUBE_COOKIE;
-        }
-
-        this.distube = new DisTube(client, distubeOptions);
+            emitAddSongWhenCreatingQueue: false,
+            emitAddListWhenCreatingQueue: false,
+            plugins: [
+                new YtDlpPlugin(),
+                new YouTubePlugin(),
+            ],
+            ffmpeg: {
+                path: ffmpegPath,
+                args: {
+                    global: {
+                        loglevel: 'debug'
+                    },
+                    input: {
+                        'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                        'reconnect': '1',
+                        'reconnect_streamed': '1',
+                        'reconnect_delay_max': '5'
+                    }
+                }
+            }
+        });
 
         this.setupEvents();
     }
 
     private setupEvents() {
-        this.distube
-            .on('playSong', async (queue: Queue, song: Song) => {
-                this.logger.info(`[AV Music] Playing: ${song.name}`);
-                await this.updateController(queue, song);
-            })
-            .on('addSong', (queue: Queue, song: Song) => {
-                this.logger.info(`[AV Music] Added to queue: ${song.name}`);
-                // Optional: Send a temporary "Added to Queue" message
-            })
-            .on('error', (channel: any, error: Error) => {
-                this.logger.error(`[AV Music] Error:`, error);
-                if (channel && channel.send) {
-                    channel.send(`❌ **AV Engine Error:** \`${error.message.slice(0, 1500)}\``);
-                }
-            })
-            .on('finish', (queue: Queue) => {
-                this.logger.info(`[AV Music] Queue finished.`);
-                this.clearController(queue.id);
-            })
-            .on('disconnect', (queue: Queue) => {
-                this.logger.info(`[AV Music] Disconnected.`);
-                this.clearController(queue.id);
-            })
-            .on('deleteQueue', (queue: Queue) => {
-                this.clearController(queue.id);
-            });
-    }
+        console.log('[AV Music] Setting up DisTube events (v5)...');
 
-    /**
-     * Updates or creates the persistent "Now Playing" controller message.
-     */
-    private async updateController(queue: Queue, song: Song) {
-        const guildId = queue.id;
-        const channel = queue.textChannel as TextChannel;
-        if (!channel) return;
+        const tube = this.distube as any;
 
-        const embed = MusicController.createNowPlayingEmbed(song, queue);
-        const components = MusicController.createButtonRow(queue);
+        tube.on('playSong', async (queue: Queue, song: Song) => {
+            console.log(`[AV Music] playSong: ${song.name}`);
+            this.logger.info(`[AV Music] Playing: ${song.name}`);
+            await MusicController.updateNowPlaying(queue, song);
+        });
 
-        try {
-            const oldMessage = this.controllers.get(guildId);
-            if (oldMessage) {
-                // Try to edit existing message
-                await oldMessage.edit({ embeds: [embed], components }).catch(async () => {
-                    // If edit fails (e.g. message deleted), send a new one
-                    const newMessage = await channel.send({ embeds: [embed], components });
-                    this.controllers.set(guildId, newMessage);
-                });
-            } else {
-                const newMessage = await channel.send({ embeds: [embed], components });
-                this.controllers.set(guildId, newMessage);
+        tube.on('addSong', (queue: Queue, song: Song) => {
+            console.log(`[AV Music] addSong: ${song.name}`);
+            this.logger.info(`[AV Music] Added to queue: ${song.name}`);
+        });
+
+        tube.on('error', (error: Error, queue: Queue, song?: Song) => {
+            console.error(`[AV Music] DisTube Global Error:`, error);
+            this.logger.error(`[AV Music] Error (Queue: ${queue?.id}):`, error);
+
+            const channel = queue?.textChannel;
+            if (channel && channel.send) {
+                channel.send(`❌ **AV Engine Error:** \`${error.message.slice(0, 1000)}\``).catch(() => { });
             }
-        } catch (error) {
-            this.logger.error(`[MusicService] Failed to update controller:`, error);
-        }
-    }
+        });
 
-    /**
-     * Removes the controller message tracking for a guild.
-     */
-    private clearController(guildId: string) {
-        this.controllers.delete(guildId);
-    }
+        tube.on('empty', (queue: Queue) => {
+            console.log('[AV Music] Channel empty');
+            this.logger.info(`[AV Music] Channel empty, leaving.`);
+        });
 
-    /**
-     * Refreshes the controller (useful for manual button pushes).
-     */
-    public async refreshController(guildId: string) {
-        const queue = this.distube.getQueue(guildId);
-        if (queue && queue.songs[0]) {
-            await this.updateController(queue, queue.songs[0]);
-        }
-    }
+        tube.on('finish', (queue: Queue) => {
+            console.log('[AV Music] Queue finished');
+            this.logger.info(`[AV Music] Queue finished.`);
+        });
 
-    // Proxy methods
-    public async play(member: any, channel: any, query: string, interaction: any) {
-        return this.distube.play(channel, query, {
-            member,
-            textChannel: interaction.channel,
-            metadata: { interaction }
+        tube.on('disconnect', (queue: Queue) => {
+            console.log('[AV Music] Disconnected');
+            this.logger.info(`[AV Music] Disconnected.`);
+        });
+
+        tube.on('ffmpegDebug', (debug: string) => {
+            // Log ALL FFmpeg info for debugging code 1
+            console.log(`[AV Music] FFmpeg Debug: ${debug}`);
+            this.logger.info(`[AV Music] FFmpeg Debug: ${debug}`);
         });
     }
 
-    public stop(guildId: string) {
+    public async play(member: GuildMember, channel: VoiceBasedChannel, query: string, interaction: any) {
+        console.log(`[AV Music] play() request: "${query}"`);
         try {
-            const queue = this.distube.getQueue(guildId);
-            if (queue) {
-                queue.stop();
-                this.clearController(guildId);
-            }
-        } catch (error) {
-            this.logger.error(`[MusicService] Stop failed:`, error);
+            await this.distube.play(channel, query, {
+                member: member,
+                textChannel: interaction.channel as TextChannel,
+                metadata: { interaction }
+            });
+            console.log('[AV Music] play() initiated.');
+        } catch (error: any) {
+            console.error('[AV Music] play() failed:', error);
+            this.logger.error(`[MusicService] Play Error:`, error);
+            throw error;
+        }
+    }
+
+    public stop(guildId: string) {
+        const queue = this.distube.getQueue(guildId);
+        if (queue) {
+            queue.stop();
         }
     }
 
     public async skip(guildId: string) {
-        try {
-            const queue = this.distube.getQueue(guildId);
-            if (queue) {
-                if (queue.songs.length <= 1 && !queue.autoplay) {
-                    return queue.stop();
-                }
-                return await queue.skip();
+        const queue = this.distube.getQueue(guildId);
+        if (queue) {
+            if (queue.songs.length <= 1 && !queue.autoplay) {
+                queue.stop();
+                return true;
             }
-            return null;
-        } catch (error) {
-            this.logger.error(`[MusicService] Skip failed:`, error);
-            return null;
+            await queue.skip();
+            return true;
         }
+        return false;
     }
 
     public getQueue(guildId: string) {
         return this.distube.getQueue(guildId);
+    }
+
+    public async refreshController(guildId: string) {
+        const queue = this.distube.getQueue(guildId);
+        if (queue && queue.songs[0]) {
+            await MusicController.updateNowPlaying(queue, queue.songs[0]);
+        }
     }
 }

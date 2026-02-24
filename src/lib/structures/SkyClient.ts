@@ -11,6 +11,8 @@ import { TerminalService } from '../services/TerminalService';
 import { MusicService } from '../services/MusicService';
 import { OnboardingService } from '../services/OnboardingService';
 import { SuggestionService } from '../services/SuggestionService';
+import { BumpService } from '../services/BumpService';
+import { PromotionService } from '../services/PromotionService';
 
 export class SkyClient extends Client {
     public logger: Logger;
@@ -25,6 +27,8 @@ export class SkyClient extends Client {
     public terminal: TerminalService;
     public onboarding: OnboardingService;
     public suggestions: SuggestionService;
+    public bump: BumpService;
+    public promotions: PromotionService;
 
     constructor() {
         super({
@@ -58,6 +62,8 @@ export class SkyClient extends Client {
         this.music = new MusicService(this);
         this.onboarding = new OnboardingService(this);
         this.suggestions = new SuggestionService(this);
+        this.bump = new BumpService(this);
+        this.promotions = new PromotionService(this);
     }
 
     public async start() {
@@ -79,5 +85,9 @@ export class SkyClient extends Client {
             this.logger.error('Failed to login:', error);
             process.exit(1);
         }
+    }
+
+    public get prisma() {
+        return this.database.prisma;
     }
 }

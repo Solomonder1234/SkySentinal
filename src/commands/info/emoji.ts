@@ -13,7 +13,7 @@ export default {
         if (emojis.size === 0) return interaction.reply({ content: 'No emojis found.' });
 
         // Limit to prevent huge messages
-        const emojiList = emojis.map(e => e.toString()).join(' ').slice(0, 2000);
+        const emojiList = emojis.map((e: any) => e.toString()).join(' ').slice(0, 2000);
 
         const embed = EmbedUtils.info(`Server Emojis (${emojis.size})`, `\n${emojiList}\n`)
             .setFooter({ text: `SkySentinel AV • Total Emojis: ${emojis.size}` });

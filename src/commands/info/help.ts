@@ -26,7 +26,7 @@ export default {
         }
 
         if (commandName) {
-            const command = client.commands.get(commandName) || client.commands.find(c => c.aliases?.includes(commandName!));
+            const command = client.commands.get(commandName) || client.commands.find((c: any) => c.aliases?.includes(commandName!));
             if (!command) return interaction.reply({ content: 'Command not found.' });
 
             const embed = EmbedUtils.info(`Command: ${command.name}`, command.description || 'No description provided.')
@@ -73,7 +73,7 @@ export default {
             };
 
             const embed = EmbedUtils.info('📚 SkySentinel Administrative Center', `Total Commands: **${commands.size}**\n\n*Select a category below to browse the AV command suite.*`)
-                .setFooter({ text: 'SkySentinel • v7.0.5 ALPHA AV Engine Transition' });
+                .setFooter({ text: 'SkySentinel • v8.4.5 ALPHA Next-Gen Engine' });
 
             const components = buildRows(categories);
 
@@ -100,7 +100,7 @@ export default {
                 }
 
                 const catName = i.customId.replace('help_cat_', '');
-                const categoryCommands = commands.filter(c => (c.category || 'Uncategorized') === catName);
+                const categoryCommands = commands.filter((c: any) => (c.category || 'Uncategorized') === catName);
                 const commandList = categoryCommands.map(c => `\`${c.name}\``).join(', ');
 
                 const emojiMap: Record<string, string> = {

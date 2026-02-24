@@ -20,8 +20,8 @@ export default {
             const messages = await channel.messages.fetch({ limit: 50 });
 
             const context = messages
-                .filter(m => !m.author.bot)
-                .map(m => `${m.author.username}: ${m.content}`)
+                .filter((m: any) => !m.author.bot)
+                .map((m: any) => `${m.author.username}: ${m.content}`)
                 .reverse()
                 .join('\n');
 

@@ -66,7 +66,7 @@ export default {
 
             const collector = message.createMessageComponentCollector({ componentType: ComponentType.Button, time: 15000 });
 
-            collector.on('collect', async i => {
+            collector.on('collect', async (i: any) => {
                 const userId = (interaction instanceof Message) ? interaction.author.id : interaction.user.id;
 
                 if (i.user.id !== userId) {
@@ -86,7 +86,7 @@ export default {
                 collector.stop();
             });
 
-            collector.on('end', async collected => {
+            collector.on('end', async (collected: any) => {
                 if (collected.size === 0) {
                     const timeoutEmbed = EmbedUtils.error('Time\'s Up!', `The correct answer was **${correctAnswer}**.`);
                     try {

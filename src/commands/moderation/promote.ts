@@ -24,7 +24,7 @@ export default {
             const guildRoles = interaction.guild.roles.cache;
 
             // Find the Head of Staff role to get its baseline position
-            const hosRole = guildRoles.find(r => r.name.toLowerCase() === 'head of staff' || r.name.toLowerCase() === 'hos');
+            const hosRole = guildRoles.find((r: any) => r.name.toLowerCase() === 'head of staff' || r.name.toLowerCase() === 'hos');
 
             if (memberRoles.cache && memberRoles.cache.some((r: any) => r.permissions && r.permissions.has('Administrator'))) {
                 hasPermission = true;
@@ -86,7 +86,7 @@ export default {
             let currentRankIndex = -1;
             for (let i = 0; i < rankHierarchy.length; i++) {
                 const rankDef = rankHierarchy[i];
-                if (rankDef && targetMember.roles.cache.some(r => r.name.toLowerCase() === rankDef.roleName.toLowerCase())) {
+                if (rankDef && targetMember.roles.cache.some((r: any) => r.name.toLowerCase() === rankDef.roleName.toLowerCase())) {
                     currentRankIndex = i;
                 }
             }
@@ -111,9 +111,9 @@ export default {
             // 2. Find Roles in Guild
             let currentRoleObj: any = undefined;
             if (currentRank && currentRank.roleName) {
-                currentRoleObj = guild.roles.cache.find(r => r.name.toLowerCase() === currentRank.roleName.toLowerCase());
+                currentRoleObj = guild.roles.cache.find((r: any) => r.name.toLowerCase() === currentRank.roleName.toLowerCase());
             }
-            const nextRoleObj = guild.roles.cache.find(r => r.name.toLowerCase() === nextRank.roleName.toLowerCase());
+            const nextRoleObj = guild.roles.cache.find((r: any) => r.name.toLowerCase() === nextRank.roleName.toLowerCase());
 
             if (!nextRoleObj) {
                 const errorEmbed = EmbedUtils.error('Role Not Found', `Cannot promote user. The role **${nextRank.roleName}** does not exist in this server. Please create it first.`);
@@ -153,7 +153,7 @@ export default {
                 const logChannelId = '1473466436449210511';
                 const logChannel = await interaction.guild.channels.fetch(logChannelId);
                 if (logChannel && logChannel.isTextBased()) {
-                    const staffRole = interaction.guild.roles.cache.find(r => r.name.toLowerCase() === 'staff');
+                    const staffRole = interaction.guild.roles.cache.find((r: any) => r.name.toLowerCase() === 'staff');
                     const pingText = staffRole ? `<@&${staffRole.id}>` : '@Staff';
                     await logChannel.send({ content: pingText, embeds: [successEmbed] });
                 }

@@ -47,8 +47,7 @@ export class SuggestionService {
             });
 
             // Save to DB
-            // @ts-ignore
-            const suggestion = await this.client.database.prisma.suggestion.create({
+            const suggestion = await (this.client.database.prisma.suggestion as any).create({
                 data: {
                     guildId: guild.id,
                     userId: member.id,
@@ -95,20 +94,20 @@ export class SuggestionService {
      * Handles staff decisions on suggestions.
      */
     public async processDecision(suggestionId: number, staffMember: GuildMember, decision: 'ACCEPTED' | 'DENIED' | 'CLOSED') {
-        const suggestion = await this.client.database.prisma.suggestion.findUnique({
+        const suggestion = await (this.client.database.prisma.suggestion as any).findUnique({
             where: { id: suggestionId }
         });
 
         if (!suggestion) return { success: false, message: 'Suggestion not found.' };
 
         if (decision === 'CLOSED') {
-            await this.client.database.prisma.suggestion.delete({ where: { id: suggestionId } });
+            await (this.client.database.prisma.suggestion as any).delete({ where: { id: suggestionId } });
             const channel = staffMember.guild.channels.cache.get(suggestion.channelId);
             if (channel) await channel.delete().catch(() => null);
             return { success: true };
         }
 
-        await this.client.database.prisma.suggestion.update({
+        await (this.client.database.prisma.suggestion as any).update({
             where: { id: suggestionId },
             data: { status: decision }
         });

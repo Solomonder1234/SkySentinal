@@ -29,7 +29,7 @@ export default {
             const memberRoles = interaction.member.roles as any;
             const guildRoles = interaction.guild.roles.cache;
 
-            const hosRole = guildRoles.find(r => r.name.toLowerCase() === 'head of staff' || r.name.toLowerCase() === 'hos');
+            const hosRole = guildRoles.find((r: any) => r.name.toLowerCase() === 'head of staff' || r.name.toLowerCase() === 'hos');
 
             if (memberRoles.cache && memberRoles.cache.some((r: any) => r.permissions && r.permissions.has('Administrator'))) {
                 hasPermission = true;

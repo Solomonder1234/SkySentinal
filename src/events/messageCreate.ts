@@ -9,6 +9,23 @@ import type { Event } from '../lib/structures/Event';
 export default {
     name: Events.MessageCreate,
     run: async (client: SkyClient, message: Message) => {
+        // Disboard Bump Detector
+        if (message.author.id === '302050872383242240' && message.guildId) {
+            const isBumpSuccess = message.embeds.some((e: any) => e.description?.includes('Bump done!')) ||
+                message.content.includes('Bump done!');
+
+            if (isBumpSuccess) {
+                const config = await client.database.prisma.guildConfig.findUnique({
+                    where: { id: message.guildId }
+                });
+
+                if (config?.enableBumpReminder) {
+                    await client.bump.startTimer(message.guildId, message.channelId);
+                }
+            }
+            return;
+        }
+
         if (message.author.bot) return;
 
         // Hook into Onboarding Service
@@ -243,7 +260,7 @@ export default {
                                 feedback = formatAIAction(actionTitle, {}, false, "Lacks ManageChannels Permission");
                             } else if (message.channel && 'permissionOverwrites' in message.channel) {
                                 const guildChannel = message.channel as any;
-                                const everyoneRole = message.guild?.roles.cache.find(r => r.name === '@everyone');
+                                const everyoneRole = message.guild?.roles.cache.find((r: any) => r.name === '@everyone');
                                 if (everyoneRole) {
                                     await guildChannel.permissionOverwrites.edit(everyoneRole.id, {
                                         SendMessages: call.name === 'unlock_channel'
@@ -409,60 +426,57 @@ async function handleXP(client: SkyClient, message: Message, config: any) {
     const currentLevel = userProfile?.level || 0;
 
     // XP Scaling: Base (15-25) + Level Bonus (1 XP per level)
-    // Level 0: 15-25 XP
-    // Level 90: 105-115 XP
     const baseXp = Math.floor(Math.random() * 11) + 15;
     const xpBonus = currentLevel;
     const xpToAdd = baseXp + xpBonus;
 
     // Update DB
     try {
-        userProfile = await client.database.prisma.userProfile.upsert({
+        userProfile = await (client.database.prisma.userProfile as any).upsert({
             where: { id: message.author.id },
-            create: { id: message.author.id, xp: BigInt(xpToAdd), level: 0 },
-            update: { xp: { increment: BigInt(xpToAdd) } }
+            create: { id: message.author.id, xp: BigInt(xpToAdd), level: 0, messageCount: 1 },
+            update: {
+                xp: { increment: BigInt(xpToAdd) },
+                messageCount: { increment: 1 }
+            }
         });
 
+        // Periodic Promotion Check (every 5 messages or level up)
+        if (userProfile && (userProfile as any).messageCount % 5 === 0) {
+            await client.promotions.checkPromotion(message.member!, userProfile);
+        }
+
         // Level Up Check
-        // Quadratic Formula: Total XP = 100 * Level^2
-        // Next Level Requirement: 100 * (CurrentLevel + 1)^2
-        const nextLevelXp = BigInt(100 * (userProfile.level + 1) * (userProfile.level + 1));
+        if (userProfile) {
+            const nextLevelXp = BigInt(100 * (userProfile.level + 1) * (userProfile.level + 1));
 
-        if (userProfile.xp >= nextLevelXp) {
-            const newLevel = userProfile.level + 1;
-            await client.database.prisma.userProfile.update({
-                where: { id: message.author.id },
-                data: { level: newLevel }
-            });
+            if ((userProfile as any).xp >= nextLevelXp) {
+                const newLevel = (userProfile as any).level + 1;
+                userProfile = await (client.database.prisma.userProfile as any).update({
+                    where: { id: message.author.id },
+                    data: { level: newLevel }
+                });
 
-            // Role Rewards
-            const reward = await (client.database.prisma as any).roleReward.findUnique({
-                where: { guildId_level: { guildId: message.guildId!, level: newLevel } }
-            });
-
-            if (reward) {
-                try {
-                    await message.member?.roles.add(reward.roleId);
-                } catch (e) {
-                    console.error('Failed to add role reward:', e);
+                // Trigger Promotion Check on Level Up
+                if (userProfile) {
+                    await client.promotions.checkPromotion(message.member!, userProfile);
                 }
-            }
 
-            // Level Up Channel
-            let targetChannel: any = message.channel;
-            if (config?.levelUpChannelId) {
-                const customChannel = message.guild.channels.cache.get(config.levelUpChannelId);
-                if (customChannel && customChannel.isTextBased()) {
-                    targetChannel = customChannel;
+                // Level Up Channel
+                let targetChannel: any = message.channel;
+                if (config?.levelUpChannelId) {
+                    const customChannel = message.guild.channels.cache.get(config.levelUpChannelId);
+                    if (customChannel && customChannel.isTextBased()) {
+                        targetChannel = customChannel;
+                    }
                 }
-            }
 
-            if (targetChannel.type === ChannelType.GuildText || targetChannel.isTextBased()) {
-                await targetChannel.send(`🎉 **${message.author.username}**, you leveled up to **Level ${newLevel}**!${reward ? ` You've been awarded the <@&${reward.roleId}> role!` : ''}`);
+                if (targetChannel.type === ChannelType.GuildText || targetChannel.isTextBased()) {
+                    await targetChannel.send(`🎉 **${message.author.username}**, you leveled up to **Level ${newLevel}**!`);
+                }
             }
         }
     } catch (error) {
         console.error('Error handling XP:', error);
     }
 }
-

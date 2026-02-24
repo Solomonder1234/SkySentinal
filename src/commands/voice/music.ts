@@ -11,7 +11,7 @@ import {
 
 export default {
     name: 'music',
-    description: 'Play music from YouTube using the DisTube AV Engine.',
+    description: 'Play music using the AV Engine v3.0 (DisTube Restoration).',
     category: 'Voice',
     aliases: ['play', 'p', 'stop', 'skip', 'queue', 'q', 'vol', 'volume', 'loop', 'filter', 'filters'],
     type: ApplicationCommandType.ChatInput,
@@ -19,12 +19,12 @@ export default {
     options: [
         {
             name: 'play',
-            description: 'Play a YouTube video or playlist.',
+            description: 'Play a song or playlist.',
             type: ApplicationCommandOptionType.Subcommand,
             options: [
                 {
                     name: 'query',
-                    description: 'YouTube URL or search query.',
+                    description: 'Search query or URL.',
                     type: ApplicationCommandOptionType.String,
                     required: true,
                 }
@@ -113,25 +113,17 @@ export default {
 
         if (subcommand === 'play') {
             if (!query) {
-                const msg = '❌ Please provide a YouTube URL or a search query.';
-                return interaction.reply({ content: msg });
+                return interaction.reply({ content: '❌ Please provide a query or URL.' });
             }
 
-            if (!(interaction instanceof Message)) {
-                await interaction.deferReply();
-            } else if (interaction.channel instanceof TextChannel) {
-                await interaction.channel.sendTyping();
-            }
+            if (!(interaction instanceof Message)) await interaction.deferReply();
+            else if (interaction.channel instanceof TextChannel) await interaction.channel.sendTyping();
 
             try {
-                const voiceChannel = member.voice.channel;
-                await client.music.play(member, voiceChannel, query, interaction);
-
-                const response = `🔍 Searching for: **${query}**\n🎶 Establishing DisTube Supreme connection...`;
-                if (interaction instanceof Message) return interaction.reply(response);
-                else return interaction.editReply(response);
+                await client.music.play(member, member.voice.channel, query, interaction);
+                const msg = `🔍 **Searching:** \`${query}\`\n🎶 **AV Engine v3.0:** Processing request...`;
+                return interaction instanceof Message ? interaction.reply(msg) : interaction.editReply(msg);
             } catch (error: any) {
-                client.logger.error(`[Music] Play Command Error:`, error);
                 const msg = `❌ **Error:** ${error.message}`;
                 return interaction instanceof Message ? interaction.reply(msg) : interaction.editReply(msg);
             }
@@ -139,35 +131,28 @@ export default {
 
         if (subcommand === 'stop') {
             client.music.stop(guildId);
-            return interaction.reply('🛑 Stopped music and cleared the queue.');
+            return interaction.reply('🛑 Stopped playback and cleared the queue.');
         }
 
         if (subcommand === 'skip') {
-            try {
-                await client.music.skip(guildId);
-                return interaction.reply('⏭️ Skipped current track.');
-            } catch (error) {
-                return interaction.reply('❌ Nothing to skip or queue finished.');
-            }
+            const success = await client.music.skip(guildId);
+            return interaction.reply(success ? '⏭️ Skipped current track.' : '❌ Nothing to skip.');
         }
 
         if (subcommand === 'volume') {
-            if (volume === null || isNaN(volume)) return interaction.reply('❌ Please provide a valid volume level (0-100).');
-            client.music.distube.setVolume(guildId, volume);
-            return interaction.reply(`🔊 Volume set to: **${volume}%**`);
+            if (volume === null || isNaN(volume)) return interaction.reply('❌ Invalid volume.');
+            const queue = client.music.getQueue(guildId);
+            if (queue) queue.setVolume(volume);
+            return interaction.reply(`🔊 Volume: **${volume}%**`);
         }
 
         if (subcommand === 'queue') {
             const queue = client.music.getQueue(guildId);
-            if (!queue || queue.songs.length === 0) {
-                return interaction.reply('The queue is empty.');
-            }
+            if (!queue || !queue.songs || queue.songs.length === 0) return interaction.reply('The queue is empty.');
 
-            const currentSong = queue.songs[0];
-            const queueList = queue.songs.slice(1, 11).map((song, i) => `${i + 1}. **${song.name}** - \`${song.formattedDuration}\``).join('\n');
-            const response = `🎵 **AV Music Queue**\n\n**Now Playing:** ${currentSong ? currentSong.name : 'Unknown'}\n\n${queueList || '*Empty*'}${queue.songs.length > 11 ? `\n*...and ${queue.songs.length - 11} more*` : ''}`;
-
-            return interaction.reply({ content: response });
+            const list = queue.songs.slice(0, 10).map((t, i) => `${i + 1}. **${t.name}** - \`${t.formattedDuration}\``).join('\n');
+            const response = `🎵 **AV Music Queue**\n\n**Now Playing:** ${queue.songs[0]?.name || 'Unknown'}\n\n${list || '*Queue is empty*'}${queue.songs.length > 10 ? `\n*...and ${queue.songs.length - 10} more*` : ''}`;
+            return interaction.reply(response);
         }
 
         if (subcommand === 'autoplay') {

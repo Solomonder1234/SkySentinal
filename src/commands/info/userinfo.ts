@@ -51,7 +51,7 @@ export default {
         if (member) {
             embed.addFields(
                 { name: 'Joined Server', value: `<t:${Math.floor(member.joinedTimestamp! / 1000)}:F> (<t:${Math.floor(member.joinedTimestamp! / 1000)}:R>)`, inline: false },
-                { name: 'Roles', value: member.roles.cache.filter(r => r.name !== '@everyone').map(r => r).join(' ') || 'None', inline: false }
+                { name: 'Roles', value: member.roles.cache.filter((r: any) => r.name !== '@everyone').map((r: any) => r).join(' ') || 'None', inline: false }
             );
             if (member.nickname) embed.addFields({ name: 'Nickname', value: member.nickname, inline: true });
         }

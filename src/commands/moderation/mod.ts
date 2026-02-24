@@ -17,7 +17,7 @@ export default {
             return interaction.reply({ content: 'You do not have permission to view the moderation menu.' });
         }
 
-        const modCommands = client.commands.filter(c => c.category === 'Moderation');
+        const modCommands = client.commands.filter((c: any) => c.category === 'Moderation');
 
         const embed = EmbedUtils.info('Moderation Menu', 'Comprehensive suite of administrative and moderation tools.')
             .setThumbnail(client.user?.displayAvatarURL() || null)
@@ -28,10 +28,10 @@ export default {
         const management = ['lock', 'unlock', 'lockserver', 'unlockserver', 'slowmode', 'nick', 'dm'];
         const advanced = ['banid', 'unban', 'softban', 'tempban', 'purge', 'nuke', 'addrole', 'removerole', 'roleall'];
 
-        const standardCmds = modCommands.filter(c => standard.includes(c.name)).map(c => `\`${c.name}\``).join(', ');
-        const managementCmds = modCommands.filter(c => management.includes(c.name)).map(c => `\`${c.name}\``).join(', ');
-        const advancedCmds = modCommands.filter(c => advanced.includes(c.name)).map(c => `\`${c.name}\``).join(', ');
-        const otherCmds = modCommands.filter(c => !standard.includes(c.name) && !management.includes(c.name) && !advanced.includes(c.name)).map(c => `\`${c.name}\``).join(', ');
+        const standardCmds = modCommands.filter((c: any) => standard.includes(c.name)).map((c: any) => `\`${c.name}\``).join(', ');
+        const managementCmds = modCommands.filter((c: any) => management.includes(c.name)).map((c: any) => `\`${c.name}\``).join(', ');
+        const advancedCmds = modCommands.filter((c: any) => advanced.includes(c.name)).map((c: any) => `\`${c.name}\``).join(', ');
+        const otherCmds = modCommands.filter((c: any) => !standard.includes(c.name) && !management.includes(c.name) && !advanced.includes(c.name)).map((c: any) => `\`${c.name}\``).join(', ');
 
         if (standardCmds) embed.addFields({ name: '🔨 Standard', value: standardCmds });
         if (managementCmds) embed.addFields({ name: '🔒 Management', value: managementCmds });

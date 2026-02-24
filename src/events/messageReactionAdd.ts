@@ -38,7 +38,7 @@ export default {
         if (!guildConfig) return;
 
         // --- Handle Reaction Roles ---
-        const rr = guildConfig.reactionRoles.find(r => r.messageId === message.id && r.emoji === reaction.emoji.name);
+        const rr = guildConfig.reactionRoles.find((r: any) => r.messageId === message.id && r.emoji === reaction.emoji.name);
         if (rr) {
             const member = await message.guild?.members.fetch(user.id);
             if (member) {

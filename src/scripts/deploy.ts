@@ -25,17 +25,17 @@ function serialize(obj: any): any {
     return obj;
 }
 
-// Points to src/commands from src/scripts
 const commandsPath = path.join(__dirname, '../commands');
 
 function getFiles(dir: string): string[] {
     const files: string[] = [];
+    if (!fs.existsSync(dir)) return [];
     const items = fs.readdirSync(dir, { withFileTypes: true });
 
     for (const item of items) {
         if (item.isDirectory()) {
             files.push(...getFiles(path.join(dir, item.name)));
-        } else if (item.name.endsWith('.ts') || item.name.endsWith('.js')) {
+        } else if ((item.name.endsWith('.ts') || item.name.endsWith('.js')) && !item.name.endsWith('.d.ts')) {
             files.push(path.join(dir, item.name));
         }
     }
@@ -45,9 +45,22 @@ function getFiles(dir: string): string[] {
 const commandFiles = getFiles(commandsPath);
 
 for (const file of commandFiles) {
-    const command = require(file).default;
-    if (command && command.name && !command.prefixOnly) {
-        commands.push(serialize(command));
+    try {
+        const command = require(file).default;
+        if (command && command.name && !command.prefixOnly) {
+            const apiCommand = {
+                name: command.name,
+                description: command.description,
+                options: command.options,
+                type: command.type,
+                default_member_permissions: command.defaultMemberPermissions?.toString(),
+                dm_permission: command.dmPermission,
+                nsfw: command.nsfw
+            };
+            commands.push(serialize(apiCommand));
+        }
+    } catch (e) {
+        console.error(`Error loading command file ${file}:`, e);
     }
 }
 
@@ -58,50 +71,56 @@ if (!tokenVal) {
 }
 const rest = new REST({ version: '10' }).setToken(tokenVal);
 
-(async () => {
+const guildId = process.env.GUILD_ID;
+let clientId = process.env.CLIENT_ID;
+
+if (!clientId && tokenVal) {
     try {
-        console.log(`Transitioning to ! ONLY mode. Clearing ${commands.length} application (/) commands.`);
-        const clearCommands: any[] = []; // Empty array to clear discord commands
+        const idPart = tokenVal.split('.')[0];
+        if (idPart) {
+            clientId = Buffer.from(idPart, 'base64').toString();
+            console.log(`Extracted Client ID from token: ${clientId}`);
+        }
+    } catch (e) {
+        console.error('Failed to extract Client ID from token:', e);
+    }
+}
 
-        let clientId = process.env.CLIENT_ID;
-        const token = process.env.DISCORD_TOKEN;
+if (!clientId) {
+    console.error('CLIENT_ID not found and could not be extracted.');
+    process.exit(1);
+}
 
-        if (!clientId && token) {
-            try {
-                const idPart = token.split('.')[0];
-                if (idPart) {
-                    clientId = Buffer.from(idPart, 'base64').toString();
-                    console.log(`Extracted Client ID from token: ${clientId}`);
-                }
-            } catch (e) {
-                console.error('Failed to extract Client ID from token:', e);
+(async () => {
+    console.log(`Starting sequential deployment of ${commands.length} commands...`);
+
+    for (const cmd of commands) {
+        try {
+            if (guildId) {
+                await rest.put(
+                    Routes.applicationGuildCommands(clientId!, guildId),
+                    { body: [cmd] }
+                );
+            } else {
+                await rest.put(
+                    Routes.applicationCommands(clientId!),
+                    { body: [cmd] }
+                );
             }
-        }
-
-        const guildId = process.env.GUILD_ID;
-
-        if (guildId && clientId) {
-            await rest.put(
-                Routes.applicationGuildCommands(clientId, guildId),
-                { body: clearCommands },
-            );
-            console.log(`Successfully reloaded ${commands.length} application (/) commands for guild ${guildId}.`);
-        } else if (clientId) {
-            await rest.put(
-                Routes.applicationCommands(clientId),
-                { body: clearCommands },
-            );
-            console.log(`Successfully reloaded ${commands.length} application (/) commands globally.`);
-        } else {
-            console.warn('Skipping command deployment: CLIENT_ID not set in .env and could not be extracted from token.');
-        }
-
-    } catch (error: any) {
-        // Detailed error logging
-        if (error.rawError) {
-            console.error('API Error Details:', JSON.stringify(error.rawError, null, 2));
-        } else {
-            console.error('An error occurred:', error);
+            console.log(`✅ Successfully deployed: ${cmd.name}`);
+        } catch (error: any) {
+            console.error(`❌ FAILED to deploy: ${cmd.name}`);
+            if (error.rawError) {
+                console.error('API Error Details:', JSON.stringify(error.rawError, null, 2));
+                // If it's the 110 length error, log the object
+                if (JSON.stringify(error.rawError).includes('110')) {
+                    console.error('Faulty command object:', JSON.stringify(cmd, null, 2));
+                }
+            } else {
+                console.error('An error occurred:', error);
+            }
+            process.exit(1);
         }
     }
+    console.log('All commands processed successfully.');
 })();

@@ -53,6 +53,14 @@ export class CommandHandler {
 
         this.client.logger.info(`[Slash Command] ${interaction.commandName} requested by ${interaction.user.tag} (${interaction.user.id}) in guild ${interaction.guild?.name || 'DM'}`);
 
+        // Deprecation Warning: Move to Prefix
+        if (command.name !== 'help') {
+            return interaction.reply({
+                content: '⚠️ **Slash Commands are being phased out in v8.4.5 ALPHA.** Please use the `!` prefix instead.\nExample: `!' + command.name + '`',
+                ephemeral: true
+            });
+        }
+
         // Cooldown enforcement
         if (!OWNER_IDS.includes(interaction.user.id)) {
             if (!this.cooldowns.has(command.name)) {
@@ -80,7 +88,7 @@ export class CommandHandler {
         }
 
         try {
-            await command.run(this.client, interaction);
+            await command.run(this.client, interaction, []);
         } catch (error) {
             this.client.logger.error(`Error executing command ${interaction.commandName}:`, error);
             if (interaction.replied || interaction.deferred) {
@@ -142,7 +150,7 @@ export class CommandHandler {
         }
 
         try {
-            await command.run(this.client, message);
+            await command.run(this.client, message, args);
         } catch (error) {
             this.client.logger.error(`Error executing command ${commandName}:`, error);
             await message.reply({ content: 'There was an error while executing this command!' });

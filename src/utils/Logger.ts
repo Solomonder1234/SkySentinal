@@ -62,7 +62,8 @@ export class Logger {
             // Ignore DB errors and fall back to name
         }
 
-        const channel = guild.channels.cache.find(c => c.name === 'logs' || c.name === 'mod-logs') as TextChannel;
+        const channel = guild.channels.cache.find((c: any) =>
+            c.name === 'logs' || c.name === 'mod-logs') as TextChannel;
         return channel || null;
     }
 
