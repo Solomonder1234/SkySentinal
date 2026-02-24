@@ -1,5 +1,6 @@
 import { DisTube, Song, Queue } from 'distube';
 import { YtDlpPlugin } from '@distube/yt-dlp';
+import { YouTubePlugin } from '@distube/youtube';
 import { SkyClient } from '../structures/SkyClient';
 import { Logger } from '../../utils/Logger';
 import { MusicController } from '../../utils/MusicController';
@@ -24,9 +25,23 @@ export class MusicService {
             emitAddSongWhenCreatingQueue: false,
             emitAddListWhenCreatingQueue: false,
             plugins: [
-                new YtDlpPlugin({ update: false }),
+                new YtDlpPlugin(),
+                new YouTubePlugin(),
             ],
-            youtubeCookie: undefined,
+            ffmpeg: {
+                path: ffmpegPath,
+                args: {
+                    global: {
+                        loglevel: 'debug'
+                    },
+                    input: {
+                        'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                        'reconnect': '1',
+                        'reconnect_streamed': '1',
+                        'reconnect_delay_max': '5'
+                    }
+                }
+            }
         });
 
         this.setupEvents();
