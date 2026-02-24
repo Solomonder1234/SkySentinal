@@ -1,6 +1,5 @@
 import { DisTube, Song, Queue } from 'distube';
 import { YtDlpPlugin } from '@distube/yt-dlp';
-import { YouTubePlugin } from '@distube/youtube';
 import { SkyClient } from '../structures/SkyClient';
 import { Logger } from '../../utils/Logger';
 import { MusicController } from '../../utils/MusicController';
@@ -25,9 +24,9 @@ export class MusicService {
             emitAddSongWhenCreatingQueue: false,
             emitAddListWhenCreatingQueue: false,
             plugins: [
-                new YtDlpPlugin(),
-                new YouTubePlugin(),
+                new YtDlpPlugin({ update: false }),
             ],
+            youtubeCookie: undefined,
         });
 
         this.setupEvents();
