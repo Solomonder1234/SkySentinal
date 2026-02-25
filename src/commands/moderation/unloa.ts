@@ -43,7 +43,7 @@ const command: Command = {
             return message.reply({ content: '❌ Failed to restore your nickname. I might lack permissions.' });
         }
 
-        const logChannelId = '1377295326272032960';
+        const logChannelId = '1386829080237969469';
         const logChannel = client.channels.cache.get(logChannelId) as TextChannel;
 
         const embed = new EmbedBuilder()

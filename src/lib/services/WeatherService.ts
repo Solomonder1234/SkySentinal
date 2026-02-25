@@ -7,6 +7,17 @@ export class WeatherService {
         this.apiKey = apiKey;
     }
 
+    async getActiveAlertCount(): Promise<number> {
+        try {
+            const url = 'https://api.weather.gov/alerts/active/count';
+            const response = await axios.get(url, { headers: { 'User-Agent': 'SkySentinelDiscordBot/1.0 (contact@skysentinel.bot)' } });
+            return response.data.total || 0;
+        } catch (error) {
+            console.error('[WeatherService] Failed to fetch active NWS alerts:', error);
+            return 0; // Return 0 gracefully if NWS is down
+        }
+    }
+
     async getWeather(location: string): Promise<string> {
         try {
             const geo = await this.geocode(location);

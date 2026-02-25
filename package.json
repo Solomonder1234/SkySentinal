@@ -1,6 +1,6 @@
 {
-  "name": "discord-mod-bot",
-  "version": "8.4.5-alpha",
+  "name": "sky-sentinel",
+  "version": "0.0.7-beta",
   "main": "dist/index.js",
   "scripts": {
     "dev": "ts-node src/index.ts",

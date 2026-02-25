@@ -1,6 +1,7 @@
 import { Command } from '../../lib/structures/Command';
-import { ApplicationCommandOptionType, ApplicationCommandType, PermissionFlagsBits, Message, ChatInputCommandInteraction, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType } from 'discord.js';
-import { EmbedUtils, Colors } from '../../utils/EmbedUtils';
+import { ApplicationCommandOptionType, ApplicationCommandType, PermissionFlagsBits, Message, ChatInputCommandInteraction, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, MessageActionRowComponentBuilder } from 'discord.js';
+import { EmbedUtils } from '../../utils/EmbedUtils';
+import { VERSION_STRING } from '../../config';
 
 export default {
     name: 'help',
@@ -29,10 +30,10 @@ export default {
             const command = client.commands.get(commandName) || client.commands.find((c: any) => c.aliases?.includes(commandName!));
             if (!command) return interaction.reply({ content: 'Command not found.' });
 
-            const embed = EmbedUtils.info(`Command: ${command.name}`, command.description || 'No description provided.')
+            const embed = EmbedUtils.info(`Command: ${command.name} `, command.description || 'No description provided.')
                 .addFields(
                     { name: 'Aliases', value: command.aliases ? command.aliases.join(', ') : 'None', inline: true },
-                    { name: 'Permissions', value: command.defaultMemberPermissions ? `${command.defaultMemberPermissions}` : 'None', inline: true }
+                    { name: 'Permissions', value: command.defaultMemberPermissions ? `${command.defaultMemberPermissions} ` : 'None', inline: true }
                 );
 
             return interaction.reply({ embeds: [embed] });
@@ -40,57 +41,45 @@ export default {
             const commands = client.commands;
             const categories = [...new Set(commands.map(c => c.category || 'Uncategorized'))].sort();
 
-            // Generate Buttons for Categories
-            const buildRows = (cats: string[]) => {
-                const rows: ActionRowBuilder<ButtonBuilder>[] = [];
-                let currentRow = new ActionRowBuilder<ButtonBuilder>();
-
-                cats.forEach((cat, index) => {
-                    if (index > 0 && index % 4 === 0) {
-                        rows.push(currentRow);
-                        currentRow = new ActionRowBuilder<ButtonBuilder>();
-                    }
-
-                    const emojiMap: Record<string, string> = {
-                        'Moderation': '🛡️', 'Utility': '🛠️', 'Info': 'ℹ️',
-                        'Fun': '🎮', 'Economy': '💰', 'Image': '🖼️',
-                        'Leveling': '📈', 'Configuration': '⚙️', 'Voice': '🎙️', 'Troll': '🤡'
-                    };
-
-                    const emoji = emojiMap[cat] || '📁';
-
-                    currentRow.addComponents(
-                        new ButtonBuilder()
-                            .setCustomId(`help_cat_${cat}`)
-                            .setEmoji(emoji)
-                            .setLabel(cat.substring(0, 80)) // Discord limits label length
-                            .setStyle(ButtonStyle.Secondary)
-                    );
-                });
-
-                if (currentRow.components.length > 0) rows.push(currentRow);
-                return rows;
+            const emojiMap: Record<string, string> = {
+                'Moderation': '🛡️', 'Utility': '🛠️', 'Info': 'ℹ️',
+                'Fun': '🎮', 'Economy': '💰', 'Image': '🖼️',
+                'Leveling': '📈', 'Configuration': '⚙️', 'Voice': '🎙️', 'Troll': '🤡'
             };
 
-            const embed = EmbedUtils.info('📚 SkySentinel Administrative Center', `Total Commands: **${commands.size}**\n\n*Select a category below to browse the AV command suite.*`)
-                .setFooter({ text: 'SkySentinel • v8.4.5 ALPHA Next-Gen Engine' });
+            const options = categories.map(cat => {
+                return new StringSelectMenuOptionBuilder()
+                    .setLabel(cat.substring(0, 80))
+                    .setValue(cat) // Safely matched without trailing spaces to prevent string mismatch bugs!
+                    .setDescription(`Browse commands in the ${cat} section.`)
+                    .setEmoji(emojiMap[cat] || '📁');
+            });
 
-            const components = buildRows(categories);
+            const selectMenu = new StringSelectMenuBuilder()
+                .setCustomId('help_category_select')
+                .setPlaceholder('Select a Command Module...')
+                .addOptions(options);
+
+            const row = new ActionRowBuilder<any>().addComponents(selectMenu);
+
+            const embed = EmbedUtils.info(
+                '✨ SkySentinel Control Panel',
+                `Welcome to the advanced administration suite. Explore our extensive toolset using the dropdown menu below.\n\n**System Statistics**\n• Total Modules Loaded: **${commands.size}**\n• Prefix: \`!\` or \`/\`\n\n*Select a category to view its corresponding commands.*`
+            ).setFooter({ text: VERSION_STRING });
 
             let replyMessage: Message;
             if (interaction instanceof Message) {
-                replyMessage = await interaction.reply({ embeds: [embed], components: components.slice(0, 5) }); // Max 5 rows
+                replyMessage = await interaction.reply({ embeds: [embed], components: [row] });
             } else {
-                replyMessage = await interaction.reply({ embeds: [embed], components: components.slice(0, 5), fetchReply: true });
+                replyMessage = await interaction.reply({ embeds: [embed], components: [row], fetchReply: true });
             }
 
             const collector = replyMessage.createMessageComponentCollector({
-                componentType: ComponentType.Button,
+                componentType: ComponentType.StringSelect,
                 time: 5 * 60 * 1000 // 5 minutes
             });
 
             collector.on('collect', async (i) => {
-                // Ensure only the person who ran the command can use the buttons
                 if (interaction instanceof Message) {
                     if (i.user.id !== interaction.author.id) {
                         return i.reply({ content: 'These options are not for you.', ephemeral: true });
@@ -99,29 +88,23 @@ export default {
                     return i.reply({ content: 'These options are not for you.', ephemeral: true });
                 }
 
-                const catName = i.customId.replace('help_cat_', '');
+                const catName = i.values[0] || 'Uncategorized';
                 const categoryCommands = commands.filter((c: any) => (c.category || 'Uncategorized') === catName);
-                const commandList = categoryCommands.map(c => `\`${c.name}\``).join(', ');
 
-                const emojiMap: Record<string, string> = {
-                    'Moderation': '🛡️', 'Utility': '🛠️', 'Info': 'ℹ️',
-                    'Fun': '🎮', 'Economy': '💰', 'Image': '🖼️',
-                    'Leveling': '📈', 'Configuration': '⚙️', 'Voice': '🎙️', 'Troll': '🤡'
-                };
+                // Detailed command list formatting
+                const commandList = categoryCommands.map(c => `**\`${c.name}\`** - ${c.description || 'No description available'}`).join('\n');
 
                 const newEmbed = EmbedUtils.info(`${emojiMap[catName] || '📁'} ${catName} Commands`, commandList)
                     .setFooter({ text: `Total: ${categoryCommands.size} commands • Use /help <command> for more info.` });
 
-                await i.update({ embeds: [newEmbed], components: components.slice(0, 5) });
+                await i.update({ embeds: [newEmbed], components: [row] });
             });
 
             collector.on('end', () => {
-                const disabledRows = components.map(row => {
-                    const disabledRow = new ActionRowBuilder<ButtonBuilder>();
-                    row.components.forEach(btn => disabledRow.addComponents(ButtonBuilder.from(btn).setDisabled(true)));
-                    return disabledRow;
-                });
-                replyMessage.edit({ components: disabledRows.slice(0, 5) }).catch(() => { });
+                const disabledRow = new ActionRowBuilder<any>().addComponents(
+                    StringSelectMenuBuilder.from(selectMenu).setDisabled(true)
+                );
+                replyMessage.edit({ components: [disabledRow] }).catch(() => { });
             });
 
             return;

@@ -1,6 +1,7 @@
 import { Command } from '../../lib/structures/Command';
 import { ApplicationCommandOptionType, ApplicationCommandType, Message, ChatInputCommandInteraction } from 'discord.js';
 import { EmbedUtils } from '../../utils/EmbedUtils';
+import { STAFF_ROLE_MAP } from '../../config';
 
 export default {
     name: 'promote',
@@ -74,19 +75,24 @@ export default {
 
             // Define the hierarchical promotion list (lowest to highest)
             const rankHierarchy = [
-                { roleName: 'Trial Staff', prefix: 'TS' },
-                { roleName: 'Moderator', prefix: 'MOD' },
-                { roleName: 'Sr. Moderator', prefix: 'SRM' },
-                { roleName: 'Admin', prefix: 'A' },
-                { roleName: 'Sr. Admin', prefix: 'SRA' },
-                { roleName: 'Head of Staff', prefix: 'HOS' }
+                { roleName: 'Trial staff', prefix: 'TS', mainId: '1366099517740552265', staffId: '1387736757394473051' },
+                { roleName: 'Moderator', prefix: 'MOD', mainId: '1275838245468639385', staffId: '1387637616882487296' },
+                { roleName: 'Sr. Moderator', prefix: 'SRM', mainId: '1366097955676749844', staffId: '1387637559282368655' },
+                { roleName: 'Admin', prefix: 'A', mainId: '1275838130498568334', staffId: '1387637516055613460' },
+                { roleName: 'Sr Admin', prefix: 'SRA', mainId: '1366077117376364625', staffId: '1387637479858901092' },
+                { roleName: 'Head Of Staff', prefix: 'HOS', mainId: '1366096466010968177', staffId: '1387637435583828129' },
+                { roleName: 'Co founder', prefix: 'CF', mainId: '1282527079828815944', staffId: '1387636614699679754' }
             ];
 
             // 1. Determine Current Rank
             let currentRankIndex = -1;
             for (let i = 0; i < rankHierarchy.length; i++) {
                 const rankDef = rankHierarchy[i];
-                if (rankDef && targetMember.roles.cache.some((r: any) => r.name.toLowerCase() === rankDef.roleName.toLowerCase())) {
+                if (rankDef && targetMember.roles.cache.some((r: any) => {
+                    return r.id === rankDef.mainId || r.id === rankDef.staffId ||
+                        r.name.toUpperCase() === rankDef.roleName.toUpperCase() ||
+                        r.name.toUpperCase() === rankDef.prefix.toUpperCase();
+                })) {
                     currentRankIndex = i;
                 }
             }
@@ -111,9 +117,18 @@ export default {
             // 2. Find Roles in Guild
             let currentRoleObj: any = undefined;
             if (currentRank && currentRank.roleName) {
-                currentRoleObj = guild.roles.cache.find((r: any) => r.name.toLowerCase() === currentRank.roleName.toLowerCase());
+                currentRoleObj = guild.roles.cache.find((r: any) => {
+                    return r.id === currentRank.mainId || r.id === currentRank.staffId ||
+                        r.name.toUpperCase() === currentRank.roleName.toUpperCase() ||
+                        r.name.toUpperCase() === currentRank.prefix.toUpperCase();
+                });
             }
-            const nextRoleObj = guild.roles.cache.find((r: any) => r.name.toLowerCase() === nextRank.roleName.toLowerCase());
+            // 3. Find Role Object for Next Rank
+            const nextRoleObj = guild.roles.cache.find((r: any) => {
+                return r.id === nextRank.mainId || r.id === nextRank.staffId ||
+                    r.name.toUpperCase() === nextRank.roleName.toUpperCase() ||
+                    r.name.toUpperCase() === nextRank.prefix.toUpperCase();
+            });
 
             if (!nextRoleObj) {
                 const errorEmbed = EmbedUtils.error('Role Not Found', `Cannot promote user. The role **${nextRank.roleName}** does not exist in this server. Please create it first.`);
@@ -151,14 +166,15 @@ export default {
             // Log to specific channel
             try {
                 const logChannelId = '1473466436449210511';
-                const logChannel = await interaction.guild.channels.fetch(logChannelId);
-                if (logChannel && logChannel.isTextBased()) {
-                    const staffRole = interaction.guild.roles.cache.find((r: any) => r.name.toLowerCase() === 'staff');
+                const logChannel = await client.channels.fetch(logChannelId);
+                if (logChannel && logChannel.isTextBased() && 'guild' in logChannel) {
+                    // Explicit Staff Server Role lookup because log channel is probably in staff server
+                    const staffRole = await logChannel.guild.roles.fetch().then((roles: any) => roles.find((r: any) => r.name.toLowerCase() === 'staff' || r.name.toLowerCase() === 'staff team')).catch(() => null);
                     const pingText = staffRole ? `<@&${staffRole.id}>` : '@Staff';
                     await logChannel.send({ content: pingText, embeds: [successEmbed] });
                 }
-            } catch (err) {
-                client.logger.error('Failed to send promotion log to defined channel:', err);
+            } catch (err: any) {
+                client.logger.error(`Failed to send promotion log to defined channel: ${err.message}`);
             }
 
             if (interaction instanceof Message) {

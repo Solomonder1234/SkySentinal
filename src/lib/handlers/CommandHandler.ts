@@ -3,7 +3,7 @@ import { SkyClient } from '../structures/SkyClient';
 import { Command } from '../structures/Command';
 import fs from 'fs';
 import path from 'path';
-import { OWNER_IDS } from '../../config';
+import { OWNER_IDS, BOT_VERSION } from '../../config';
 
 export class CommandHandler {
     private client: SkyClient;
@@ -56,7 +56,7 @@ export class CommandHandler {
         // Deprecation Warning: Move to Prefix
         if (command.name !== 'help') {
             return interaction.reply({
-                content: '⚠️ **Slash Commands are being phased out in v8.4.5 ALPHA.** Please use the `!` prefix instead.\nExample: `!' + command.name + '`',
+                content: `⚠️ **Slash Commands are being phased out in v${BOT_VERSION.toUpperCase()}.** Please use the \`!\` prefix instead.\nExample: \`!${command.name}\``,
                 ephemeral: true
             });
         }

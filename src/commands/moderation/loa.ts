@@ -20,7 +20,7 @@ const command: Command = {
         const duration = args[0] ?? '';
         const reason = args.slice(1).join(' ');
 
-        const logChannelId = '1377295326272032960';
+        const logChannelId = '1386829080237969469';
         const logChannel = client.channels.cache.get(logChannelId) as TextChannel;
 
         if (!logChannel) {

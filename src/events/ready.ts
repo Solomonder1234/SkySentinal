@@ -24,6 +24,33 @@ export default {
             }
         }
 
+        // Set default presence to DND
+        client.user?.setStatus('dnd');
+
+        // Rotating Presence (EAS Alerts, Modmail, Watching)
+        let presenceState = 0;
+        setInterval(async () => {
+            try {
+                if (presenceState === 0) {
+                    let alertCount = 0;
+                    if (client.ai?.weatherService) {
+                        alertCount = await client.ai.weatherService.getActiveAlertCount();
+                    }
+                    // Type 3 is "Watching"
+                    client.user?.setActivity(`${alertCount} EAS Alerts 📡`, { type: 3 });
+                    presenceState = 1;
+                } else if (presenceState === 1) {
+                    client.user?.setActivity('DM me for Modmail 📩', { type: 3 });
+                    presenceState = 2;
+                } else {
+                    client.user?.setActivity('SkyAlert Network', { type: 3 });
+                    presenceState = 0;
+                }
+            } catch (err) {
+                client.logger.error('Failed to update presence:', err);
+            }
+        }, 30000);
+
         // Scheduler for Tempbans
         setInterval(async () => {
             try {

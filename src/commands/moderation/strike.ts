@@ -1,5 +1,5 @@
 import { Command } from '../../lib/structures/Command';
-import { ApplicationCommandOptionType, ApplicationCommandType, Message, ChatInputCommandInteraction } from 'discord.js';
+import { ApplicationCommandOptionType, ApplicationCommandType, Message, ChatInputCommandInteraction, EmbedBuilder, Colors } from 'discord.js';
 import { EmbedUtils } from '../../utils/EmbedUtils';
 
 export default {
@@ -225,38 +225,48 @@ export default {
                 }
             }
 
-            const strikeTitle = `Formal Strike Notice (Strike ${totalStrikes})`;
+            const strikeTitle = `⚠️ OFFICIAL INFRACTION NOTICE: STRIKE ${totalStrikes} / 3`;
 
-            const ansiContent = `\`\`\`ansi\n\u001b[1;36mInfraction Details & Reason\u001b[0m\n\u001b[0;34m${formattedReasonStr}\u001b[0m\n\n\u001b[1;36mModerator Notes\u001b[0m\n\u001b[0;34mThis strike has been issued due to a direct violation of server guidelines. This incident has been logged onto the user's permanent record for future review.\u001b[0m\n\n\u001b[1;36mCase ID\u001b[0m\n\u001b[1;37m#${caseRecord.id}\u001b[0m\n\`\`\``;
+            const ansiContent = `\`\`\`ansi\n\u001b[1;31m>>> INFRACTION DETAILS <<<\u001b[0m\n\u001b[0;37mViolation:\u001b[0m \u001b[0;33m${formattedReasonStr}\u001b[0m\n\n\u001b[1;31m>>> AUTOMATED SYSTEM REVIEW <<<\u001b[0m\n\u001b[0;37mStatus:\u001b[0m \u001b[0;31mStrike Issued\u001b[0m\n\u001b[0;37mModerator Notes:\u001b[0m \u001b[0;33mThis strike has been issued due to a direct violation of SkyAlert Network guidelines. This incident has been permanently recorded in the moderation database. Further violations will result in automated escalation up to and including permanent termination of access.\u001b[0m\n\n\u001b[1;31m>>> PENALTY ESCALATION MATRIX <<<\u001b[0m\n\u001b[0;37m• Strike 1:\u001b[0m \u001b[0;33mFormal Warning Issued\u001b[0m\n\u001b[0;37m• Strike 2:\u001b[0m \u001b[0;31mImmediate 1-Week Suspension\u001b[0m ${totalStrikes === 2 ? '<< YOU ARE HERE' : ''}\n\u001b[0;37m• Strike 3:\u001b[0m \u001b[1;31mPermanent Demotion & Potential Exile\u001b[0m ${totalStrikes >= 3 ? '<< YOU ARE HERE' : ''}\n\n\u001b[1;36mCase ID:\u001b[0m \u001b[1;37m#${caseRecord.id}\u001b[0m\n\`\`\``;
 
-            const successEmbed = EmbedUtils.success(
-                strikeTitle,
-                `<@${user.id}> has received a formal strike.\n${ansiContent}${demotionText}`
-            );
+            const publicEmbed = new EmbedBuilder()
+                .setTitle(strikeTitle)
+                .setDescription(`**Target:** <@${user.id}> (\`${user.id}\`)\n**Action:** Level ${totalStrikes} Strike\n\n${ansiContent}${demotionText}`)
+                .setColor(Colors.Red)
+                .setThumbnail(user.displayAvatarURL())
+                .setTimestamp();
 
-            // Log to specific channel
+            const clientAvatar = client.user?.displayAvatarURL();
+            if (clientAvatar) {
+                publicEmbed.setFooter({ text: 'SkyAlert Network Automated Moderation System', iconURL: clientAvatar });
+            } else {
+                publicEmbed.setFooter({ text: 'SkyAlert Network Automated Moderation System' });
+            }
+
+            // Log to specific channel (Includes Moderator ID)
+            const logEmbed = new EmbedBuilder(publicEmbed.toJSON());
+            logEmbed.addFields({ name: 'Executing Moderator', value: `<@${caseRecord.moderatorId}>`, inline: true });
+
             try {
                 const logChannelId = '1371279072067321896';
                 const logChannel = await interaction.guild.channels.fetch(logChannelId);
                 if (logChannel && logChannel.isTextBased()) {
-                    await logChannel.send({ embeds: [successEmbed] });
+                    await logChannel.send({ embeds: [logEmbed] });
                 }
             } catch (err) {
                 client.logger.error('Failed to send strike log to defined channel:', err);
             }
 
             if (interaction instanceof Message) {
-                await interaction.reply({ embeds: [successEmbed] });
+                await interaction.reply({ embeds: [publicEmbed] });
             } else {
-                await interaction.reply({ embeds: [successEmbed] });
+                await interaction.reply({ embeds: [publicEmbed] });
             }
 
             // Dm user
             try {
-                const dmEmbed = EmbedUtils.error(
-                    strikeTitle,
-                    `You are receiving this automated message to notify you of a formal strike issued in **${interaction.guild.name}**.\n${ansiContent}${demotionText}`
-                );
+                const dmEmbed = new EmbedBuilder(publicEmbed.toJSON());
+                dmEmbed.setDescription(`You are receiving this automated message to notify you of a formal strike issued in **${interaction.guild.name}**.\n\n${ansiContent}${demotionText}`);
                 await user.send({ embeds: [dmEmbed] });
             } catch (err) {
                 // Ignore if DMs are closed

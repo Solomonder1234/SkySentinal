@@ -1,11 +1,13 @@
 import { Events, Interaction, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, EmbedBuilder, GuildMember } from 'discord.js';
 import { Event } from '../lib/structures/Event';
+import { PromotionService } from '../lib/services/PromotionService';
+import { JSONDatabase } from '../utils/JSONDatabase';
 import { Logger } from '../utils/Logger';
 import { EmbedUtils } from '../utils/EmbedUtils';
 
 export default {
     name: Events.InteractionCreate,
-    run: async (client, interaction: Interaction) => {
+    run: async (client: any, interaction: Interaction) => {
         if (interaction.isCommand()) {
             // Disabled per user request: "I need every command to be ! ONLY"
             // await client.commandHandler.handle(interaction);
@@ -79,6 +81,9 @@ export default {
 
                 if (!interaction.guild) return;
 
+                const jsonConf = JSONDatabase.getGuildConfig(interaction.guild.id);
+                const categoryRaw = jsonConf.ticketCategoryId;
+
                 const sanitizedUsername = interaction.user.username.replace(/[^a-z0-9]/gi, '').toLowerCase();
                 const channelName = `ticket-${sanitizedUsername}`.substring(0, 100);
 
@@ -86,6 +91,7 @@ export default {
                     const channel = await interaction.guild.channels.create({
                         name: channelName,
                         type: ChannelType.GuildText,
+                        parent: categoryRaw || null,
                         permissionOverwrites: [
                             {
                                 id: interaction.guild.id,

@@ -25,21 +25,14 @@ export class PromotionService {
 
         if (!config || !(config as any).promotionRules || (config as any).promotionRules.length === 0) return;
 
-        // Requirement: Must be Staff
-        const isStaff = member.roles.cache.some((r: any) =>
-            r.id === (config as any).modRoleId ||
-            r.id === (config as any).adminRoleId ||
-            r.name.toLowerCase().includes('staff') ||
-            r.name.toLowerCase().includes('mod')
-        );
-
-        if (!isStaff) return;
+        // Removed the hardcoded staff-only restriction so auto-promotions apply to all global users.
 
         // Calculate Days in Server
         const daysInServer = Math.floor((Date.now() - member.joinedTimestamp!) / (1000 * 60 * 60 * 24));
 
         // Find all rules the user meets
         const eligibleRules = ((config as any).promotionRules as any[]).filter(rule => {
+            if (!/^\d{17,19}$/.test(rule.roleId)) return false;
             if (rule.type === 'LEVEL') return profile.level >= rule.requirement;
             if (rule.type === 'MESSAGES') return (profile as any).messageCount >= rule.requirement;
             if (rule.type === 'DAYS') return daysInServer >= rule.requirement;

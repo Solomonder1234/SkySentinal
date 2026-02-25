@@ -1,45 +1,45 @@
 import { Command } from '../../lib/structures/Command';
-import { ApplicationCommandOptionType, ApplicationCommandType, PermissionFlagsBits, Message, ChatInputCommandInteraction, Role } from 'discord.js';
+import { ApplicationCommandOptionType, ApplicationCommandType, Message, ChatInputCommandInteraction, PermissionFlagsBits } from 'discord.js';
 import { EmbedUtils } from '../../utils/EmbedUtils';
 
 export default {
     name: 'autopromote',
-    description: 'Manage auto-promotion rules for active members.',
+    description: 'Configure auto-promotion rules for Staff members based on Activity.',
     category: 'Configuration',
     type: ApplicationCommandType.ChatInput,
     defaultMemberPermissions: PermissionFlagsBits.ManageGuild,
     options: [
         {
             name: 'add',
-            description: 'Add a new promotion rule.',
+            description: 'Add a new auto-promotion rule',
             type: ApplicationCommandOptionType.Subcommand,
             options: [
                 {
                     name: 'type',
-                    description: 'The requirement type.',
+                    description: 'The type of requirement',
                     type: ApplicationCommandOptionType.String,
                     required: true,
                     choices: [
-                        { name: 'Level', value: 'LEVEL' },
-                        { name: 'Messages', value: 'MESSAGES' },
+                        { name: 'Level (XP System)', value: 'LEVEL' },
+                        { name: 'Messages Sent', value: 'MESSAGES' },
                         { name: 'Days in Server', value: 'DAYS' }
                     ]
                 },
                 {
                     name: 'requirement',
-                    description: 'The number required (Level #, Message count, or Days).',
+                    description: 'The number required to earn this role',
                     type: ApplicationCommandOptionType.Integer,
                     required: true
                 },
                 {
                     name: 'role',
-                    description: 'The role to award.',
+                    description: 'The role to award',
                     type: ApplicationCommandOptionType.Role,
                     required: true
                 },
                 {
                     name: 'prefix',
-                    description: 'Optional nickname prefix (e.g., "MOD").',
+                    description: 'Optional nickname prefix (e.g. "S-MOD" -> [S-MOD] Username)',
                     type: ApplicationCommandOptionType.String,
                     required: false
                 }
@@ -47,12 +47,23 @@ export default {
         },
         {
             name: 'remove',
-            description: 'Remove a promotion rule.',
+            description: 'Remove an existing auto-promotion rule',
             type: ApplicationCommandOptionType.Subcommand,
             options: [
                 {
-                    name: 'id',
-                    description: 'The rule ID to remove (see /autopromote list).',
+                    name: 'type',
+                    description: 'The type of requirement',
+                    type: ApplicationCommandOptionType.String,
+                    required: true,
+                    choices: [
+                        { name: 'Level (XP System)', value: 'LEVEL' },
+                        { name: 'Messages Sent', value: 'MESSAGES' },
+                        { name: 'Days in Server', value: 'DAYS' }
+                    ]
+                },
+                {
+                    name: 'requirement',
+                    description: 'The exact requirement number to delete',
                     type: ApplicationCommandOptionType.Integer,
                     required: true
                 }
@@ -60,129 +71,112 @@ export default {
         },
         {
             name: 'list',
-            description: 'List all promotion rules.',
+            description: 'List all active auto-promotion rules',
             type: ApplicationCommandOptionType.Subcommand
-        },
-        {
-            name: 'setting',
-            description: 'Update auto-promotion settings.',
-            type: ApplicationCommandOptionType.Subcommand,
-            options: [
-                {
-                    name: 'stack_promotions',
-                    description: 'Whether to keep old promotion roles (stacking) or remove them.',
-                    type: ApplicationCommandOptionType.Boolean,
-                    required: true
-                }
-            ]
         }
     ],
-    run: async (client, interaction, args) => {
+    run: async (client, interaction) => {
+        // Enforce Admin/ManageGuild
+        let hasPerms = false;
+        if (interaction instanceof Message) {
+            hasPerms = interaction.member?.permissions.has(PermissionFlagsBits.ManageGuild) || false;
+        } else {
+            hasPerms = interaction.memberPermissions?.has(PermissionFlagsBits.ManageGuild) || false;
+        }
+
+        if (!hasPerms) {
+            const err = EmbedUtils.error('Access Denied', 'You need `Manage Server` permissions to bypass standard hierarchy protocols.');
+            return interaction.reply(interaction instanceof Message ? { embeds: [err] } : { embeds: [err], ephemeral: true });
+        }
+
+        let subcommand = '';
+        let type = '';
+        let requirement = 0;
+        let roleId = '';
+        let prefix = '';
+
+        if (interaction instanceof Message) {
+            const args = interaction.content.split(' ').slice(1);
+            subcommand = args[0]?.toLowerCase() || 'list';
+            if (subcommand === 'add') {
+                type = args[1]?.toUpperCase() || '';
+                requirement = parseInt(args[2] || '0') || 0;
+                roleId = args[3]?.replace(/[<@&>]/g, '') || '';
+                prefix = args.slice(4).join(' ');
+            } else if (subcommand === 'remove') {
+                type = args[1]?.toUpperCase() || '';
+                requirement = parseInt(args[2] || '0') || 0;
+            }
+        } else {
+            const chatInteraction = interaction as ChatInputCommandInteraction;
+            subcommand = chatInteraction.options.getSubcommand();
+            if (subcommand === 'add') {
+                type = chatInteraction.options.getString('type', true);
+                requirement = chatInteraction.options.getInteger('requirement', true);
+                roleId = chatInteraction.options.getRole('role', true).id;
+                prefix = chatInteraction.options.getString('prefix') || '';
+            } else if (subcommand === 'remove') {
+                type = chatInteraction.options.getString('type', true);
+                requirement = chatInteraction.options.getInteger('requirement', true);
+            }
+        }
+
         const guildId = interaction.guildId!;
 
-        const isSlash = interaction instanceof ChatInputCommandInteraction;
-        const subcommand = isSlash ? interaction.options.getSubcommand() : args[0]?.toLowerCase();
-
-        if (!subcommand) {
-            return interaction.reply({ content: '❌ Please specify a subcommand: `add`, `remove`, `list`, or `setting`.' });
-        }
-
-        if (subcommand === 'add') {
-            let type: string | null = null;
-            let requirement: number | null = null;
-            let roleId: string | null = null;
-            let prefix: string | null = null;
-
-            if (isSlash) {
-                const chatInt = interaction as ChatInputCommandInteraction;
-                type = chatInt.options.getString('type', true);
-                requirement = chatInt.options.getInteger('requirement', true);
-                roleId = chatInt.options.getRole('role', true).id;
-                prefix = chatInt.options.getString('prefix');
-            } else {
-                // Positional: !autopromote add <type> <req> <@role/id> [prefix]
-                type = (args[1] || '').toUpperCase();
-                requirement = parseInt(args[2] || '');
-                roleId = (args[3] || '').replace(/[<@&>]/g, '');
-                prefix = args[4] || null;
-
-                if (!type || !['LEVEL', 'MESSAGES', 'DAYS'].includes(type)) return interaction.reply({ content: '❌ Invalid type. Use `LEVEL`, `MESSAGES`, or `DAYS`.' });
-                if (isNaN(requirement)) return interaction.reply({ content: '❌ Requirement must be a number.' });
-                if (!roleId) return interaction.reply({ content: '❌ Please provide a role or role ID.' });
-            }
-
-            await (client.database.prisma.promotionRule as any).upsert({
-                where: {
-                    guildId_type_requirement: {
-                        guildId,
-                        type,
-                        requirement
-                    }
-                },
-                create: {
-                    guildId,
-                    type,
-                    requirement,
-                    roleId,
-                    nicknamePrefix: prefix
-                },
-                update: {
-                    roleId,
-                    nicknamePrefix: prefix
-                }
-            });
-
-            return interaction.reply({
-                embeds: [EmbedUtils.success('Rule Added', `Successfully ${prefix ? `added **[${prefix}]**` : 'added'} promotion rule:\n**Type:** ${type}\n**Requirement:** ${requirement}\n**Role:** <@&${roleId}>`)]
-            });
-        }
-
-        if (subcommand === 'remove') {
-            const id = isSlash ? (interaction as ChatInputCommandInteraction).options.getInteger('id', true) : parseInt(args[1] || '');
-
-            if (isNaN(id)) return interaction.reply({ content: '❌ Please provide a valid Rule ID.' });
-
-            try {
-                await (client.database.prisma.promotionRule as any).delete({
-                    where: { id, guildId }
-                });
-                return interaction.reply({ embeds: [EmbedUtils.success('Rule Removed', `Successfully deleted rule ID: \`${id}\``)] });
-            } catch (e) {
-                return interaction.reply({ content: '❌ Rule not found or does not belong to this guild.' });
-            }
-        }
+        // Ensure GuildConfig is present
+        await client.database.prisma.guildConfig.upsert({
+            where: { id: guildId },
+            create: { id: guildId },
+            update: {}
+        });
 
         if (subcommand === 'list') {
-            const rules = await (client.database.prisma.promotionRule as any).findMany({
-                where: { guildId },
-                orderBy: { requirement: 'asc' }
-            });
-
-            const config = await (client.database.prisma.guildConfig as any).findUnique({ where: { id: guildId } });
+            const rules = await client.database.prisma.promotionRule.findMany({ where: { guildId } });
 
             if (rules.length === 0) {
-                return interaction.reply({ content: 'No promotion rules configured for this server.' });
+                return interaction.reply({ embeds: [EmbedUtils.info('Promotion Rules', 'There are no automated staff promotion rules configured for this server.')] });
             }
 
-            const ruleList = (rules as any[]).map(r => `ID: \`${r.id}\` | **${r.type} ${r.requirement}** -> <@&${r.roleId}>${r.nicknamePrefix ? ` (Prefix: \`${r.nicknamePrefix}\`)` : ''}`).join('\n');
-
-            const embed = EmbedUtils.info('Promotion Rules', ruleList)
-                .addFields({ name: 'Role Stacking', value: (config as any)?.stackPromotions ? '✅ Enabled' : '❌ Disabled', inline: true });
-
+            const ruleDescriptions = rules.map((r: any) => `*   **${r.type} ${r.requirement}:** <@&${r.roleId}> ${r.nicknamePrefix ? `(Prefix: \`[${r.nicknamePrefix}]\`)` : ''}`).join('\n');
+            const embed = EmbedUtils.info('Active Promotion Pipeline', `Staff members will automatically receive these roles when they hit the designated milestones:\n\n${ruleDescriptions}`);
             return interaction.reply({ embeds: [embed] });
         }
 
-        if (subcommand === 'setting') {
-            const stack = isSlash ? (interaction as ChatInputCommandInteraction).options.getBoolean('stack_promotions', true) : (args[1] || '').toLowerCase() === 'true';
+        if (subcommand === 'add') {
+            if (!['LEVEL', 'MESSAGES', 'DAYS'].includes(type) || isNaN(requirement) || !roleId) {
+                return interaction.reply({ content: 'Invalid syntax. Example: `!autopromote add LEVEL 10 @role [Prefix]`' });
+            }
 
-            await (client.database.prisma.guildConfig as any).update({
-                where: { id: guildId },
-                data: { stackPromotions: stack }
-            });
+            try {
+                await client.database.prisma.promotionRule.upsert({
+                    where: { guildId_type_requirement: { guildId, type, requirement } },
+                    update: { roleId, nicknamePrefix: prefix || null },
+                    create: { guildId, type, requirement, roleId, nicknamePrefix: prefix || null }
+                });
 
-            return interaction.reply({
-                embeds: [EmbedUtils.success('Setting Updated', `Role stacking is now **${stack ? 'ENABLED' : 'DISABLED'}**.`)]
-            });
+                const embed = EmbedUtils.success('Pipeline Authorized', `Successfully configured promotion rule:\n*   **Condition:** ${type} ${requirement}\n*   **Reward:** <@&${roleId}>\n*   **Prefix:** ${prefix ? `\`[${prefix}]\`` : 'None'}`);
+                return interaction.reply({ embeds: [embed] });
+            } catch (err) {
+                client.logger.error('Failed to add promotion rule:', err);
+                return interaction.reply({ embeds: [EmbedUtils.error('Database Error', 'Could not save the promotion rule onto the mainframe.')] });
+            }
         }
-    },
+
+        if (subcommand === 'remove') {
+            if (!['LEVEL', 'MESSAGES', 'DAYS'].includes(type) || isNaN(requirement)) {
+                return interaction.reply({ content: 'Invalid syntax. Example: `!autopromote remove LEVEL 10`' });
+            }
+
+            try {
+                await client.database.prisma.promotionRule.delete({
+                    where: { guildId_type_requirement: { guildId, type, requirement } }
+                });
+
+                const embed = EmbedUtils.success('Pipeline Terminated', `Successfully deleted promotion trajectory for **${type} ${requirement}**.`);
+                return interaction.reply({ embeds: [embed] });
+            } catch (err) {
+                return interaction.reply({ embeds: [EmbedUtils.error('Not Found', 'Could not locate a rule matching those exact conditions within the schema.')] });
+            }
+        }
+    }
 } as Command;

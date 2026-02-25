@@ -13,6 +13,7 @@ import { OnboardingService } from '../services/OnboardingService';
 import { SuggestionService } from '../services/SuggestionService';
 import { BumpService } from '../services/BumpService';
 import { PromotionService } from '../services/PromotionService';
+import { ModmailService } from '../services/ModmailService';
 
 export class SkyClient extends Client {
     public logger: Logger;
@@ -29,6 +30,7 @@ export class SkyClient extends Client {
     public suggestions: SuggestionService;
     public bump: BumpService;
     public promotions: PromotionService;
+    public modmail: ModmailService;
 
     constructor() {
         super({
@@ -39,6 +41,7 @@ export class SkyClient extends Client {
                 GatewayIntentBits.GuildMembers,
                 GatewayIntentBits.GuildModeration,
                 GatewayIntentBits.GuildVoiceStates,
+                GatewayIntentBits.DirectMessages,
             ],
             partials: [Partials.Message, Partials.Channel, Partials.Reaction],
         });
@@ -64,6 +67,7 @@ export class SkyClient extends Client {
         this.suggestions = new SuggestionService(this);
         this.bump = new BumpService(this);
         this.promotions = new PromotionService(this);
+        this.modmail = new ModmailService(this);
     }
 
     public async start() {

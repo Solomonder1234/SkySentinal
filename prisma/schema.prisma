@@ -7,7 +7,7 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = "file:./dev.db"
+  url      = "file:./local.db"
 }
 
 model GuildConfig {
@@ -15,6 +15,8 @@ model GuildConfig {
   prefix          String   @default("!")
   modLogChannelId String?
   watchLogChannelId String?
+  modmailChannelId String?
+  ticketCategoryId String?
   adminRoleId     String?
   modRoleId       String?
   

@@ -25,8 +25,7 @@ export class MusicService {
             emitAddListWhenCreatingQueue: false,
             plugins: [
                 new YtDlpPlugin({ update: false }),
-            ],
-            youtubeCookie: undefined,
+            ]
         });
 
         this.setupEvents();

@@ -1,4 +1,5 @@
 import { EmbedBuilder, ColorResolvable } from 'discord.js';
+import { VERSION_STRING } from '../config';
 
 export const Colors = {
     Success: '#00FA9A' as ColorResolvable, // Spring Green
@@ -11,7 +12,7 @@ export const Colors = {
 };
 
 export class EmbedUtils {
-    private static FOOTER_TEXT = 'SkySentinel v8.4.5 ALPHA • Next-Gen Engine';
+    private static FOOTER_TEXT = VERSION_STRING;
     private static BRAND_ICON = 'https://i.imgur.com/vHqXvU6.png'; // Placeholder
 
     private static base(color: ColorResolvable, type: string): EmbedBuilder {
@@ -30,31 +31,31 @@ export class EmbedUtils {
 
     public static success(title: string, description: string): EmbedBuilder {
         return this.base(Colors.Success, 'Operations')
-            .setTitle(`✅ ${title}`)
-            .setDescription(`\`\`\`diff\n+ SUCCESS\n\`\`\`\n${description}`);
+            .setTitle(`✅    ${title}`)
+            .setDescription(`**Status:** \`SUCCESS\`\n\n> ${description.replace(/\n/g, '\n> ')}`);
     }
 
     public static error(title: string, description: string): EmbedBuilder {
         return this.base(Colors.Error, 'System Failure')
-            .setTitle(`❌ ${title}`)
-            .setDescription(`\`\`\`diff\n- CRITICAL ERROR\n\`\`\`\n> ${description}`);
+            .setTitle(`❌    ${title}`)
+            .setDescription(`**Status:** \`CRITICAL ERROR\`\n\n> ${description.replace(/\n/g, '\n> ')}`);
     }
 
     public static info(title: string, description: string): EmbedBuilder {
         return this.base(Colors.Info, 'Intelligence')
-            .setTitle(`🌌 ${title}`)
-            .setDescription(`\n${description}\n`);
+            .setTitle(`🌌    ${title}`)
+            .setDescription(`**Status:** \`INFORMATION\`\n\n> ${description.replace(/\n/g, '\n> ')}`);
     }
 
     public static warning(title: string, description: string): EmbedBuilder {
         return this.base(Colors.Warning, 'Security Alert')
-            .setTitle(`⚠️ ${title}`)
-            .setDescription(`\`\`\`fix\n[!] ACTION REQUIRED\n\`\`\`\n${description}`);
+            .setTitle(`⚠️    ${title}`)
+            .setDescription(`**Status:** \`ACTION REQUIRED\`\n\n> ${description.replace(/\n/g, '\n> ')}`);
     }
 
     public static premium(title: string, description: string): EmbedBuilder {
         return this.base(Colors.AV, 'AV Intelligence')
-            .setTitle(`💎 ${title}`)
-            .setDescription(`\n${description}\n`);
+            .setTitle(`💎    ${title}`)
+            .setDescription(`**Status:** \`PREMIUM FEATURE\`\n\n> ${description.replace(/\n/g, '\n> ')}`);
     }
 }

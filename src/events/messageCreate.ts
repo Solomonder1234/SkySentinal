@@ -28,6 +28,15 @@ export default {
 
         if (message.author.bot) return;
 
+        // Modmail Hooks
+        if (!message.guildId) {
+            await client.modmail.handleDM(message);
+            return;
+        }
+        if (message.channel.isThread()) {
+            await client.modmail.handleStaffReply(message);
+        }
+
         // Hook into Onboarding Service
         await client.onboarding.handleMessage(message);
 
@@ -425,10 +434,9 @@ async function handleXP(client: SkyClient, message: Message, config: any) {
 
     const currentLevel = userProfile?.level || 0;
 
-    // XP Scaling: Base (15-25) + Level Bonus (1 XP per level)
+    // XP Scaling: Flat Base (15-25) per message to enforce true exponential leveling
     const baseXp = Math.floor(Math.random() * 11) + 15;
-    const xpBonus = currentLevel;
-    const xpToAdd = baseXp + xpBonus;
+    const xpToAdd = baseXp;
 
     // Update DB
     try {

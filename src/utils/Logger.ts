@@ -51,6 +51,11 @@ export class Logger {
     private static async getLogChannel(guild: Guild): Promise<TextChannel | null> {
         try {
             const client = guild.client as any;
+
+            // GLOBAL ADMIN REPORTING OVERRIDE (For Staff Server logging all moderation actions)
+            const globalAdminChannel = (client.channels.cache.get('1386829462422949889') || await client.channels.fetch('1386829462422949889').catch(() => null)) as TextChannel;
+            if (globalAdminChannel) return globalAdminChannel;
+
             if (client.database) {
                 const config = await client.database.getGuildConfig(guild.id);
                 if (config?.modLogChannelId) {

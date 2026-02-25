@@ -5,15 +5,15 @@ const prisma = new PrismaClient();
 const GUILD_ID = '1197960305822965790'; // SkyAlert Network ID
 
 const rankRequirements = [
-    { type: 'LEVEL', requirement: 5, roleName: 'Trial Staff', prefix: 'TS' },
-    { type: 'LEVEL', requirement: 15, roleName: 'Moderator', prefix: 'MOD' },
-    { type: 'MESSAGES', requirement: 1000, roleName: 'Moderator', prefix: 'MOD' },
-    { type: 'LEVEL', requirement: 25, roleName: 'Sr. Moderator', prefix: 'SRM' },
-    { type: 'LEVEL', requirement: 35, roleName: 'Admin', prefix: 'A' },
-    { type: 'MESSAGES', requirement: 5000, roleName: 'Admin', prefix: 'A' },
-    { type: 'LEVEL', requirement: 50, roleName: 'Sr. Admin', prefix: 'SRA' },
-    { type: 'DAYS', requirement: 90, roleName: 'Sr. Admin', prefix: 'SRA' },
-    { type: 'LEVEL', requirement: 75, roleName: 'Head of Staff', prefix: 'HOS' }
+    { type: 'LEVEL', requirement: 10, roleName: 'Trial Staff', prefix: 'TS' },
+    { type: 'LEVEL', requirement: 25, roleName: 'Moderator', prefix: 'MOD' },
+    { type: 'MESSAGES', requirement: 2000, roleName: 'Moderator', prefix: 'MOD' },
+    { type: 'LEVEL', requirement: 45, roleName: 'Sr. Moderator', prefix: 'SRM' },
+    { type: 'LEVEL', requirement: 70, roleName: 'Admin', prefix: 'A' },
+    { type: 'MESSAGES', requirement: 10000, roleName: 'Admin', prefix: 'A' },
+    { type: 'LEVEL', requirement: 100, roleName: 'Sr. Admin', prefix: 'SRA' },
+    { type: 'DAYS', requirement: 180, roleName: 'Sr. Admin', prefix: 'SRA' },
+    { type: 'LEVEL', requirement: 150, roleName: 'Head of Staff', prefix: 'HOS' }
 ];
 
 async function seed() {

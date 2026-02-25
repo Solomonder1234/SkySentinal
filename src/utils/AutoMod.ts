@@ -2,7 +2,27 @@ import { Message, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
 import { EmbedUtils } from './EmbedUtils';
 
 export class AutoMod {
-    private static badWords = ['badword1', 'badword2', 'badword3']; // Replace with actual words or redundant list
+    private static badWords = [
+        // --- Scams & Phishing ---
+        'free nitro', 'discord.gift/', 'discord-promo', 'nitro-gift', 'free-nitro', 'nitro-generator', 'dicsord.com', 'dlscord.app', 'discord-niltro.com', 'discord-events.com',
+        'discord-app.net', 'steamcommunity-gift', 'csgo-skins-free', 'steam-promo.com', 'steam-free-game', 'steamcommunity.link', 'steamncommunity.com', 'steampowered.link', 'crypto-giveaway', 'send eth to',
+        'double your btc', 'free bitcoin', 'wallet validate', 'metamask support', 'trustwallet help', 'free robux', 'robux generator', 'roblox-security.com', 'roblox-support.net', 'vbucks generator',
+        'free v-bucks', 'fortnite skins free', 'roblox.com/promo', 'instagram-verify.com', 'twitter-badge.net', 'tiktok-view-bot',
+        // --- Malware & Grabbers ---
+        'grabify.link', 'iplogger.org', 'token grabber', 'hack your account', 'download this hack', 'free bypass script', 'krnl download', 'synapse x crack',
+        'ip puller', 'ddos tool', 'booter network', 'stresser network', 'botnet for sale', 'discord token logger', 'roblox cookie logger', 'webhook spammer', 'discord server nuke tool', 'raid tool download',
+        'mass dm bot free', 'discord nitro snaiper', 'giveaway joiner bot', 'selfbot download free', 'betterdiscord nitro plugin', 'vened discord client',
+        // --- Financial Fraud & Generators ---
+        'credit card generator', 'cvv dumps', 'paypal money adder', 'cashapp glitch', 'venmo exploit', 'amazon gift card gen', 'apple gift card gen', 'google play gen',
+        'psn code gen', 'xbox live card gen', 'nintendo eshop gen', 'twitch prime gen', 'minecraft alt gen', 'optifine cape gen',
+        // --- Piracy & Account Cracking ---
+        'onlyfans bypass', 'premium snapchat hack', 'tinder gold hack', 'spotify premium mod', 'netflix lifetime account', 'hulu unban', 'disney plus crack',
+        'nordvpn cracked', 'expressvpn mod',
+        // --- Exploits & Game Cheats ---
+        'gta 5 mod menu free', 'valorant aimbot free', 'apex esp download', 'warzone unlock tool', 'hwid spoofer free', 'hypixel unban hack', 'genshin impact crystals hack', 'clash of clans gems hack', 'brawl stars gems hack', 'pokemon go spoof hack', 'snapchat score booster', 'instagram followers bot', 'twitter likes bot', 'youtube subs bot',
+        // --- General Toxicity ---
+        'kill yourself', 'drink bleach', 'commit suicide'
+    ];
     private static linkRegex = /(https?:\/\/[^\s]+)/g;
     private static spamMap = new Map<string, { count: number, lastMessage: number }>();
 

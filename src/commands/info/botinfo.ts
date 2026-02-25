@@ -25,6 +25,7 @@ export default {
                 { name: 'Servers', value: `${client.guilds.cache.size}`, inline: true },
                 { name: 'Users', value: `${client.users.cache.size}`, inline: true },
                 { name: 'Memory', value: `${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2)} MB`, inline: true },
+                { name: 'System Badges', value: '💻 `Active Developer`\n🔮 `Early Verified`\n👑 `Server Owner`\n🌟 `HypeSquad`\n🛡️ `Head of Staff`', inline: true },
                 { name: 'OS', value: `${os.type()} ${os.release()}`, inline: true }
             );
 
