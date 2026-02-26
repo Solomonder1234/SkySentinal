@@ -1,6 +1,6 @@
 {
   "name": "sky-sentinel",
-  "version": "0.0.7-beta",
+  "version": "1.0.0-beta",
   "main": "dist/index.js",
   "scripts": {
     "dev": "ts-node src/index.ts",
