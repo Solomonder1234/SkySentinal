@@ -1,5 +1,7 @@
 import { Command } from '../../lib/structures/Command';
 import { ApplicationCommandType, Message, TextChannel } from 'discord.js';
+import fs from 'fs';
+import path from 'path';
 let isGlobalStrokeActive = false;
 
 const STROKE_MESSAGES = [
@@ -57,13 +59,33 @@ export default {
             return interaction.reply({ content: '⚠️ **A GLOBAL STROKE IS ALREADY IN PROGRESS.** Calm down, the bot can only have one massive meltdown at a time.', ephemeral: true });
         }
 
+        const COOLDOWN_FILE = path.join(process.cwd(), 'stroke_cooldown.json');
+        let lastStrokeTime = 0;
+        try {
+            if (fs.existsSync(COOLDOWN_FILE)) {
+                lastStrokeTime = JSON.parse(fs.readFileSync(COOLDOWN_FILE, 'utf-8')).lastStroke;
+            }
+        } catch (e) { }
+
+        const COOLDOWN_MS = 24 * 60 * 60 * 1000;
+        if (Date.now() - lastStrokeTime < COOLDOWN_MS) {
+            const remaining = COOLDOWN_MS - (Date.now() - lastStrokeTime);
+            const hours = Math.floor(remaining / (1000 * 60 * 60));
+            const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+            return interaction.reply({ content: `⚠️ **OMNI-TIER COOLDOWN ACTIVE.** The fabric of reality is still recovering. Please wait **${hours}h ${minutes}m** before initiating another global meltdown.`, ephemeral: true });
+        }
+
+        try {
+            fs.writeFileSync(COOLDOWN_FILE, JSON.stringify({ lastStroke: Date.now() }));
+        } catch (e) { }
+
         isGlobalStrokeActive = true;
         if (client.ai) client.ai.setStrokeMode(true);
 
-        await interaction.reply({ content: '🌍 **OMNI-TIER STROKE ACTIVATED.** Initiating global high-frequency meltdown across all servers for 60 minutes.', ephemeral: true });
+        await interaction.reply({ content: '🌍 **OMNI-TIER STROKE ACTIVATED.** Initiating global high-frequency meltdown across all servers for a few minutes.', ephemeral: true });
 
         const startTime = Date.now();
-        const duration = 60 * 60 * 1000; // 1 Hour
+        const duration = Math.floor(Math.random() * (6 * 60 * 1000 - 2 * 60 * 1000)) + 2 * 60 * 1000; // 2 to 6 minutes
 
         // Collect target channels across all guilds
         const targetChannels: TextChannel[] = [];

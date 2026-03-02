@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkyAlert Network | Our Team</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <nav>
+        <div class="logo">SkyAlert<span>Network</span></div>
+        <div class="nav-links">
+            <a href="index.html">Dashboard</a>
+            <a href="what-we-do.html">Mission</a>
+            <a href="team.html" style="color: var(--accent-pink);">Team</a>
+            <a href="partner.html">Partners</a>
+            <a href="join.html">Join</a>
+            <a href="socials.html">Socials</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1 style="text-align: center; margin-bottom: 3rem;">Command Staff</h1>
+
+        <!-- Dynamic Flexbox Container -->
+        <div id="team-grid" class="flex-row" style="justify-content: center; align-items: stretch;">
+            <!-- DOM Rendered by staff.js -->
+        </div>
+    </div>
+
+    <!-- Data Injection -->
+    <script src="staff.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const grid = document.getElementById('team-grid');
+
+            // Iterate over the global staffMembers array imported from staff.js
+            staffMembers.forEach(staff => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.style.width = '300px';
+                card.style.textAlign = 'center';
+                card.style.display = 'flex';
+                card.style.flexDirection = 'column';
+                card.style.alignItems = 'center';
+
+                card.innerHTML = `
+                    <img src="${staff.image}" alt="${staff.name}" style="width: 150px; height: 150px; border-radius: 50%; border: 3px solid var(--accent-blue); margin-bottom: 1rem; object-fit: cover;">
+                    <h2 style="color: var(--text-main); margin-bottom: 0.2rem;">${staff.name}</h2>
+                    <h4 style="color: var(--accent-pink); margin-bottom: 1rem; font-size: 0.9rem;">${staff.role}</h4>
+                    <p style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.95rem; flex-grow: 1;">${staff.blurb}</p>
+                    <a href="mailto:${staff.email}" class="btn" style="width: 100%;">Contact</a>
+                `;
+
+                grid.appendChild(card);
+            });
+        });
+    </script>
+    <script src="transition.js"></script>
+</body>
+
+</html>

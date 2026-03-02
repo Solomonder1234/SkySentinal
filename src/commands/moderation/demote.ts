@@ -136,12 +136,19 @@ export default {
 
             // 4. Update Nickname Prefix
             const currentNickname = targetMember.nickname || targetMember.user.username;
-            let baseName = currentNickname.replace(/^\[.*?\]\s*|\{.*?\}\s*|\|.*?\|\s*/g, '').trim();
+            const hasFT = currentNickname.toUpperCase().startsWith('[FT]');
+            const hasPT = currentNickname.toUpperCase().startsWith('[PT]');
+
+            let baseName = currentNickname.replace(/^\[(?:FT|PT)\]\s*/i, '');
+            baseName = baseName.replace(/^\[.*?\]\s*|\{.*?\}\s*|\|.*?\|\s*/g, '').trim();
 
             let newNickname = baseName;
             if (targetRankDef) {
-                newNickname = `[${targetRankDef.prefix}] ${baseName}`.substring(0, 32);
+                newNickname = `[${targetRankDef.prefix}] ${baseName}`;
+                if (hasFT) newNickname = `[FT] ${newNickname}`;
+                if (hasPT) newNickname = `[PT] ${newNickname}`;
             }
+            newNickname = newNickname.substring(0, 32);
 
             try {
                 if (targetMember.nickname !== newNickname) {

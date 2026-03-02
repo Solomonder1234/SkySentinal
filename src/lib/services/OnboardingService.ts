@@ -30,11 +30,22 @@ export class OnboardingService {
         const unverifiedRoleId = config.unverifiedRoleId || FALLBACK_UNVERIFIED_ROLE_ID;
 
         try {
+            // Validate or Reconstruct Category to prevent CHANNEL_PARENT_INVALID crash
+            let validCategoryId = categoryId;
+            const existingCategory = guild.channels.cache.get(categoryId);
+            if (!existingCategory || existingCategory.type !== ChannelType.GuildCategory) {
+                const newCategory = await guild.channels.create({
+                    name: 'Onboarding (Auto-Recovered)',
+                    type: ChannelType.GuildCategory
+                });
+                validCategoryId = newCategory.id;
+            }
+
             // Create the private channel
             const channel = await guild.channels.create({
                 name: `onboard-${member.user.username.toLowerCase()}`,
                 type: ChannelType.GuildText,
-                parent: categoryId,
+                parent: validCategoryId,
                 permissionOverwrites: [
                     { id: guild.id, deny: ['ViewChannel'] },
                     { id: member.id, allow: ['ViewChannel', 'SendMessages', 'ReadMessageHistory'] },
@@ -53,7 +64,14 @@ export class OnboardingService {
             );
 
             // @ts-ignore
-            const questions = JSON.parse(config.onboardingQuestions || '[]');
+            let questions = JSON.parse(config.onboardingQuestions || '[]');
+            if (questions.length === 0) {
+                questions = [
+                    "How did you discover the SkyAlert Network?",
+                    "What is your primary relationship with or interest in Meteorology?",
+                    "Have you read, understood, and agreed to follow the server's official rules?"
+                ];
+            }
             if (questions.length > 0) {
                 embed.addFields({ name: 'Next Step', value: `Please answer our onboarding questions. \n\n**Question 1:** ${questions[0]}` });
             } else {
@@ -87,7 +105,14 @@ export class OnboardingService {
         if (message.content.startsWith(prefix)) return;
 
         // @ts-ignore
-        const questions = JSON.parse(config.onboardingQuestions || '[]');
+        let questions = JSON.parse(config.onboardingQuestions || '[]');
+        if (questions.length === 0) {
+            questions = [
+                "How did you discover the SkyAlert Network?",
+                "What is your primary relationship with or interest in Meteorology?",
+                "Have you read, understood, and agreed to follow the server's official rules?"
+            ];
+        }
         if (questions.length === 0) return;
 
         // Count non-bot messages to determine the current question

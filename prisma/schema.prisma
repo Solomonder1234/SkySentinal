@@ -154,6 +154,7 @@ model UserProfile {
   lastDig         DateTime?
   
   inventory       InventoryItem[]
+  investments     Investment[]
 }
 
 model ShopItem {
@@ -166,6 +167,19 @@ model ShopItem {
   stock           Int?     // Null means infinite
   
   createdAt       DateTime @default(now())
+}
+
+model Investment {
+  id              Int      @id @default(autoincrement())
+  userId          String
+  user            UserProfile @relation(fields: [userId], references: [id])
+  symbol          String   // e.g., 'AAPL'
+  shares          Float    // Fractional shares allowed
+  averagePrice    Float    // For P&L calculation
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([userId, symbol])
 }
 
 model InventoryItem {
@@ -248,6 +262,17 @@ model LOA {
   status      String   @default("PENDING") // PENDING, APPROVED, DECLINED, RETURNED
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@index([guildId, userId])
+}
+
+model PendingStaffJoin {
+  id          Int      @id @default(autoincrement())
+  guildId     String
+  userId      String
+  roles       String   // JSON string of role IDs granted
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
 
   @@index([guildId, userId])
 }

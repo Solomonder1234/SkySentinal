@@ -8,15 +8,11 @@ export default {
     aliases: ['mmclose'],
     cooldown: 5,
     run: async (client, message, args) => {
-        if (!message.channel.isThread()) {
-            return message.reply({ embeds: [EmbedUtils.error('Modmail Error', 'You can only use this command inside an active Modmail Thread.')] });
-        }
-
-        const thread = message.channel as ThreadChannel;
-        const match = thread.name.match(/-(\d+)$/);
+        const channel = message.channel as TextChannel | ThreadChannel;
+        const match = channel.name.match(/mm-(\d+)$/) || (channel.isThread() ? channel.name.match(/-(\d+)$/) : null);
 
         if (!match || !match[1]) {
-            return message.reply({ embeds: [EmbedUtils.error('Modmail Error', 'This thread does not appear to be a valid Modmail user thread.')] });
+            return message.reply({ embeds: [EmbedUtils.error('Modmail Error', 'You can only use this command inside an active Modmail Thread or Channel.')] });
         }
 
         const userId = match[1];
@@ -35,7 +31,13 @@ export default {
             await targetUser.send({ embeds: [closeEmbed] }).catch(() => { });
         }
 
-        await message.reply({ embeds: [EmbedUtils.success('Thread Closed', `The Modmail thread has been archived. Reason relayed to user: \`${reason}\``)] });
-        await thread.setArchived(true);
+        await message.reply({ embeds: [EmbedUtils.success('Modmail Closed', `The Modmail session has been ended. Reason relayed to user: \`${reason}\``)] });
+
+        if (message.channel.isThread()) {
+            await (message.channel as ThreadChannel).setArchived(true);
+        } else {
+            // Delete text channel after a 5 second delay to let the staff see the confirmation
+            setTimeout(() => message.channel.delete().catch(() => { }), 5000);
+        }
     }
 } as Command;

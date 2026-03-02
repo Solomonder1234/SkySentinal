@@ -99,6 +99,7 @@ export class ApplicationService {
         this.client = client;
         this.startReviewCleanup();
         this.startSuspensionCleanup();
+        this.startStaffJoinCleanup();
     }
 
     private getQuestionsForType(type: string): string[] {
@@ -347,7 +348,9 @@ STRICT INSTRUCTIONS:
 2. MOBILE USER LENIENCY: You MUST be extremely forgiving of minor typos, grammar inconsistencies, or casing issues. Many applicants are on mobile devices where "upper classes" or lack of punctuation is common. Focus strictly on the core content and maturity of their answers.
 3. AI DETECTION: You MUST analyze the transcript for signs of AI-generated responses (e.g., overly perfect, robotic, academic structure). Only fail for AI if you are 100% certain. Human-like errors are a sign they ARE human.
 4. GRADING SCALE: Assign a percentage score out of 100%. To PASS, the applicant MUST score 75% or higher.
-5. FORMAT: Your ENTIRE response MUST be EXACTLY 1-2 complete sentences explaining your recommendation, followed by the score and [PASS] or [FAIL]. Do NOT use any special formatting. Just raw text.
+5. FORMAT: You MUST return your response in the EXACT following format:
+SUMMARY: EXACTLY 1-2 complete sentences explaining your overall recommendation, followed by the score and [PASS] or [FAIL].
+BREAKDOWN: A question-by-question analysis. For each question number (e.g., Q1, Q2), provide either [CORRECT], [INCORRECT], or [NEUTRAL] and a single sentence explaining why. **CRITICAL: IF a question is marked [INCORRECT], you MUST explicitly state what they got wrong AND what the correct answer or procedure should have been.**
 6. 2FA REQUIREMENT: The applicant has explicitly confirmed they have 2FA enabled as a prerequisite for this interview.
 
 ${transcriptStr}
@@ -356,11 +359,26 @@ ${transcriptStr}
         // Send to AI Service
         const aiService = this.client.ai;
         let gradingResult = "AI Grading Failed.";
+        let modifiedAnswers = answers;
 
         if (aiService) {
             try {
                 const response = await aiService.generateResponse(prompt);
                 gradingResult = response.text;
+
+                const parts = gradingResult.split(/BREAKDOWN:/i);
+                if (parts.length > 1) {
+                    gradingResult = parts[0]!.replace(/SUMMARY:/i, '').trim();
+                    const breakdownText = parts[1]!.trim();
+
+                    const qFeedbackMatches = [...breakdownText.matchAll(/Q(\d+):\s*(.*?)(?=\nQ\d+:|$)/gs)];
+                    modifiedAnswers = modifiedAnswers.map((ans: any, idx: number) => {
+                        const feedback = qFeedbackMatches.find(m => parseInt(m[1]!) === idx + 1);
+                        return { ...ans, aiFeedback: feedback ? feedback[2]!.trim() : null };
+                    });
+                } else {
+                    gradingResult = gradingResult.replace(/SUMMARY:/i, '').trim();
+                }
             } catch (err) {
                 this.client.logger.error('AI Processing error:', err);
                 gradingResult = "Error reaching AI core.";
@@ -373,7 +391,8 @@ ${transcriptStr}
             data: {
                 status: 'PENDING_REVIEW',
                 submittedAt: new Date(),
-                aiProposedResult: gradingResult
+                aiProposedResult: gradingResult,
+                answers: JSON.stringify(modifiedAnswers)
             }
         });
 
@@ -447,7 +466,7 @@ ${transcriptStr}
 
                 const dmEmbed = new EmbedBuilder()
                     .setTitle(`SkyAlert Network: ${statusTitle}`)
-                    .setDescription(`Your application for **${app.type}** has been processed by our ${isAuto ? 'AI fallback system' : 'staff team'}.\n\n**Decision Analysis:**\n${gradingResult.substring(0, 3900)}\n\n${passed ? 'Congratulations, you have Passed! You have been promoted. An administrator will contact you shortly.' : 'Unfortunately, you do not meet our requirements at this time.'}`)
+                    .setDescription(`Your application for **${app.type}** has been processed by our ${isAuto ? 'AI fallback system' : 'staff team'}.\n\n**Decision Analysis:**\n${gradingResult.substring(0, 3900)}\n\n${passed ? 'Congratulations, you have passed and been promoted.\n\n**⚠️ TIME SENSITIVE ACTION REQUIRED ⚠️**\nYou **MUST** join the Official Staff Server within **24 hours**, or your new staff roles will be automatically revoked.\n\n👉 **Join the Staff Server Here: https://discord.gg/RDRr4UaRSt**' : 'Unfortunately, you do not meet our requirements at this time.'}`)
                     .setColor(statusColor);
 
                 await applicantUser.send({ embeds: [dmEmbed] }).catch(() => null);
@@ -470,13 +489,32 @@ ${transcriptStr}
                         await applicantMember.roles.add(targetRole.id);
 
                         const currentName = applicantMember.displayName;
-                        if (!currentName.startsWith(prefix)) {
-                            const newName = `${prefix} ${currentName.replace(/^\[.*?\]\s*/, '')}`;
+                        const hasFT = currentName.toUpperCase().startsWith('[FT]');
+                        const hasPT = currentName.toUpperCase().startsWith('[PT]');
+
+                        if (!currentName.includes(prefix)) {
+                            let baseName = currentName.replace(/^\[(?:FT|PT)\]\s*/i, '');
+                            baseName = baseName.replace(/^\[.*?\]\s*/, '').trim();
+                            let newName = `${prefix} ${baseName}`;
+                            if (hasFT) newName = `[FT] ${newName}`;
+                            if (hasPT) newName = `[PT] ${newName}`;
                             await applicantMember.setNickname(newName.substring(0, 32)).catch(() => null);
                         }
+
+                        // Log the Pending Staff Join (24 Hour Deadline)
+                        const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+                        await this.client.database.prisma.pendingStaffJoin.create({
+                            data: {
+                                guildId: guild.id,
+                                userId: app.userId,
+                                roles: JSON.stringify([targetRole.id]),
+                                expiresAt
+                            }
+                        });
+                        this.client.logger.info(`[Auto-Demote] Logged ${app.userId} into PendingStaffJoin. Expires in 24h.`);
                     }
                 }
-            } catch (err) { }
+            } catch (err) { this.client.logger.error('Failed to process auto-promotion or pending log', err); }
         }
 
         return { success: true, passed };
@@ -492,7 +530,11 @@ ${transcriptStr}
 
         answers.forEach((q: any, i: number) => {
             text += `Q${i + 1}: ${q.question}\n`;
-            text += `A: ${q.answer}\n\n`;
+            text += `A: ${q.answer}\n`;
+            if (q.aiFeedback) {
+                text += `AI: ${q.aiFeedback}\n`;
+            }
+            text += `\n`;
         });
 
         return new AttachmentBuilder(Buffer.from(text), { name: `transcript-${app.userId}.txt` });
@@ -518,6 +560,64 @@ ${transcriptStr}
                 this.client.logger.info(`AI Fallback executed for app ${app.id} (${app.userId})`);
             }
         }, 60 * 60 * 1000); // Check every hour
+    }
+
+    public startStaffJoinCleanup() {
+        setInterval(async () => {
+            try {
+                const now = new Date();
+                const expiredJoins = await this.client.database.prisma.pendingStaffJoin.findMany({
+                    where: {
+                        expiresAt: { lte: now }
+                    }
+                });
+
+                for (const pending of expiredJoins) {
+                    const guild = this.client.guilds.cache.get(pending.guildId);
+                    if (!guild) continue;
+
+                    try {
+                        const targetMember = await guild.members.fetch(pending.userId);
+                        const rolesToRemove = JSON.parse(pending.roles);
+
+                        if (rolesToRemove && rolesToRemove.length > 0) {
+                            const validRoles = rolesToRemove.filter((id: string) => guild.roles.cache.has(id));
+                            if (validRoles.length > 0) {
+                                await targetMember.roles.remove(validRoles);
+                            }
+                        }
+
+                        // Remove Prefix
+                        const currentName = targetMember.displayName;
+                        const cleanName = currentName.replace(/^\[.*?\]\s*/, '');
+                        if (currentName !== cleanName) {
+                            await targetMember.setNickname(cleanName.substring(0, 32)).catch(() => null);
+                        }
+
+                        // Delete the expired entry
+                        await this.client.database.prisma.pendingStaffJoin.delete({
+                            where: { id: pending.id }
+                        });
+
+                        this.client.logger.info(`[Auto-Demote] User ${pending.userId} failed to join the Staff Server in 24 hours. Roles revoked.`);
+
+                        try {
+                            await targetMember.send({
+                                embeds: [EmbedUtils.error(
+                                    'Staff Promotion Revoked',
+                                    `Your recent staff promotion in **${guild.name}** was automatically revoked.\n\nYou failed to join the required Staff Server within the 24-hour time limit. If you believe this is an error, please open a tier 3 ticket.`
+                                )]
+                            });
+                        } catch (e) { }
+
+                    } catch (e) {
+                        this.client.logger.error(`Failed to handle auto-demotion for user ${pending.userId}:`, e);
+                    }
+                }
+            } catch (error) {
+                this.client.logger.error('Error in staff join cleanup loop:', error);
+            }
+        }, 5 * 60 * 1000); // Check every 5 minutes
     }
 
     public startSuspensionCleanup() {

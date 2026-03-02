@@ -33,7 +33,7 @@ export default {
             await client.modmail.handleDM(message);
             return;
         }
-        if (message.channel.isThread()) {
+        if (message.channel.type === ChannelType.GuildText || message.channel.isThread()) {
             await client.modmail.handleStaffReply(message);
         }
 

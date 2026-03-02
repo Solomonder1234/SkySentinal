@@ -11,7 +11,7 @@ export class ModmailService {
     }
 
     /**
-     * Intercepts incoming DMs to the bot and routes them to a Modmail thread
+     * Intercepts incoming DMs to the bot and routes them to a dedicated Modmail channel
      */
     public async handleDM(message: Message) {
         if (message.author.bot) return;
@@ -36,57 +36,67 @@ export class ModmailService {
             return;
         }
 
-        const modmailChannel = guild.channels.cache.get((config as any).modmailChannelId!) as TextChannel;
-        if (!modmailChannel || !modmailChannel.isTextBased()) {
-            await message.reply({ embeds: [EmbedUtils.error('Modmail Error', 'The target Modmail hub is currently unreachable. Please try again later.')] }).catch(() => { });
-            return;
+        // Create category if it doesn't exist
+        let modmailCategory = guild.channels.cache.find(c => c.name === 'Modmail' && c.type === ChannelType.GuildCategory) as CategoryChannel;
+        if (!modmailCategory) {
+            const overwrites: any[] = [
+                { id: guild.id, deny: ['ViewChannel'] },
+                { id: this.client.user!.id, allow: ['ViewChannel', 'ManageChannels', 'SendMessages'] }
+            ];
+
+            if (config.modRoleId) {
+                overwrites.push({ id: config.modRoleId, allow: ['ViewChannel', 'SendMessages', 'ReadMessageHistory'] });
+            }
+            if (config.adminRoleId) {
+                overwrites.push({ id: config.adminRoleId, allow: ['ViewChannel', 'SendMessages', 'ReadMessageHistory'] });
+            }
+
+            modmailCategory = await guild.channels.create({
+                name: 'Modmail',
+                type: ChannelType.GuildCategory,
+                permissionOverwrites: overwrites
+            });
         }
 
-        // Try to find an open thread for this user
-        let targetThread = modmailChannel.threads.cache.find(t => t.name === `${message.author.username}-${message.author.id}`) as ThreadChannel;
+        // Try to find an open channel for this user
+        const targetChannelName = `mm-${message.author.id}`;
+        let targetChannel = guild.channels.cache.find(c => c.name === targetChannelName && c.parentId === modmailCategory.id) as TextChannel;
 
-        if (!targetThread) {
-            // Find archived threads too
-            try {
-                const archived = await modmailChannel.threads.fetchArchived();
-                targetThread = archived.threads.find(t => t.name === `${message.author.username}-${message.author.id}`) as ThreadChannel;
+        if (!targetChannel) {
+            const overwrites: any[] = [
+                { id: guild.id, deny: ['ViewChannel'] },
+                { id: this.client.user!.id, allow: ['ViewChannel', 'SendMessages', 'ManageChannels'] }
+            ];
 
-                if (targetThread) {
-                    await targetThread.setArchived(false); // Unarchive
-                    const userConfirmEmbed = new EmbedBuilder()
-                        .setTitle('📩 Modmail Reopened')
-                        .setDescription(`Your message has been received by the staff team at **${guild.name}**.\nWe will reach out as soon as possible.\n\n*Future messages sent here will be relayed directly to your support thread.*`)
-                        .setColor(Colors.Green)
-                        .setTimestamp();
-                    await message.reply({ embeds: [userConfirmEmbed] }).catch(() => { });
-                }
-            } catch (err) {
-                this.client.logger.warn(`Could not fetch archived threads: ${err}`);
+            if (config.modRoleId) {
+                overwrites.push({ id: config.modRoleId, allow: ['ViewChannel', 'SendMessages', 'ReadMessageHistory'] });
+            }
+            if (config.adminRoleId) {
+                overwrites.push({ id: config.adminRoleId, allow: ['ViewChannel', 'SendMessages', 'ReadMessageHistory'] });
             }
 
-            if (!targetThread) {
-                // Create a brand new thread
-                targetThread = await modmailChannel.threads.create({
-                    name: `${message.author.username}-${message.author.id}`,
-                    type: ChannelType.PrivateThread, // Make it private for staff only
-                    invitable: false,
-                    reason: `Modmail thread created for ${message.author.tag}`
-                });
+            // Create a brand new channel
+            targetChannel = await guild.channels.create({
+                name: targetChannelName,
+                type: ChannelType.GuildText,
+                topic: `Modmail for ${message.author.tag} (${message.author.id})`,
+                parent: modmailCategory.id,
+                permissionOverwrites: overwrites
+            });
 
-                const startEmbed = new EmbedBuilder()
-                    .setTitle('🔔 New Modmail Received')
-                    .setDescription(`User: <@${message.author.id}> (\`${message.author.id}\`)\n\nPlease reply directly to this thread to talk to the user.`)
-                    .setColor(Colors.Blue)
-                    .setTimestamp();
-                await targetThread.send({ embeds: [startEmbed] });
+            const startEmbed = new EmbedBuilder()
+                .setTitle('🔔 New Modmail Received')
+                .setDescription(`**User:** <@${message.author.id}> (\`${message.author.id}\`)\n\nStaff may reply directly in this channel to relay messages back to the user.`)
+                .setColor('#ffaa00')
+                .setTimestamp();
+            await targetChannel.send({ embeds: [startEmbed] });
 
-                const userConfirmEmbed = new EmbedBuilder()
-                    .setTitle('📩 Modmail Open')
-                    .setDescription(`Your message has been received by the staff team at **${guild.name}**.\nWe will reach out as soon as possible.\n\n*Future messages sent here will be relayed directly to your support thread.*`)
-                    .setColor(Colors.Green)
-                    .setTimestamp();
-                await message.reply({ embeds: [userConfirmEmbed] }).catch(() => { });
-            }
+            const userConfirmEmbed = new EmbedBuilder()
+                .setTitle('📩 Modmail Open')
+                .setDescription(`Your message has been received by the staff team at **${guild.name}**.\nWe will reach out as soon as possible.\n\n*Future messages sent here will be relayed directly to your support channel.*`)
+                .setColor(Colors.Green)
+                .setTimestamp();
+            await message.reply({ embeds: [userConfirmEmbed] }).catch(() => { });
         }
 
         // Process message content and attachments
@@ -99,50 +109,40 @@ export class ModmailService {
             .setTimestamp();
 
         try {
-            await targetThread.send({ embeds: [dmEmbed], ...(files.length > 0 && { files }) });
+            await targetChannel.send({ embeds: [dmEmbed], ...(files.length > 0 && { files }) });
             await message.react('✅').catch(() => { });
         } catch (e) {
-            this.client.logger.error(`Failed to route DM to thread for ${message.author.tag}:`, e);
+            this.client.logger.error(`Failed to route DM to channel for ${message.author.tag}:`, e);
             await message.react('❌').catch(() => { });
         }
     }
 
     /**
-     * Catches staff replies inside a Modmail Thread and forwards them to the user via DM.
+     * Catches staff replies inside a Modmail Channel and forwards them to the user via DM.
      */
     public async handleStaffReply(message: Message) {
         if (message.author.bot) return;
-        if (!message.channel.isThread()) return;
+        if (message.channel.type !== ChannelType.GuildText && !message.channel.isThread()) return;
 
-        this.client.logger.info(`[ModmailTrace] Caught Thread Message from ${message.author.tag} in ${message.channel.id}`);
+        const channel = message.channel as TextChannel;
 
-        const thread = message.channel as ThreadChannel;
-        // Check if thread is a Modmail thread (name format: "username-userid")
-        const match = thread.name.match(/-(\d+)$/);
+        // Check if channel is a Modmail channel (name format: "mm-userid")
+        const match = channel.name.match(/^mm-(\d+)$/);
         if (!match || !match[1]) {
-            this.client.logger.warn(`[ModmailTrace] Thread name ${thread.name} did not match regex`);
             return;
         }
 
         const userId = match[1];
-        this.client.logger.info(`[ModmailTrace] Parsed UserId: ${userId}`);
 
         const config = JSONDatabase.getGuildConfig(message.guildId!);
-        this.client.logger.info(`[ModmailTrace] Config fetched. Modmail Channel ID: ${(config as any).modmailChannelId}. Thread Parent ID: ${thread.parentId}`);
+        if (!config) return;
 
-        if (!config || (config as any).modmailChannelId !== thread.parentId) {
-            this.client.logger.warn(`[ModmailTrace] Thread parent mismatch or no config.`);
-            return;
-        }
-
-        // Skip command invocation so staff can use bot commands inside the thread
+        // Skip command invocation so staff can use bot commands inside the channel
         if (message.content.startsWith(config.prefix || '!')) {
-            this.client.logger.info(`[ModmailTrace] Skipped due to prefix ${config.prefix || '!'}`);
             return;
         }
 
         const targetUser = await this.client.users.fetch(userId).catch(() => null);
-        this.client.logger.info(`[ModmailTrace] Target user fetched: ${targetUser ? targetUser.tag : 'null'}`);
         if (!targetUser) {
             await message.reply({ embeds: [EmbedUtils.error('Error', 'Could not locate the user to forward this message. They may have left the server or been deleted.')] });
             return;

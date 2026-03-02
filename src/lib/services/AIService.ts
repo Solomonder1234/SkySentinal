@@ -348,7 +348,11 @@ export class AIService {
                 .replace(/@here/g, '@\u200Bhere');
             return { text: safeText };
         } catch (error: any) {
-            console.error(`[AIService] Gemini Error with ${this.models[this.currentModelIndex]}:`, error);
+            if (error?.status === 429 || error?.message?.includes('429')) {
+                console.warn(`[AIService] Rate Limited (429) on ${this.models[this.currentModelIndex]}.`);
+            } else {
+                console.error(`[AIService] Gemini Error with ${this.models[this.currentModelIndex]}:`, error.message || error);
+            }
 
             if (this.currentModelIndex < this.models.length - 1) {
                 this.currentModelIndex++;
@@ -476,8 +480,12 @@ export class AIService {
             const response = await result.response;
             const text = response.text().trim().toUpperCase();
             return text.includes('TRUE');
-        } catch (error) {
-            console.error('[AIService] Toxicity Check Error:', error);
+        } catch (error: any) {
+            if (error?.status === 429 || error?.message?.includes('429')) {
+                this.log('WARN', 'Toxicity Check Skipped (API Rate Limited: 429).');
+            } else {
+                console.error('[AIService] Toxicity Check Error:', error.message || error);
+            }
             return false;
         }
     }
@@ -521,9 +529,13 @@ export class AIService {
 
             this.log('VISION', `Analyzed image: ${imageUrl}`, data);
             return data;
-        } catch (error) {
-            console.error('[AIService] Image Analysis Error:', error);
-            return { safe: true }; // Default to safe if analysis fails to avoid false positives
+        } catch (error: any) {
+            if (error?.status === 429 || error?.message?.includes('429')) {
+                this.log('WARN', 'Image Analysis Skipped (API Rate Limited: 429).');
+            } else {
+                console.error('[AIService] Image Analysis Error:', error.message || error);
+            }
+            return { safe: true };
         }
     }
 }

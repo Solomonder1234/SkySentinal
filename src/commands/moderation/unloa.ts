@@ -11,13 +11,9 @@ const command: Command = {
 
         const member = message.member;
         if (!member) return;
-
         const currentNickname = member.nickname || member.user.username;
-        if (!currentNickname.startsWith('[LOA]')) {
-            return message.reply({ content: '❌ You are not currently marked as being on LOA.' });
-        }
 
-        // Find the active APPROVED LOA record
+        // Query the database directly for ACTIVE LOAs to prevent bad Discord cached Nickname blocks
         const activeLOA = await client.prisma.lOA.findFirst({
             where: {
                 userId: message.author.id,
@@ -26,6 +22,10 @@ const command: Command = {
             },
             orderBy: { createdAt: 'desc' }
         });
+
+        if (!activeLOA) {
+            return message.reply({ content: '❌ The internal Database does not categorize you as actively on LOA.' });
+        }
 
         if (activeLOA) {
             await client.prisma.lOA.update({
@@ -43,9 +43,6 @@ const command: Command = {
             return message.reply({ content: '❌ Failed to restore your nickname. I might lack permissions.' });
         }
 
-        const logChannelId = '1386829080237969469';
-        const logChannel = client.channels.cache.get(logChannelId) as TextChannel;
-
         const embed = new EmbedBuilder()
             .setTitle('🏠 Returned from LOA')
             .setColor('#00FFFF')
@@ -56,8 +53,10 @@ const command: Command = {
             .setDescription(`<@${message.author.id}> has officially returned from their Leave of Absence.`)
             .setTimestamp();
 
-        if (logChannel) {
-            await logChannel.send({ embeds: [embed] });
+        const adminLogChannelIds = ['1386829462422949889', '1371279072067321896'];
+        for (const id of adminLogChannelIds) {
+            const adminCh = client.channels.cache.get(id);
+            if (adminCh) await (adminCh as any).send({ embeds: [embed] }).catch(() => {});
         }
 
         return message.reply({

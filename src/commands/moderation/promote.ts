@@ -141,12 +141,16 @@ export default {
 
             // 4. Update Nickname
             const currentNickname = targetMember.nickname || targetMember.user.username;
-            let baseName = currentNickname;
+            const hasFT = currentNickname.toUpperCase().startsWith('[FT]');
+            const hasPT = currentNickname.toUpperCase().startsWith('[PT]');
 
-            // Regex to strip any existing bracketed prefix like [TS], {MOD}, |SRM|
-            baseName = baseName.replace(/^\[.*?\]\s*|\{.*?\}\s*|\|.*?\|\s*/g, '').trim();
+            let baseName = currentNickname.replace(/^\[(?:FT|PT)\]\s*/i, ''); // Strip availability temporarily
+            baseName = baseName.replace(/^\[.*?\]\s*|\{.*?\}\s*|\|.*?\|\s*/g, '').trim(); // Strip old staff rank
 
-            const newNickname = `[${nextRank.prefix}] ${baseName}`.substring(0, 32);
+            let newNickname = `[${nextRank.prefix}] ${baseName}`;
+            if (hasFT) newNickname = `[FT] ${newNickname}`;
+            if (hasPT) newNickname = `[PT] ${newNickname}`;
+            newNickname = newNickname.substring(0, 32);
 
             try {
                 await targetMember.setNickname(newNickname);
@@ -168,10 +172,7 @@ export default {
                 const logChannelId = '1473466436449210511';
                 const logChannel = await client.channels.fetch(logChannelId);
                 if (logChannel && logChannel.isTextBased() && 'guild' in logChannel) {
-                    // Explicit Staff Server Role lookup because log channel is probably in staff server
-                    const staffRole = await logChannel.guild.roles.fetch().then((roles: any) => roles.find((r: any) => r.name.toLowerCase() === 'staff' || r.name.toLowerCase() === 'staff team')).catch(() => null);
-                    const pingText = staffRole ? `<@&${staffRole.id}>` : '@Staff';
-                    await logChannel.send({ content: pingText, embeds: [successEmbed] });
+                    await logChannel.send({ embeds: [successEmbed] });
                 }
             } catch (err: any) {
                 client.logger.error(`Failed to send promotion log to defined channel: ${err.message}`);

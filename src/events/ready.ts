@@ -87,5 +87,51 @@ export default {
                 client.logger.error('Error in tempban scheduler:', error);
             }
         }, 60000); // Check every minute
+
+        // Scheduler for 24-hour Onboarding Kick
+        setInterval(async () => {
+            try {
+                const now = new Date();
+                const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+                for (const guild of client.guilds.cache.values()) {
+                    const config = await client.database.prisma.guildConfig.findUnique({
+                        where: { id: guild.id }
+                    });
+
+                    if (!config) continue;
+
+                    const FALLBACK_UNVERIFIED_ROLE_ID = '1371788188087226428';
+                    // @ts-ignore
+                    const unverifiedRoleId = config.unverifiedRoleId || FALLBACK_UNVERIFIED_ROLE_ID;
+
+                    const unverifiedRole = guild.roles.cache.get(unverifiedRoleId);
+                    if (!unverifiedRole) continue;
+
+                    // Fetch members to ensure cache is 100% full before cross-referencing
+                    await guild.members.fetch().catch(() => null);
+
+                    for (const member of unverifiedRole.members.values()) {
+                        if (member.joinedAt && member.joinedAt < twentyFourHoursAgo) {
+                            try {
+                                await member.kick('Failed to complete onboarding within 24 hours.');
+                                client.logger.info(`Kicked ${member.user.tag} for 24-hour onboarding timeout.`);
+
+                                // Clean up their channel
+                                const channelName = `onboard-${member.user.username.toLowerCase()}`;
+                                const onboardChannel = guild.channels.cache.find(c => c.name === channelName);
+                                if (onboardChannel) {
+                                    await onboardChannel.delete('Onboarding timed out and member kicked.').catch(() => null);
+                                }
+                            } catch (e) {
+                                client.logger.error(`Failed to kick ${member.user.tag} for onboarding timeout:`, e);
+                            }
+                        }
+                    }
+                }
+            } catch (error) {
+                client.logger.error('Error in onboarding kicker scheduler:', error);
+            }
+        }, 30 * 60 * 1000); // Check every 30 minutes
     },
 } as Event<Events.ClientReady>;

@@ -8,6 +8,22 @@ export default {
     run: async (client, member: GuildMember) => {
         // --- AUTO-ROLE SYNC ---
         if (member.guild.id === STAFF_GUILD_ID) {
+            // Check for Pending Staff Join
+            try {
+                const pendingJoin = await client.database.prisma.pendingStaffJoin.findFirst({
+                    where: { userId: member.id }
+                });
+
+                if (pendingJoin) {
+                    await client.database.prisma.pendingStaffJoin.delete({
+                        where: { id: pendingJoin.id }
+                    });
+                    client.logger.info(`[Auto-Demote] User ${member.user.tag} joined the Staff Server in time. Pending expiration cleared.`);
+                }
+            } catch (err) {
+                client.logger.error(`[Auto-Demote] Failed to clear pending join for ${member.user.tag}:`, err);
+            }
+
             const mainGuild = client.guilds.cache.get(MAIN_GUILD_ID);
             if (mainGuild) {
                 try {

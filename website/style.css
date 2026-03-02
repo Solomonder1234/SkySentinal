@@ -1,0 +1,286 @@
+/* SkyAlert Network - Global Design System */
+
+:root {
+    --bg-dark: #0b0e14;
+    --bg-card: #1a1a2e;
+    --accent-blue: #4cc9f0;
+    --accent-pink: #f72585;
+    --text-main: #ffffff;
+    --text-muted: #a0a0b0;
+    --font-stack: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    font-family: var(--font-stack);
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+/* Global Typography */
+h1,
+h2,
+h3,
+h4 {
+    color: var(--text-main);
+    margin-bottom: 1rem;
+}
+
+a {
+    color: var(--accent-blue);
+    text-decoration: none;
+    transition: color 0.3s ease, text-shadow 0.3s ease;
+}
+
+a:hover {
+    color: var(--accent-pink);
+    text-shadow: 0 0 8px var(--accent-pink);
+}
+
+/* Layout Classes */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.grid-center {
+    display: grid;
+    place-items: center;
+    min-height: 100vh;
+}
+
+.flex-row {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* Navbar */
+nav {
+    background-color: var(--bg-card);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--accent-blue);
+    box-shadow: 0 4px 15px rgba(76, 201, 240, 0.2);
+}
+
+nav .logo {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--text-main);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+nav .logo span {
+    color: var(--accent-blue);
+}
+
+nav .nav-links {
+    display: flex;
+    gap: 2rem;
+}
+
+nav .nav-links a {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+}
+
+/* Buttons */
+.btn {
+    display: inline-block;
+    background: transparent;
+    border: 2px solid var(--accent-blue);
+    color: var(--accent-blue);
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    background: var(--accent-blue);
+    color: var(--bg-dark);
+    box-shadow: 0 0 15px var(--accent-blue);
+}
+
+.btn.accent {
+    border-color: var(--accent-pink);
+    color: var(--accent-pink);
+}
+
+.btn.accent:hover {
+    background: var(--accent-pink);
+    color: var(--text-main);
+    box-shadow: 0 0 15px var(--accent-pink);
+}
+
+/* Cards */
+.card {
+    background: var(--bg-card);
+    border-radius: 8px;
+    padding: 1.5rem;
+    border-top: 3px solid var(--accent-blue);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+/* Make it Rain Overlay */
+#rain-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(to bottom, transparent, rgba(11, 14, 20, 0.9) 80%, var(--bg-dark));
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.6s ease-in-out;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#rain-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+    /* Block clicks during transition */
+}
+
+/* Raindrops */
+.raindrop {
+    position: absolute;
+    width: 2px;
+    height: 100px;
+    background: linear-gradient(to bottom, transparent, var(--accent-blue));
+    opacity: 0;
+}
+
+#rain-overlay.active .raindrop {
+    animation: fall 0.6s linear infinite;
+}
+
+@keyframes fall {
+    0% {
+        transform: translateY(-100vh);
+        opacity: 0;
+    }
+
+    10% {
+        opacity: 1;
+    }
+
+    90% {
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateY(100vh);
+        opacity: 0;
+    }
+}
+
+/* Dashboard Grid */
+.command-center {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.command-center .weather-panel {
+    grid-column: 1 / -1;
+}
+
+/* EAS Banner */
+.eas-banner {
+    background: #ff0000;
+    color: #ffffff;
+    padding: 1rem;
+    text-align: center;
+    font-weight: bold;
+    letter-spacing: 1px;
+    animation: pulse 2s infinite;
+    border-bottom: 2px solid #fff;
+}
+
+.eas-banner.hidden {
+    display: none;
+}
+
+@keyframes pulse {
+    0% {
+        background-color: #e63946;
+    }
+
+    50% {
+        background-color: #780000;
+    }
+
+    100% {
+        background-color: #e63946;
+    }
+}
+
+/* Status Indicator */
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.status-indicator .dot {
+    width: 15px;
+    height: 15px;
+    background: #00ff00;
+    border-radius: 50%;
+    box-shadow: 0 0 10px #00ff00;
+}
+
+/* Weather Specifics */
+.weather-current h3 {
+    color: var(--accent-blue);
+    margin-bottom: 0.5rem;
+}
+
+.weather-current .temp {
+    font-size: 3rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+}
+
+.weather-current .desc {
+    font-size: 1.2rem;
+    font-weight: 500;
+    margin-bottom: 1rem;
+    color: var(--accent-pink);
+}
+
+.weather-current .detail {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+}

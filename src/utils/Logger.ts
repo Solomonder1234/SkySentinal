@@ -48,50 +48,28 @@ export class Logger {
     }
 
     // Discord Channel Logging
-    private static async getLogChannel(guild: Guild): Promise<TextChannel | null> {
-        try {
-            const client = guild.client as any;
-
-            // GLOBAL ADMIN REPORTING OVERRIDE (For Staff Server logging all moderation actions)
-            const globalAdminChannel = (client.channels.cache.get('1386829462422949889') || await client.channels.fetch('1386829462422949889').catch(() => null)) as TextChannel;
-            if (globalAdminChannel) return globalAdminChannel;
-
-            if (client.database) {
-                const config = await client.database.getGuildConfig(guild.id);
-                if (config?.modLogChannelId) {
-                    const channel = guild.channels.cache.get(config.modLogChannelId) as TextChannel;
-                    if (channel) return channel;
-                }
-            }
-        } catch (e) {
-            // Ignore DB errors and fall back to name
+    public static async adminLog(client: any, embed: EmbedBuilder) {
+        const adminChannels = ['1386829462422949889', '1371279072067321896'];
+        for (const id of adminChannels) {
+            const channel = (client.channels.cache.get(id) || await client.channels.fetch(id).catch(() => null)) as TextChannel;
+            if (channel) await channel.send({ embeds: [embed] }).catch(() => { });
         }
-
-        const channel = guild.channels.cache.find((c: any) =>
-            c.name === 'logs' || c.name === 'mod-logs') as TextChannel;
-        return channel || null;
     }
 
     public static async log(guild: Guild, title: string, description: string, color: ColorResolvable = 'Blue', fields: { name: string, value: string, inline?: boolean }[] = []) {
-        const channel = await this.getLogChannel(guild);
-        if (!channel) return;
+        const client = guild.client as any;
+        const serverLogChannels = ['1275910056428179499', '1386829343644323870'];
 
-        // Original code:
-        // const embed = new EmbedBuilder()
-        //     .setAuthor({ name: title, iconURL: 'https://i.imgur.com/vHqXvU6.png' })
-        //     .setDescription(description)
-        //     .setColor(color)
-        //     .setFooter({ text: 'SkySentinel v5.5.0 • System Log' })
-        //     .setTimestamp();
-
-        // Applying the requested change, adapting to the log method's parameters
         const embed = EmbedUtils.premium(title, description)
-            .setThumbnail(guild.iconURL() || null); // Use guild.iconURL() instead of interaction.guild?.iconURL()
+            .setThumbnail(guild.iconURL() || null);
 
         if (fields.length > 0) {
             embed.addFields(fields);
         }
 
-        await channel.send({ embeds: [embed] }).catch(() => { });
+        for (const id of serverLogChannels) {
+            const channel = (client.channels.cache.get(id) || await client.channels.fetch(id).catch(() => null)) as TextChannel;
+            if (channel) await channel.send({ embeds: [embed] }).catch(() => { });
+        }
     }
 }

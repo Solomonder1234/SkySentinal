@@ -20,12 +20,7 @@ const command: Command = {
         const duration = args[0] ?? '';
         const reason = args.slice(1).join(' ');
 
-        const logChannelId = '1386829080237969469';
-        const logChannel = client.channels.cache.get(logChannelId) as TextChannel;
 
-        if (!logChannel) {
-            return message.reply({ content: '❌ LOA submission failed: Staff log channel not found.' });
-        }
 
         // Check for existing pending LOA
         const existingPending = await client.prisma.lOA.findFirst({
@@ -67,7 +62,11 @@ const command: Command = {
             .setTimestamp()
             .setFooter({ text: 'LOA Request System' });
 
-        await logChannel.send({ embeds: [embed] });
+        const adminLogChannelIds = ['1386829462422949889', '1371279072067321896'];
+        for (const id of adminLogChannelIds) {
+            const adminCh = client.channels.cache.get(id);
+            if (adminCh) await (adminCh as TextChannel).send({ embeds: [embed] }).catch(() => { });
+        }
 
         // Update Nickname
         try {

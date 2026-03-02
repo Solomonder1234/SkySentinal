@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkyAlert Network | Command Center</title>
+    <meta name="description" content="The ultimate network for severe weather coverage, EAS monitoring, and community gaming.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav>
+        <div class="logo">SkyAlert<span>Network</span></div>
+        <div class="nav-links">
+            <a href="index.html">Dashboard</a>
+            <a href="what-we-do.html">Mission</a>
+            <a href="team.html">Team</a>
+            <a href="partner.html">Partners</a>
+            <a href="join.html">Join</a>
+            <a href="socials.html">Socials</a>
+        </div>
+    </nav>
+
+    <!-- EAS Banner (Hidden by Default) -->
+    <div id="eas-banner" class="eas-banner hidden">
+        <strong>⚠️ EMERGENCY ACTION NOTIFICATION ⚠️</strong>
+        <span id="eas-text">The Emergency Alert System has been activated. Stand by for vital information.</span>
+    </div>
+
+    <div class="container command-center">
+        <!-- Status Panel -->
+        <div class="card status-panel">
+            <h2>System Status</h2>
+            <div class="status-indicator">
+                <span class="dot active"></span> 
+                <span class="status-text">NETWORK ONLINE & ACTIVE</span>
+            </div>
+            <p style="margin-top: 1rem; color: var(--text-muted); font-size: 0.9rem;">All subsystems nominal. Live telemetry linked.</p>
+        </div>
+
+        <!-- Promo Panels -->
+        <div class="card promo-panel">
+            <h2>TheGrinnerWx</h2>
+            <p style="margin-bottom: 1rem;">Live storm tracing, professional meteorological forecasts, and active severe weather coverage.</p>
+            <a href="https://youtube.com/@TheGrinnerWx" target="_blank" class="btn">Watch Live</a>
+        </div>
+
+        <div class="card promo-panel">
+            <h2>TheGrinnerGames</h2>
+            <p style="margin-bottom: 1rem;">Join us on Roblox SCR for coordinated Train Dispatcher (DS) operations and casual streams.</p>
+            <a href="https://youtube.com/@TheGrinnerGames" target="_blank" class="btn accent">Play Now</a>
+        </div>
+
+        <!-- Weather Panel (Grid Span All) -->
+        <div class="card weather-panel">
+            <h2>Live Sector Telemetry (Brooklyn, NY)</h2>
+            <div id="weather-data" style="margin-top: 1.5rem;">
+                <p style="color: var(--accent-blue);">[Establishing handshake with api.weather.gov...]</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="transition.js"></script>
+    <script>
+        /**
+         * Asynchronous fetch operation to pull live grids from the National Weather Service (NWS) API.
+         * Coordinates map to gridpoint OKX 35,34.
+         */
+        async function fetchWeather() {
+            const display = document.getElementById('weather-data');
+            try {
+                // The NWS strongly dictates valid User-Agents.
+                const response = await fetch('https://api.weather.gov/gridpoints/OKX/35,34/forecast', {
+                    headers: { 'User-Agent': '(SkyAlertNetwork, contact@skyalertnetwork.com)' }
+                });
+                if (!response.ok) throw new Error('NWS API Handshake failed or returned restricted status.');
+                
+                const data = await response.json();
+                const currentPeriod = data.properties.periods[0];
+                
+                display.innerHTML = `
+                    <div class="weather-current">
+                        <h3>${currentPeriod.name.toUpperCase()}</h3>
+                        <p class="temp">${currentPeriod.temperature}°${currentPeriod.temperatureUnit}</p>
+                        <p class="desc">${currentPeriod.shortForecast}</p>
+                        <p class="detail">${currentPeriod.detailedForecast}</p>
+                    </div>
+                `;
+            } catch (error) {
+                console.error("NWS Fetch Error:", error);
+                display.innerHTML = `<p style="color: #f72585; font-weight: bold;">[ERR_TIMEOUT] Failed to load live telemetry from the National Weather Service. Please check satellite uplink.</p>`;
+            }
+        }
+        
+        // Mount the async API caller once DOM resolves naturally.
+        document.addEventListener('DOMContentLoaded', fetchWeather);
+    </script>
+</body>
+</html>

@@ -26,6 +26,9 @@ export default {
             } else if (name.startsWith('suggest-')) {
                 isClaimable = true;
                 type = 'Suggestion Ticket';
+            } else if (name.startsWith('mm-')) {
+                isClaimable = true;
+                type = 'Modmail Channel';
             }
         }
 

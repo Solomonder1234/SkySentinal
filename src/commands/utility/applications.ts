@@ -13,15 +13,49 @@ export default {
             description: 'Open applications silently without pinging @everyone.',
             type: ApplicationCommandOptionType.Boolean,
             required: false
+        },
+        {
+            name: 'announce_close',
+            description: 'Broadcast a warning that applications are closing soon.',
+            type: ApplicationCommandOptionType.Boolean,
+            required: false
         }
     ],
     run: async (client, interaction) => {
         if (!(interaction instanceof Message)) await interaction.deferReply({ flags: ['Ephemeral'] });
 
         let silent = false;
-        if (!(interaction instanceof Message)) {
+        let isCloseAnnounce = false;
+        if (interaction instanceof Message) {
+            const args = interaction.content.split(' ').slice(1);
+            if (args[0]?.toLowerCase() === 'silent') silent = true;
+            if (args[0]?.toLowerCase() === 'close') isCloseAnnounce = true;
+        } else {
             const chatInteraction = interaction as ChatInputCommandInteraction;
             silent = chatInteraction.options.getBoolean('silent') ?? false;
+            isCloseAnnounce = chatInteraction.options.getBoolean('announce_close') ?? false;
+        }
+
+        if (isCloseAnnounce) {
+            const announceChannelId = '1276237463823581275'; // Hardcoded applications channel
+            try {
+                const annChannel = await interaction.guild?.channels.fetch(announceChannelId);
+                if (annChannel && annChannel.isTextBased()) {
+                    await annChannel.send({
+                        content: '@everyone',
+                        embeds: [EmbedUtils.warning('⚠️ Applications Closing Soon!', 'This is an official notice that **Staff Applications will be closing in a few days!**\n\nIf you have not yet submitted your application or completed your interview, please make sure to finalize it as soon as possible. Once applications are formally closed, all active interview channels will be locked. Good luck!')]
+                    });
+                    const replyOptions = { content: '✅ Closure warning announcement successfully broadcasted to the applications channel.' };
+                    if (interaction instanceof Message) {
+                        return interaction.reply(replyOptions);
+                    } else {
+                        return interaction.editReply(replyOptions);
+                    }
+                }
+            } catch (e) {
+                client.logger.error('Failed to send closing announcement.', e);
+            }
+            return;
         }
 
         let settings = await client.database.prisma.applicationSettings.findUnique({

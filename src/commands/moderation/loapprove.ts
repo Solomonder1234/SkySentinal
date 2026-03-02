@@ -13,7 +13,7 @@ const command: Command = {
         const member = message.member;
         if (!member) return;
 
-        const isAuthorized = member.roles.cache.some((r: any) =>
+        const isAuthorized = message.author.id === message.guild?.ownerId || member.roles.cache.some((r: any) =>
             ['founder', 'head of staff', 'hos'].includes((r.name ?? '').toLowerCase()) ||
             r.permissions.has('Administrator')
         );
@@ -47,9 +47,6 @@ const command: Command = {
             data: { status: 'APPROVED' }
         });
 
-        const logChannelId = '1386829080237969469';
-        const logChannel = client.channels.cache.get(logChannelId) as TextChannel;
-
         const embed = new EmbedBuilder()
             .setTitle('✅ LOA Request Approved')
             .setColor('#00FF00')
@@ -64,8 +61,10 @@ const command: Command = {
             )
             .setTimestamp();
 
-        if (logChannel) {
-            await logChannel.send({ embeds: [embed] });
+        const adminLogChannelIds = ['1386829462422949889', '1371279072067321896'];
+        for (const id of adminLogChannelIds) {
+            const adminCh = client.channels.cache.get(id);
+            if (adminCh) await (adminCh as any).send({ embeds: [embed] }).catch(() => {});
         }
 
         // Notify user
