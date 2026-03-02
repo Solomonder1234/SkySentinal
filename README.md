@@ -78,3 +78,17 @@ pm2 save
 - **Restart the bot (PM2)**: `pm2 restart SkySentinel`
 - **View live bot logs (PM2)**: `pm2 logs SkySentinel`
 - **Open Prisma Studio (View Database UI)**: `npx prisma studio`
+
+## 🔄 Updating & Git Synchronization
+If you've made changes locally and want to push them to GitHub so your other computers can download the new code, run:
+```bash
+git add .
+git commit -m "chore: Your commit message here"
+git push
+```
+
+If you need to delete an old version tag (e.g., `v1.1.1`) from the remote repository, run:
+```bash
+git tag -d v1.1.1
+git push origin --delete v1.1.1
+```
