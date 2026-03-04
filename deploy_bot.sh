@@ -6,8 +6,9 @@ sudo dnf module enable nodejs:20 -y
 sudo dnf install nodejs -y
 sudo dnf install npm -y
 
-# Safely execute Prisma Generation and build dependencies
+# Safely execute Prisma Generation, schema sync, and build dependencies
 npm ci || npm install
+npx prisma db push
 npx prisma generate
 
 # Compile TypeScript

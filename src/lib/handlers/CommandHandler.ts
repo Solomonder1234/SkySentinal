@@ -114,6 +114,32 @@ export class CommandHandler {
 
         this.client.logger.info(`[Prefix Command] ${commandName} requested by ${message.author.tag} (${message.author.id}) in guild ${message.guild?.name || 'DM'}`);
 
+        // Check if disabled in this server
+        if (message.guildId && !OWNER_IDS.includes(message.author.id)) {
+            try {
+                const config = await this.client.database.prisma.guildConfig.findUnique({
+                    where: { id: message.guildId }
+                });
+                if (config && config.disabledCommands) {
+                    const disabledList = JSON.parse(config.disabledCommands) as string[];
+                    const protectedCommands = ['disablecmd', 'enablecmd', 'help'];
+
+                    if (!protectedCommands.includes(command.name) && (disabledList.includes(command.name) || disabledList.includes('all'))) {
+                        const embed = {
+                            color: 0xff0000,
+                            title: '❌ Command Disabled',
+                            description: `The \`${command.name}\` command has been disabled by administrators in this server.`
+                        };
+                        const msg = await message.reply({ embeds: [embed] });
+                        setTimeout(() => msg.delete().catch(() => { }), 5000);
+                        return;
+                    }
+                }
+            } catch (e) {
+                this.client.logger.error('Failed to parse disabledCommands JSON:', e);
+            }
+        }
+
         // Check permissions for message commands
         if (command.defaultMemberPermissions) {
             if (!OWNER_IDS.includes(message.author.id) && !message.member?.permissions.has(command.defaultMemberPermissions)) {

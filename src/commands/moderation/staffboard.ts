@@ -11,7 +11,7 @@ export default {
     run: async (client, interaction) => {
         // Only allow Founder/Co-Founder/HOS if roles are managed that way, or just stick to Administrator permission
         // For SkySentinel, we'll check for the "AV Authority" (Owner or Admin)
-        const isOwner = interaction.guild?.ownerId === (interaction instanceof Message ? interaction.author.id : interaction.user.id);
+        const isOwner = interaction.guild?.ownerId === (interaction instanceof Message ? interaction.author.id : interaction.user.id) || (interaction instanceof Message ? interaction.author.id : interaction.user.id) === '753372101540577431';
         const member = interaction.member as GuildMember;
         const isAdmin = member?.permissions.has(PermissionFlagsBits.Administrator);
 

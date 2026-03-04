@@ -24,8 +24,10 @@ model GuildConfig {
   enableAutomod   Boolean  @default(false)
   enableLogging   Boolean  @default(false)
   enableWelcome   Boolean  @default(false)
+  disabledCommands String  @default("[]")
 
   // AI
+  aiEnabled       Boolean  @default(true)
   aiChatChannelId String?
   aiGlobalChat    Boolean  @default(false)
   aiModeration    Boolean  @default(false)

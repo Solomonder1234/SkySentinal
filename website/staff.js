@@ -3,8 +3,7 @@ const staffMembers = [
         "name": "Leo",
         "role": "Founder / Lead Meteorologist",
         "email": "leo@skyalertnetwork.com",
-        "blurb": "Founder of SkyAlert and Staffing Oversight.",
-        "
+        "blurb": "Founder of SkyAlert and Staffing Oversight."
     },
     {
         "name": "",

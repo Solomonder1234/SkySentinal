@@ -92,6 +92,76 @@ const WEATHER_QUESTIONS = [
     "How many hours a week can you dedicate to monitoring weather events?"
 ];
 
+// Transit: PRA Questions
+const PRA_QUESTIONS = [
+    "What is your Discord Tag and Age?",
+    "What time zone are you located in?",
+    "Why do you want to join the Public Relations team for the Transit Server?",
+    "Scenario: A user is complaining in general chat about transit delays. How do you respond?",
+    "How would you represent our server when interacting with partnered communities?",
+    "Describe a time you de-escalated a conflict between multiple users.",
+    "If a member asks a question about a transit route you don't know, what is your next step?",
+    "What ideas do you have for hosting community events or engagement activities?",
+    "How much time can you dedicate to the Public Relations team per week?",
+    "Is there anything else you'd like us to know about you before we conclude?"
+];
+
+// Transit: PCA Questions
+const PCA_QUESTIONS = [
+    "What is your Discord Tag and Age?",
+    "What time zone are you located in?",
+    "Why are you interested in becoming a People & Culture Associate?",
+    "How would you handle a report of harassment within the staff team?",
+    "Scenario: Two staff members are arguing publicly. How do you step in?",
+    "What strategies would you use to boost morale among the server's staff and operations team?",
+    "If an operator is feeling overwhelmed by their duties, how would you support them?",
+    "How do you ensure confidentiality when handling sensitive personnel matters?",
+    "How much time can you dedicate to the People & Culture team per week?",
+    "Is there anything else you'd like us to know about you before we conclude?"
+];
+
+// Transit: OA Questions
+const OA_QUESTIONS = [
+    "What is your Discord Tag and Age?",
+    "What time zone are you located in?",
+    "Why do you want to become an Operations Associate?",
+    "What previous experience do you have with transit or operational simulations?",
+    "Scenario: Multiple operators are requesting a route assignment at the same time. How do you prioritize?",
+    "How would you handle an operator who is repeatedly violating the driving/transit guidelines?",
+    "Describe a situation where you had to enforce a complex rule. How did it go?",
+    "What do you believe is the most important aspect of maintaining a realistic transit environment?",
+    "How much time can you dedicate to the Operations team per week?",
+    "Is there anything else you'd like us to know about you before we conclude?"
+];
+
+// Transit: TSV Questions
+const TSV_QUESTIONS = [
+    "What is your Discord Tag and Age?",
+    "What time zone are you located in?",
+    "Why are you applying for Transit Supervisor?",
+    "What leadership qualities do you possess that make you a good fit for this role?",
+    "Scenario: An Operations Associate is struggling to manage a busy transit hub. How do you assist them?",
+    "How would you handle a situation where a major transit event goes wrong and causes community backlash?",
+    "If you notice a flaw in the current transit guidelines, how would you propose fixing it?",
+    "Describe how you would conduct a performance review for a junior operator.",
+    "How much time can you dedicate to being a Transit Supervisor per week?",
+    "Is there anything else you'd like us to know about you before we conclude?"
+];
+
+// Transit: TM Questions
+const TM_QUESTIONS = [
+    "What is your Discord Tag and Age?",
+    "What time zone are you located in?",
+    "Why do you believe you are qualified for the Transit Manager position?",
+    "What is your long-term vision for the operational success of the server?",
+    "Scenario: The server is experiencing a massive influx of new users. How do you scale operations to handle them?",
+    "How would you resolve a major dispute between Supervisors and Operations Associates?",
+    "What metrics would you use to measure the success of the transit team?",
+    "Describe a time you successfully led a team through a significant transition or challenge.",
+    "How much time can you dedicate to being a Transit Manager per week?",
+    "Is there anything else you'd like us to know about you before we conclude?"
+];
+
 export class ApplicationService {
     private client: SkyClient;
 
@@ -111,6 +181,11 @@ export class ApplicationService {
             case 'CONTENT_CREATOR': return CREATOR_QUESTIONS;
             case 'YOUTUBE_BROADCAST': return YOUTUBE_QUESTIONS;
             case 'WEATHER_TEAM': return WEATHER_QUESTIONS;
+            case 'TRANSIT_PRA': return PRA_QUESTIONS;
+            case 'TRANSIT_PCA': return PCA_QUESTIONS;
+            case 'TRANSIT_OA': return OA_QUESTIONS;
+            case 'TRANSIT_TSV': return TSV_QUESTIONS;
+            case 'TRANSIT_TM': return TM_QUESTIONS;
             default: return STAFF_QUESTIONS;
         }
     }
@@ -124,6 +199,11 @@ export class ApplicationService {
             case 'CONTENT_CREATOR': return 'Content Creator';
             case 'YOUTUBE_BROADCAST': return 'YouTube Broadcast Team';
             case 'WEATHER_TEAM': return 'Weather Team';
+            case 'TRANSIT_PRA': return 'Public Relations Associate';
+            case 'TRANSIT_PCA': return 'People & Culture Associate';
+            case 'TRANSIT_OA': return 'Operations Associate';
+            case 'TRANSIT_TSV': return 'Transit Supervisor';
+            case 'TRANSIT_TM': return 'Transit Manager';
             default: return 'Staff';
         }
     }
@@ -255,6 +335,18 @@ export class ApplicationService {
         });
 
         if (!appRecord || appRecord.status !== 'IN_PROGRESS' || appRecord.userId !== message.author.id) {
+            return;
+        }
+
+        if (message.content.toLowerCase() === '!cancelapp') {
+            await this.client.database.prisma.application.update({
+                where: { id: appRecord.id },
+                data: { status: 'CANCELLED' }
+            });
+            await message.reply({ embeds: [EmbedUtils.error('Application Cancelled', 'You have manually cancelled this application. This channel will close shortly.')] }).catch(() => null);
+            setTimeout(async () => {
+                try { await message.channel.delete(); } catch (e) { }
+            }, 5000);
             return;
         }
 
@@ -403,16 +495,23 @@ ${transcriptStr}
         } catch (e) { }
 
         // Post to staff review channel
-        const staffChannelId = '1381685965063721031';
+        const staffChannelId = guild.id === '1466918766490292480' ? '1470074406134087691' : '1381685965063721031';
         try {
             const staffChannel = await guild.channels.fetch(staffChannelId);
             if (staffChannel && staffChannel.isTextBased()) {
                 const passed = gradingResult.includes('[PASS]');
 
                 const resultEmbed = new EmbedBuilder()
-                    .setTitle(`Review Required: ${appRecord.type} Application`)
-                    .setDescription(`**Applicant:** <@${appRecord.userId}>\n**AI Recommendation:** ${gradingResult}\n\n**Note:** This is an AI-assisted recommendation. A Co-founder+ must manually review the transcript and decide. If no action is taken within 48 hours, the AI decision will be executed automatically.`)
-                    .setColor(passed ? '#00ff00' : '#ffaa00')
+                    .setTitle(`📝 Review Required: ${this.getPrettyNameForType(appRecord.type)} Application`)
+                    .setThumbnail(guild.iconURL() || null)
+                    .addFields(
+                        { name: '👤 Applicant', value: `<@${appRecord.userId}>`, inline: true },
+                        { name: '🤖 AI Recommendation', value: passed ? '✅ **__PASS__**' : '❌ **__FAIL__**', inline: true },
+                        { name: '📄 AI Summary', value: gradingResult.substring(0, 1024), inline: false },
+                        { name: '⚠️ Action Required', value: 'This is an AI-assisted baseline recommendation. A senior staff member or above must manually review the transcript and submit a final decision below. If ignored for **48 hours**, the AI decision will automatically execute.', inline: false }
+                    )
+                    .setColor(passed ? '#2ecc71' : '#e74c3c')
+                    .setFooter({ text: 'SkySentinel Recruitment AI' })
                     .setTimestamp();
 
                 const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
@@ -438,6 +537,11 @@ ${transcriptStr}
             case 'CONTENT_CREATOR': return { role: 'content creator', prefix: '[CC]' };
             case 'YOUTUBE_BROADCAST': return { role: 'youtube broadcast team', prefix: '[YT]' };
             case 'WEATHER_TEAM': return { role: 'weather team', prefix: '[WX]' };
+            case 'TRANSIT_PRA': return { role: '1470920278925119751', prefix: '[PRA]' };
+            case 'TRANSIT_PCA': return { role: '1470920525164314880', prefix: '[PCA]' };
+            case 'TRANSIT_OA': return { role: '1477750924217946122', prefix: '[OA]' };
+            case 'TRANSIT_TSV': return { role: '1469808593359470622', prefix: '[TSV]' };
+            case 'TRANSIT_TM': return { role: '1469964848531243081', prefix: '[TM]' };
             default: return { role: 'staff', prefix: '[STAFF]' };
         }
     }
@@ -477,7 +581,7 @@ ${transcriptStr}
         if (passed) {
             try {
                 const { role: targetRoleName, prefix } = this.getRoleAndPrefixForType(app.type);
-                let targetRole = guild.roles.cache.find((r: any) => r.name.toLowerCase() === targetRoleName);
+                let targetRole = guild.roles.cache.get(targetRoleName) || guild.roles.cache.find((r: any) => r.name.toLowerCase() === targetRoleName);
 
                 if (!targetRole && app.type === 'PR') {
                     targetRole = guild.roles.cache.find((r: any) => r.name.toLowerCase() === 'trial staff');
@@ -501,17 +605,33 @@ ${transcriptStr}
                             await applicantMember.setNickname(newName.substring(0, 32)).catch(() => null);
                         }
 
-                        // Log the Pending Staff Join (24 Hour Deadline)
-                        const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
-                        await this.client.database.prisma.pendingStaffJoin.create({
-                            data: {
-                                guildId: guild.id,
-                                userId: app.userId,
-                                roles: JSON.stringify([targetRole.id]),
-                                expiresAt
-                            }
-                        });
-                        this.client.logger.info(`[Auto-Demote] Logged ${app.userId} into PendingStaffJoin. Expires in 24h.`);
+                        // Log the Pending Staff Join (24 Hour Deadline) (Skip if Transit Server)
+                        if (guild.id !== '1466918766490292480') {
+                            const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+                            await this.client.database.prisma.pendingStaffJoin.create({
+                                data: {
+                                    guildId: guild.id,
+                                    userId: app.userId,
+                                    roles: JSON.stringify([targetRole.id]),
+                                    expiresAt
+                                }
+                            });
+                            this.client.logger.info(`[Auto-Demote] Logged ${app.userId} into PendingStaffJoin. Expires in 24h.`);
+                        } else {
+                            try {
+                                const announceChannel = await guild.channels.fetch('1469979181835358290').catch(() => null);
+                                if (announceChannel && announceChannel.isTextBased()) {
+                                    const rankName = this.getPrettyNameForType(app.type);
+                                    let prefix = '[STAFF]';
+                                    const roleInfo = this.getRoleAndPrefixForType(app.type);
+                                    if (typeof roleInfo === 'object') prefix = roleInfo.prefix;
+
+                                    const ansiContent = `\`\`\`ansi\n\u001b[1;36mOfficial Rank Advancement\u001b[0m\n\u001b[0;34mPrevious Rank:\u001b[0m \u001b[1;37mNone (Unranked)\u001b[0m\n\u001b[0;34mNew Rank:\u001b[0m \u001b[1;37m${rankName}\u001b[0m\n\n\u001b[1;36mSystem Update\u001b[0m\n\u001b[0;34mTheir database profile and nickname will automatically reflect their new station: \u001b[0m\u001b[1;37m${prefix}\u001b[0m\n\`\`\``;
+
+                                    await (announceChannel as TextChannel).send({ embeds: [EmbedUtils.success('New Team Member', `Please welcome <@${app.userId}> to the team as a new **${rankName}**!\n\n${ansiContent}`)] });
+                                }
+                            } catch (e) { }
+                        }
                     }
                 }
             } catch (err) { this.client.logger.error('Failed to process auto-promotion or pending log', err); }

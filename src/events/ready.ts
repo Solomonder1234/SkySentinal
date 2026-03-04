@@ -1,5 +1,5 @@
 import { Event } from '../lib/structures/Event';
-import { Events } from 'discord.js';
+import { Events, REST, Routes } from 'discord.js';
 
 export default {
     name: Events.ClientReady,
@@ -9,6 +9,45 @@ export default {
 
         // Initialize Bump Service (Persistence)
         await client.bump.init().catch(err => client.logger.error('[BumpService] Init Error:', err));
+
+        // Global Slash Command & Database Configuration (Existing Servers)
+        if (client.user?.id && process.env.DISCORD_TOKEN) {
+            const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
+            const slashCommands = client.commands
+                .filter(cmd => !cmd.prefixOnly && cmd.description && cmd.description.length > 0)
+                .map(cmd => {
+                    const obj: any = {
+                        name: cmd.name,
+                        description: cmd.description,
+                        options: cmd.options || [],
+                        type: cmd.type
+                    };
+                    if (cmd.defaultMemberPermissions) {
+                        obj.default_member_permissions = cmd.defaultMemberPermissions.toString();
+                    }
+                    return obj;
+                });
+
+            for (const guild of client.guilds.cache.values()) {
+                try {
+                    // Automatically insert database configuration for existing guilds
+                    await client.database.prisma.guildConfig.upsert({
+                        where: { id: guild.id },
+                        update: {},
+                        create: { id: guild.id }
+                    });
+
+                    // Set slash commands per-guild for instant propagation
+                    await rest.put(
+                        Routes.applicationGuildCommands(client.user.id, guild.id),
+                        { body: slashCommands }
+                    );
+                } catch (err: any) {
+                    client.logger.warn(`Failed to configure/sync slash commands for existing guild ${guild.name}: ${err.message}`);
+                }
+            }
+            client.logger.info(`Successfully synchronized configuration and ${slashCommands.length} slash commands across all existing servers.`);
+        }
 
         // Debug Startup Message
         if (process.env.NODE_ENV === 'development') {

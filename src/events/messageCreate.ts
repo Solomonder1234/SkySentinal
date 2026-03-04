@@ -76,7 +76,7 @@ export default {
         }
 
         // AI Moderation (Global)
-        if (config?.aiModeration && client.ai) {
+        if (config?.aiEnabled !== false && config?.aiModeration && client.ai) {
             // Text Toxicity Scan
             const isToxic = await client.ai.analyzeToxicity(message.content);
             if (isToxic) {
@@ -143,7 +143,7 @@ export default {
         const prefix = config?.prefix || '!';
 
         let shouldChat = false;
-        if (client.ai && !message.author.bot && !message.content.startsWith(prefix)) {
+        if (config?.aiEnabled !== false && client.ai && !message.author.bot && !message.content.startsWith(prefix)) {
             // Check 1: Mention
             if (message.mentions.has(client.user!.id)) {
                 shouldChat = true;
@@ -214,8 +214,13 @@ export default {
                             if (!message.member?.permissions.has(PermissionFlagsBits.BanMembers)) {
                                 feedback = formatAIAction("USER BAN INITIATED", { "User ID": targetId }, false, "Lacks BanMembers Permission");
                             } else {
-                                await message.guild?.members.ban(targetId, { reason: args.reason || `AI Moderation by ${message.author.tag}` });
-                                feedback = formatAIAction("USER BAN INITIATED", { "User ID": targetId, "Reason": args.reason || "Not specified" }, true);
+                                const reason = args.reason || `AI Moderation by ${message.author.tag}`;
+                                const member = await message.guild?.members.fetch(targetId).catch(() => null);
+                                if (member) {
+                                    await member.send(`🚨 **Security Alert from ${message.guild?.name}**\nYou have been **Banned** by the Automated Intelligence System.\n**Reason:** ${reason}`).catch(() => { });
+                                }
+                                await message.guild?.members.ban(targetId, { reason });
+                                feedback = formatAIAction("USER BAN INITIATED", { "User ID": targetId, "Reason": reason }, true);
                             }
                         } else if (call.name === 'unban_user') {
                             const targetId = args.userId?.toString().replace(/[<@!>]/g, '') || 'Unknown';
@@ -231,9 +236,11 @@ export default {
                                 feedback = formatAIAction("USER KICK INITIATED", { "User ID": targetId }, false, "Lacks KickMembers Permission");
                             } else {
                                 const member = await message.guild?.members.fetch(targetId).catch(() => null);
+                                const reason = args.reason || `AI Moderation by ${message.author.tag}`;
                                 if (member) {
-                                    await member.kick(args.reason || `AI Moderation by ${message.author.tag}`);
-                                    feedback = formatAIAction("USER KICK INITIATED", { "User ID": targetId, "Reason": args.reason || "Not specified" }, true);
+                                    await member.send(`🚨 **Security Alert from ${message.guild?.name}**\nYou have been **Kicked** by the Automated Intelligence System.\n**Reason:** ${reason}`).catch(() => { });
+                                    await member.kick(reason);
+                                    feedback = formatAIAction("USER KICK INITIATED", { "User ID": targetId, "Reason": reason }, true);
                                 } else {
                                     feedback = formatAIAction("USER KICK INITIATED", { "User ID": targetId }, false, "User not found in server");
                                 }
@@ -244,9 +251,11 @@ export default {
                                 feedback = formatAIAction("USER TIMEOUT INITIATED", { "User ID": targetId }, false, "Lacks ModerateMembers Permission");
                             } else {
                                 const member = await message.guild?.members.fetch(targetId).catch(() => null);
+                                const reason = args.reason || `AI Moderation by ${message.author.tag}`;
                                 if (member) {
-                                    await member.timeout(args.durationMinutes * 60000, args.reason || `AI Moderation by ${message.author.tag}`);
-                                    feedback = formatAIAction("USER TIMEOUT INITIATED", { "User ID": targetId, "Duration": `${args.durationMinutes} Minutes`, "Reason": args.reason || "Not specified" }, true);
+                                    await member.send(`🚨 **Security Alert from ${message.guild?.name}**\nYou have been **Muted (${args.durationMinutes}m)** by the Automated Intelligence System.\n**Reason:** ${reason}`).catch(() => { });
+                                    await member.timeout(args.durationMinutes * 60000, reason);
+                                    feedback = formatAIAction("USER TIMEOUT INITIATED", { "User ID": targetId, "Duration": `${args.durationMinutes} Minutes`, "Reason": reason }, true);
                                 } else {
                                     feedback = formatAIAction("USER TIMEOUT INITIATED", { "User ID": targetId }, false, "User not found in server");
                                 }
@@ -323,16 +332,21 @@ export default {
                             if (!message.member?.permissions.has(PermissionFlagsBits.ModerateMembers)) {
                                 feedback = formatAIAction("FORMAL WARNING INITIATED", { "User ID": targetId }, false, "Lacks ModerateMembers Permission");
                             } else {
+                                const reason = args.reason || `AI Moderation by ${message.author.tag}`;
+                                const member = await message.guild?.members.fetch(targetId).catch(() => null);
+                                if (member) {
+                                    await member.send(`⚠️ **Official Warning from ${message.guild?.name}**\nYou have been formally warned by the Automated Intelligence System.\n**Reason:** ${reason}`).catch(() => { });
+                                }
                                 await client.database.prisma.case.create({
                                     data: {
                                         guildId: message.guild!.id,
                                         targetId: targetId,
-                                        moderatorId: message.author.id,
+                                        moderatorId: client.user!.id,
                                         type: 'WARN',
-                                        reason: args.reason || `AI Moderation by ${message.author.tag}`
+                                        reason: reason
                                     }
                                 });
-                                feedback = formatAIAction("FORMAL WARNING INITIATED", { "User ID": targetId, "Infraction Details": args.reason || "Not specified" }, true);
+                                feedback = formatAIAction("FORMAL WARNING INITIATED", { "User ID": targetId, "Infraction Details": reason }, true);
                             }
                         } else if (call.name === 'dm_user') {
                             const targetId = args.userId?.toString().replace(/[<@!>]/g, '') || 'Unknown';
