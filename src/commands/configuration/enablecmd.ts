@@ -6,6 +6,7 @@ export default {
     name: 'enablecmd',
     description: 'Enables a previously disabled command in this server.',
     category: 'Configuration',
+    prefixOnly: true,
     defaultMemberPermissions: 'Administrator',
     aliases: ['enablecommand'],
     run: async (client, message, args) => {

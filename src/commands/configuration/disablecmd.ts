@@ -6,6 +6,7 @@ export default {
     name: 'disablecmd',
     description: 'Disables a specific command in this server.',
     category: 'Configuration',
+    prefixOnly: true,
     defaultMemberPermissions: 'Administrator',
     aliases: ['disablecommand'],
     run: async (client, message, args) => {

@@ -44,10 +44,17 @@ export default {
         }
 
         if (panelId === 1) {
+            const subteamGifs = [
+                'https://media.giphy.com/media/xT9IgzoKnwFNmISR8I/giphy.gif', // High-tech work
+                'https://media.giphy.com/media/3o7TKSjRrfIPjeiVyM/giphy.gif', // Analytics/Screens
+                'https://media.giphy.com/media/ule4vhQigQB20/giphy.gif'  // Cyber/Network pulse
+            ];
+            const selectedGif = subteamGifs[Math.floor(Math.random() * subteamGifs.length)];
+
             const embed = EmbedUtils.premium(
-                'SkyAlert Network Sub-Team Applications',
-                'We are actively recruiting for our specialized sub-teams! If you possess specific skills and want to contribute to the network, select an option below.\n\n**⚠️ MANDATORY REQUIREMENT: 2FA**\nAll positions require **Two-Factor Authentication (2FA)** to be enabled on your Discord account. You will be required to confirm this before applying.\n\n**⏳ TIME LIMIT**\nOnce you open an application channel, you will have **30 minutes** to complete the application.\n\n**Available Positions:**\n- **Support Team:** Assist users with inquiries and technical issues.\n- **Social Media Team:** Manage and grow our social presence.\n- **Content Creator:** Produce engaging content for the community.\n- **YouTube Broadcast Team:** Moderate and manage live broadcasts.\n- **Weather Team:** Specialized meteorological analysis and alerts.'
-            );
+                'Sub-Team Recruitment Portal',
+                'We are actively recruiting for specialized sub-teams! If you possess specific skills and want to contribute to the network, select an option below.\n\n**REQUIREMENTS**\n🔐 **2FA Authentication** is mandatory.\n⏳ You will have **30 minutes** to complete the interview once started.\n\n**AVAILABLE POSITIONS**\n- **Support Team:** Assist users with inquiries and technical issues.\n- **Social Media Team:** Manage and grow our social presence.\n- **Content Creator:** Produce engaging content for the community.\n- **YouTube Broadcast Team:** Moderate and manage live broadcasts.\n- **Weather Team:** Specialized meteorological analysis and alerts.'
+            ).setImage(selectedGif || null);
 
             const selectMenu = new StringSelectMenuBuilder()
                 .setCustomId('application_select_sub')
@@ -71,10 +78,17 @@ export default {
                 await (interaction as ChatInputCommandInteraction).reply({ embeds: [embed], components: [row] });
             }
         } else if (panelId === 2) {
+            const transitGifs = [
+                'https://media.giphy.com/media/3o7aD2saal6q1858z6/giphy.gif', // Subways/Movement
+                'https://media.giphy.com/media/l0HlHFRbmaZtBRhXG/giphy.gif',  // Night city streak
+                'https://media.giphy.com/media/13HgwGsXF0aiGY/giphy.gif'     // City grids/transit maps
+            ];
+            const selectedTransitGif = transitGifs[Math.floor(Math.random() * transitGifs.length)];
+
             const embed = EmbedUtils.premium(
-                'Transit Server Operations Applications',
-                'We are actively recruiting for our specialized Transit Operations teams! If you possess the required skills, select an option below.\n\n**⚠️ INSTRUCTIONS**\nOnce you open an application channel, you will have **30 minutes** to complete the interview. You can cancel your interview at any time by typing `!cancelapp` in the channel.\n\n**Available Positions:**\n- **Public Relations Associate (PRA):** Manage community relations and partnered events.\n- **People & Culture Associate (P&C-A):** Handle internal staff relations and morale.\n- **Operations Associate (OA):** Manage daily on-the-ground transit operations.\n- **Transit Supervisor (TSV):** Supervise active routes and assist the operations team.\n- **Transit Manager (TM):** High-level administration of the entire transit network.'
-            );
+                'Transit Server Operations Hub',
+                'Join the active Operations network. Ensure you have verified your Roblox account before submitting an application.\n\n**REQUIREMENTS**\n🔐 **2FA Authentication** is mandatory.\n⏳ You will have **30 minutes** to complete the interview once started.\n\n**AVAILABLE POSITIONS**\n- **Transit Supervisor (TSV):** Supervise active routes and assist the operations team.\n- **Transit Moderation (TM):** Enforce server rules and maintain safety on active flights/routes.'
+            ).setImage(selectedTransitGif || null);
 
             const selectMenu = new StringSelectMenuBuilder()
                 .setCustomId('application_select_transit')

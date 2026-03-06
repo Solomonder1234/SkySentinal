@@ -1,5 +1,5 @@
 import { Command } from '../../lib/structures/Command';
-import { ApplicationCommandOptionType, ApplicationCommandType, PermissionFlagsBits, Message, EmbedBuilder, ChatInputCommandInteraction, GuildMember } from 'discord.js';
+import { ApplicationCommandOptionType, ApplicationCommandType, PermissionFlagsBits, Message, EmbedBuilder, ChatInputCommandInteraction, GuildMember, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 import { EmbedUtils } from '../../utils/EmbedUtils';
 
 export default {
@@ -56,6 +56,16 @@ export default {
         }
 
         try {
+            const dmEmbed = EmbedUtils.error(`Kicked from ${interaction.guild?.name}`, `You have been kicked from the server.\n\n**Reason:** ${reason}`);
+            const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+                new ButtonBuilder()
+                    .setCustomId(`appeal_btn_start_${interaction.guild?.id}`)
+                    .setLabel('Submit Formal Appeal')
+                    .setStyle(ButtonStyle.Secondary)
+                    .setEmoji('⚖️')
+            );
+            await user.send({ embeds: [dmEmbed], components: [row] }).catch(() => null);
+
             await member.kick(reason);
             const successEmbed = EmbedUtils.success('User Kicked', `**${user.tag}** has been kicked.\nReason: ${reason}`);
 

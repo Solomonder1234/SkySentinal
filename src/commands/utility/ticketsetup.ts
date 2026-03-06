@@ -16,10 +16,17 @@ export default {
             return interaction.reply({ content: 'Only Administrators can use this command.', ephemeral: true });
         }
 
+        const ticketGifs = [
+            'https://media.giphy.com/media/YQitE4YNQNahy/giphy.gif', // Network nodes/Data
+            'https://media.giphy.com/media/26tn33aiTi1jIGsnu/giphy.gif', // Cyber Terminal
+            'https://media.giphy.com/media/l41YcGT5ShJa0nCM0/giphy.gif' // High tech analysis
+        ];
+        const selectedGif = ticketGifs[Math.floor(Math.random() * ticketGifs.length)];
+
         const embed = EmbedUtils.premium(
-            'Investigations',
-            'To create a ticket use the Create ticket button\n\n🎟️ SkySentinel.xyz - Ticketing without clutter'
-        ).setColor('#2b2d31');
+            'SkySentinel Support Terminal',
+            'Select the corresponding category below to open a direct, private communication channel with the staff network.\n\n**CATEGORIES**\n❓ **Support Request:** General inquiries and assistance.\n⚠️ **Member Report:** Privately report users breaking protocol.\n👔 **HR/Admin:** Highly-sensitive network issues.\n🕵️ **Investigations:** Dedicated intelligence reports.'
+        ).setImage(selectedGif || null);
 
         const selectMenu = new StringSelectMenuBuilder()
             .setCustomId('ticket_select')

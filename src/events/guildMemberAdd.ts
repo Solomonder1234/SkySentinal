@@ -53,7 +53,9 @@ export default {
         // --- END AUTO-ROLE SYNC ---
 
         // Trigger Onboarding
-        await client.onboarding.handleMemberJoin(member);
+        if (member.guild.id !== '1437983121822715946') {
+            await client.onboarding.handleMemberJoin(member);
+        }
 
         await Logger.log(
             member.guild,

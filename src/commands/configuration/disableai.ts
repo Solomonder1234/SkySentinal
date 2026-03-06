@@ -4,10 +4,11 @@ import { EmbedUtils } from '../../utils/EmbedUtils';
 
 export default {
     name: 'disableai',
-    description: 'Universally kills all AI functionality in the server (Chat, Vision Guard, Toxicity Filtering).',
+    description: 'Disables all AI moderation in this server.',
     category: 'Configuration',
+    prefixOnly: true,
     defaultMemberPermissions: 'Administrator',
-    aliases: ['killai'],
+    aliases: ['turnoffai'],
     run: async (client, message, args) => {
         if (!message.guildId) return;
 

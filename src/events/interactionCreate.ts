@@ -1,4 +1,4 @@
-import { Events, Interaction, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, EmbedBuilder, GuildMember, AttachmentBuilder, TextChannel } from 'discord.js';
+import { Events, Interaction, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, EmbedBuilder, GuildMember, AttachmentBuilder, TextChannel, ModalBuilder, TextInputBuilder, TextInputStyle } from 'discord.js';
 import { Event } from '../lib/structures/Event';
 import { PromotionService } from '../lib/services/PromotionService';
 import { JSONDatabase } from '../utils/JSONDatabase';
@@ -70,8 +70,9 @@ export default {
 
                 if (!interaction.guild) return;
 
+                const guildConf = await client.database.prisma.guildConfig.findUnique({ where: { id: interaction.guild.id } });
                 const jsonConf = JSONDatabase.getGuildConfig(interaction.guild.id);
-                const categoryRaw = jsonConf.ticketCategoryId;
+                const categoryRaw = guildConf?.ticketCategoryId || jsonConf.ticketCategoryId || '1470069914382503978';
 
                 const sanitizedUsername = interaction.user.username.replace(/[^a-z0-9]/gi, '').toLowerCase();
                 let channelName = `ticket-${sanitizedUsername}`.substring(0, 100);
@@ -155,8 +156,9 @@ export default {
 
                 if (!interaction.guild) return;
 
+                const guildConf = await client.database.prisma.guildConfig.findUnique({ where: { id: interaction.guild.id } });
                 const jsonConf = JSONDatabase.getGuildConfig(interaction.guild.id);
-                const categoryRaw = jsonConf.ticketCategoryId;
+                const categoryRaw = guildConf?.ticketCategoryId || jsonConf.ticketCategoryId || '1470069914382503978';
 
                 const sanitizedUsername = interaction.user.username.replace(/[^a-z0-9]/gi, '').toLowerCase();
                 const channelName = `ticket-${sanitizedUsername}`.substring(0, 100);
@@ -213,7 +215,7 @@ export default {
                         const ticket = await client.database.prisma.ticket.findFirst({
                             where: { channelId: interaction.channel.id, open: true }
                         });
-                        
+
                         try {
                             const messages = await interaction.channel.messages.fetch({ limit: 100 });
                             const transcriptData = messages.reverse().map((m: any) => `[${m.createdAt.toLocaleString()}] ${m.author.tag}: ${m.content}`).join('\n');
@@ -222,9 +224,9 @@ export default {
 
                             const tChannel = await client.channels.fetch('1470074406134087691').catch(() => null);
                             if (tChannel && tChannel.isTextBased()) {
-                                await (tChannel as TextChannel).send({ 
+                                await (tChannel as TextChannel).send({
                                     content: `Transcript for closed ticket \`#${(interaction.channel as any).name || 'ticket'}\``,
-                                    files: [attach] 
+                                    files: [attach]
                                 });
                             }
                         } catch (e) {
@@ -408,6 +410,126 @@ export default {
                 } else {
                     await interaction.followUp({ content: `❌ ${result.message}`, flags: ['Ephemeral'] });
                 }
+            } else if (interaction.customId.startsWith('appeal_btn_start')) {
+                const parts = interaction.customId.split('_');
+                const guildIdStr = parts[3] || interaction.guild?.id;
+
+                if (!guildIdStr) return interaction.reply({ content: 'Cannot determine server origin. You may need to ask an administrator directly.', ephemeral: true });
+
+                const modal = new ModalBuilder()
+                    .setCustomId(`modal_appeal_${guildIdStr}`)
+                    .setTitle('Formal Infraction Appeal');
+
+                const actionInput = new TextInputBuilder()
+                    .setCustomId('appeal_action')
+                    .setLabel('What action are you appealing?')
+                    .setPlaceholder('Ban, Kick, Warn, or Timeout.')
+                    .setStyle(TextInputStyle.Short)
+                    .setMaxLength(50)
+                    .setRequired(true);
+
+                const staffInput = new TextInputBuilder()
+                    .setCustomId('appeal_staff')
+                    .setLabel('Staff Member Involved')
+                    .setPlaceholder('Username or ID (Leave blank if unknown)')
+                    .setStyle(TextInputStyle.Short)
+                    .setMaxLength(100)
+                    .setRequired(false);
+
+                const dateInput = new TextInputBuilder()
+                    .setCustomId('appeal_date')
+                    .setLabel('Approximate Date of Incident')
+                    .setPlaceholder('e.g., Yesterday, May 4th, 2024')
+                    .setStyle(TextInputStyle.Short)
+                    .setMaxLength(100)
+                    .setRequired(true);
+
+                const reasonInput = new TextInputBuilder()
+                    .setCustomId('appeal_reason')
+                    .setLabel('Why should this be reversed?')
+                    .setPlaceholder('State your case clearly...')
+                    .setStyle(TextInputStyle.Paragraph)
+                    .setMaxLength(1000)
+                    .setRequired(true);
+
+                const proofInput = new TextInputBuilder()
+                    .setCustomId('appeal_proof')
+                    .setLabel('Additional Proof / Links')
+                    .setPlaceholder('Any images or evidence? (Optional)')
+                    .setStyle(TextInputStyle.Paragraph)
+                    .setMaxLength(1000)
+                    .setRequired(false);
+
+                modal.addComponents(
+                    new ActionRowBuilder<TextInputBuilder>().addComponents(actionInput),
+                    new ActionRowBuilder<TextInputBuilder>().addComponents(staffInput),
+                    new ActionRowBuilder<TextInputBuilder>().addComponents(dateInput),
+                    new ActionRowBuilder<TextInputBuilder>().addComponents(reasonInput),
+                    new ActionRowBuilder<TextInputBuilder>().addComponents(proofInput)
+                );
+
+                await interaction.showModal(modal);
+            }
+        } else if (interaction.isModalSubmit()) {
+            if (interaction.customId.startsWith('modal_appeal_')) {
+                await interaction.deferReply({ flags: ['Ephemeral'] as any });
+                const guildIdStr = interaction.customId.split('_')[2];
+                const guild = client.guilds.cache.get(guildIdStr);
+
+                if (!guild) return interaction.editReply({ content: 'Server not found or bot is no longer in this server.' });
+
+                const actionMsg = interaction.fields.getTextInputValue('appeal_action');
+                const staffMsg = interaction.fields.getTextInputValue('appeal_staff') || 'Unknown/Not Provided';
+                const dateMsg = interaction.fields.getTextInputValue('appeal_date');
+                const reasonMsg = interaction.fields.getTextInputValue('appeal_reason');
+                const proofMsg = interaction.fields.getTextInputValue('appeal_proof') || 'None provided';
+
+                let modmailCategory = guild.channels.cache.find((c: any) => c.name === 'Modmail' && c.type === ChannelType.GuildCategory);
+                const targetChannelName = `mm-${interaction.user.id}`;
+                let targetChannel = guild.channels.cache.find((c: any) => c.name === targetChannelName && c.parentId === modmailCategory?.id) as any;
+
+                if (!targetChannel) {
+                    const overwrites: any[] = [
+                        { id: guild.id, deny: ['ViewChannel'] as any },
+                        { id: client.user!.id, allow: ['ViewChannel', 'SendMessages', 'ManageChannels'] as any }
+                    ];
+
+                    const guildConf = await client.database.prisma.guildConfig.findUnique({ where: { id: guild.id } });
+                    if (guildConf?.modRoleId) overwrites.push({ id: guildConf.modRoleId, allow: ['ViewChannel', 'SendMessages', 'ReadMessageHistory'] });
+                    if (guildConf?.adminRoleId) overwrites.push({ id: guildConf.adminRoleId, allow: ['ViewChannel', 'SendMessages', 'ReadMessageHistory'] });
+
+                    if (!modmailCategory) {
+                        try {
+                            modmailCategory = await guild.channels.create({
+                                name: 'Modmail',
+                                type: ChannelType.GuildCategory,
+                                permissionOverwrites: overwrites
+                            });
+                        } catch (e) {
+                            // Ignore if we can't create category
+                        }
+                    }
+
+                    try {
+                        targetChannel = await guild.channels.create({
+                            name: targetChannelName,
+                            type: ChannelType.GuildText,
+                            topic: `Modmail / Appeal for ${interaction.user.tag} (${interaction.user.id})`,
+                            parent: modmailCategory?.id || null,
+                            permissionOverwrites: overwrites
+                        });
+                    } catch (e) {
+                        return interaction.editReply({ content: 'Failed to securely transmit your appeal. Staff may have locked down the system.' });
+                    }
+                }
+
+                const appealEmbed = EmbedUtils.premium(
+                    'Formal Infraction Appeal',
+                    `**User:** <@${interaction.user.id}> (\`${interaction.user.id}\`)\n**Action Appealed:** ${actionMsg}\n**Date of Incident:** ${dateMsg}\n**Issuing Staff Member:** ${staffMsg}\n\n**Reason / Statement:**\n${reasonMsg}\n\n**Additional Proof/Context:**\n${proofMsg}`
+                ).setColor(0xffaa00).setTimestamp();
+
+                await targetChannel.send({ embeds: [appealEmbed] });
+                await interaction.editReply({ content: '✅ Your appeal has been securely transmitted to the Senior Enforcement Branch!' });
             }
         }
     },

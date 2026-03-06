@@ -1,5 +1,5 @@
 import { Command } from '../../lib/structures/Command';
-import { ApplicationCommandOptionType, ApplicationCommandType, PermissionFlagsBits, Message, ChatInputCommandInteraction, GuildMember } from 'discord.js';
+import { ApplicationCommandOptionType, ApplicationCommandType, PermissionFlagsBits, Message, ChatInputCommandInteraction, GuildMember, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 import { EmbedUtils } from '../../utils/EmbedUtils';
 
 export default {
@@ -77,8 +77,15 @@ export default {
 
             // Dm user
             try {
-                const dmEmbed = EmbedUtils.error('You were warned', `Server: ${interaction.guild.name}\nReason: ${reason}`);
-                await user.send({ embeds: [dmEmbed] });
+                const dmEmbed = EmbedUtils.error(`Official Warning from ${interaction.guild.name}`, `You have received a formal warning.\n\n**Reason:** ${reason}`);
+                const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+                    new ButtonBuilder()
+                        .setCustomId(`appeal_btn_start_${interaction.guild?.id}`)
+                        .setLabel('Submit Formal Appeal')
+                        .setStyle(ButtonStyle.Secondary)
+                        .setEmoji('⚖️')
+                );
+                await user.send({ embeds: [dmEmbed], components: [row] });
             } catch (err) {
                 // Ignore if DMs are closed
             }

@@ -4,10 +4,11 @@ import { EmbedUtils } from '../../utils/EmbedUtils';
 
 export default {
     name: 'enableai',
-    description: 'Restores all AI functionality in the server (Chat, Vision Guard, Toxicity Filtering).',
+    description: 'Enables all AI moderation features in this server.',
     category: 'Configuration',
+    prefixOnly: true,
     defaultMemberPermissions: 'Administrator',
-    aliases: ['startai'],
+    aliases: ['turnonai'],
     run: async (client, message, args) => {
         if (!message.guildId) return;
 

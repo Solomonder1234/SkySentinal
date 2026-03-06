@@ -1,5 +1,5 @@
 import { Command } from '../../lib/structures/Command';
-import { ApplicationCommandOptionType, ApplicationCommandType, PermissionFlagsBits, Message, ChatInputCommandInteraction, GuildMember } from 'discord.js';
+import { ApplicationCommandOptionType, ApplicationCommandType, PermissionFlagsBits, Message, ChatInputCommandInteraction, GuildMember, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 import { EmbedUtils } from '../../utils/EmbedUtils';
 
 export default {
@@ -58,6 +58,17 @@ export default {
         }
 
         try {
+            // Attempt to DM the user the appeal button before banning
+            const dmEmbed = EmbedUtils.error(`Banned from ${interaction.guild?.name}`, `You have been permanently banned from the server.\n\n**Reason:** ${reason}`);
+            const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+                new ButtonBuilder()
+                    .setCustomId(`appeal_btn_start_${interaction.guild?.id}`)
+                    .setLabel('Submit Formal Appeal')
+                    .setStyle(ButtonStyle.Secondary)
+                    .setEmoji('⚖️')
+            );
+            await user.send({ embeds: [dmEmbed], components: [row] }).catch(() => null);
+
             await interaction.guild?.members.ban(user, { reason });
             const successEmbed = EmbedUtils.success('User Banned', `**${user.tag}** has been banned.\nReason: ${reason}`);
 

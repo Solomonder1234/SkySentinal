@@ -1,5 +1,5 @@
 import { Command } from '../../lib/structures/Command';
-import { ApplicationCommandOptionType, ApplicationCommandType, PermissionFlagsBits, Message, ChatInputCommandInteraction, GuildMember } from 'discord.js';
+import { ApplicationCommandOptionType, ApplicationCommandType, PermissionFlagsBits, Message, ChatInputCommandInteraction, GuildMember, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 import { EmbedUtils } from '../../utils/EmbedUtils';
 
 function parseDuration(duration: string): number | null {
@@ -92,6 +92,16 @@ export default {
         }
 
         try {
+            const dmEmbed = EmbedUtils.error(`Timed out in ${interaction.guild?.name}`, `You have been timed out for ${durationStr}.\n\n**Reason:** ${reason}`);
+            const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+                new ButtonBuilder()
+                    .setCustomId(`appeal_btn_start_${interaction.guild?.id}`)
+                    .setLabel('Submit Formal Appeal')
+                    .setStyle(ButtonStyle.Secondary)
+                    .setEmoji('⚖️')
+            );
+            await user.send({ embeds: [dmEmbed], components: [row] }).catch(() => null);
+
             await member.timeout(durationMs, reason);
             const successEmbed = EmbedUtils.success('User Timed Out', `**${user.tag}** has been timed out for ${durationStr}.\nReason: ${reason}`);
 
