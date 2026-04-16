@@ -4,6 +4,7 @@ import { ApplicationCommandOptionType, ApplicationCommandType, PermissionFlagsBi
 export default {
     name: 'mock',
     description: 'CoNvErT tExT tO mOcKiNg CaSe.',
+    prefixOnly: true,
     category: 'Troll',
     type: ApplicationCommandType.ChatInput,
     defaultMemberPermissions: PermissionFlagsBits.SendMessages,

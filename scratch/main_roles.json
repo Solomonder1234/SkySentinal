@@ -1,0 +1,763 @@
+[dotenv@17.3.1] injecting env (5) from .env -- tip: 🔐 prevent committing .env to code: https://dotenvx.com/precommit
+[
+  {
+    "name": "Snow Squall Warning",
+    "id": "1366113034141044786"
+  },
+  {
+    "name": "Discohook Utils",
+    "id": "1367478708134215746"
+  },
+  {
+    "name": "→ Gaming Roles ←",
+    "id": "1366118478972583947"
+  },
+  {
+    "name": "MLB Fan",
+    "id": "1366115311740256336"
+  },
+  {
+    "name": "[HOS] | Head of Staff",
+    "id": "1366096466010968177"
+  },
+  {
+    "name": "LOA",
+    "id": "1488925038890455050"
+  },
+  {
+    "name": "→ DM Status ←",
+    "id": "1366111974529826857"
+  },
+  {
+    "name": "NHL Fan",
+    "id": "1366115373442662474"
+  },
+  {
+    "name": "[SRM] | Sr. Moderator",
+    "id": "1366097955676749844"
+  },
+  {
+    "name": "Tropical Storm Warning",
+    "id": "1366113489525014629"
+  },
+  {
+    "name": "Midwest",
+    "id": "1366117957234856087"
+  },
+  {
+    "name": "EAS Geek",
+    "id": "1366115470310375434"
+  },
+  {
+    "name": "Statbot",
+    "id": "1380184546472886365"
+  },
+  {
+    "name": "Disboard | Bot",
+    "id": "1299929089611923599"
+  },
+  {
+    "name": "Alaska",
+    "id": "1366118279474581656"
+  },
+  {
+    "name": "Studying Meteorology",
+    "id": "1366116485197598721"
+  },
+  {
+    "name": "TweetShift",
+    "id": "1370459241894248502"
+  },
+  {
+    "name": "TV Fan",
+    "id": "1366115769146150973"
+  },
+  {
+    "name": "→ Welcome Team ←",
+    "id": "1275842393400152075"
+  },
+  {
+    "name": "[EB] | Executive Board",
+    "id": "1478418323266994277"
+  },
+  {
+    "name": "Ham Radio Operator",
+    "id": "1366115511082942594"
+  },
+  {
+    "name": "[PRA] | Public Relations Associate",
+    "id": "1474509849218781204"
+  },
+  {
+    "name": "Member",
+    "id": "1370396828490666135"
+  },
+  {
+    "name": "Broadcast Junkie",
+    "id": "1366115555681243198"
+  },
+  {
+    "name": "Koala of the Week",
+    "id": "1382138083813883914"
+  },
+  {
+    "name": "→ Bots ←",
+    "id": "1366077568079626241"
+  },
+  {
+    "name": "[F] | Founder",
+    "id": "1275838079718002829"
+  },
+  {
+    "name": "Furry",
+    "id": "1492217212172239088"
+  },
+  {
+    "name": "Southwest",
+    "id": "1366118238483906661"
+  },
+  {
+    "name": "Verified",
+    "id": "1380560101248598137"
+  },
+  {
+    "name": "Server Booster",
+    "id": "1316921716941000788"
+  },
+  {
+    "name": "NBA Fan",
+    "id": "1366115411195592704"
+  },
+  {
+    "name": "[CF] | Co-Founder",
+    "id": "1282527079828815944"
+  },
+  {
+    "name": "Server Promoter",
+    "id": "1366108357299273869"
+  },
+  {
+    "name": "Unverified",
+    "id": "1371788186061242420"
+  },
+  {
+    "name": "Tornado Possible",
+    "id": "1366112961244168262"
+  },
+  {
+    "name": "SkyAlert Network | Weather Enthusiast",
+    "id": "1374105323270569984"
+  },
+  {
+    "name": "→ Weather Team ←",
+    "id": "1366108564942491658"
+  },
+  {
+    "name": "→ Engagement Team ←",
+    "id": "1366107611560284230"
+  },
+  {
+    "name": "[FS] | Former Staff",
+    "id": "1366441996796952657"
+  },
+  {
+    "name": "Bots",
+    "id": "1366127100737753098"
+  },
+  {
+    "name": "Shoutout Quene",
+    "id": "1379877620744982559"
+  },
+  {
+    "name": "Unverified",
+    "id": "1371788188087226428"
+  },
+  {
+    "name": "DM Closed",
+    "id": "1366112214943137885"
+  },
+  {
+    "name": "North Central States",
+    "id": "1366118057210023976"
+  },
+  {
+    "name": ".",
+    "id": "1366091602040459435"
+  },
+  {
+    "name": "test",
+    "id": "1387194847500435619"
+  },
+  {
+    "name": "SkyAlert Network | Storm Chaser",
+    "id": "1374104960832245853"
+  },
+  {
+    "name": "Canada Eh",
+    "id": "1366118357140770857"
+  },
+  {
+    "name": "Music Fan",
+    "id": "1366115953590665236"
+  },
+  {
+    "name": "Skywarn Spotter",
+    "id": "1366116439773417553"
+  },
+  {
+    "name": "Member of The Week",
+    "id": "1382133996053467249"
+  },
+  {
+    "name": "Staff of the Week",
+    "id": "1382134588897234994"
+  },
+  {
+    "name": "PDS Tornado Warning",
+    "id": "1366112827827290162"
+  },
+  {
+    "name": "Staffing - Career & Staff Oversight",
+    "id": "1387234868924256448"
+  },
+  {
+    "name": "NWS Bot | Bot",
+    "id": "1367199782673580091"
+  },
+  {
+    "name": "Staffing - People & Culture",
+    "id": "1478414354138534010"
+  },
+  {
+    "name": "Mobile Gamer",
+    "id": "1366118845609148566"
+  },
+  {
+    "name": "Tornado Warning",
+    "id": "1366112779484004412"
+  },
+  {
+    "name": "Events/Gamenight Ping!",
+    "id": "1371599976777646180"
+  },
+  {
+    "name": "→ Social Media Team ←",
+    "id": "1366108069238411354"
+  },
+  {
+    "name": "Inactive",
+    "id": "1394851631870513252"
+  },
+  {
+    "name": "Nintendo",
+    "id": "1366118748469071936"
+  },
+  {
+    "name": "Severe WX Enthusiast",
+    "id": "1366116064840257536"
+  },
+  {
+    "name": "Northwest",
+    "id": "1366118197765341285"
+  },
+  {
+    "name": "🎂 Birthday 🎂",
+    "id": "1376961842479366290"
+  },
+  {
+    "name": "→ Staff ←",
+    "id": "1366074712412917901"
+  },
+  {
+    "name": "Nocturne",
+    "id": "1488586057564950844"
+  },
+  {
+    "name": "13-15",
+    "id": "1366114555041677413"
+  },
+  {
+    "name": "Astronomy Geek",
+    "id": "1366116588482203800"
+  },
+  {
+    "name": "21-24",
+    "id": "1366114734163886193"
+  },
+  {
+    "name": "Hawaii",
+    "id": "1366118321489051780"
+  },
+  {
+    "name": "SKYWARN Storm Spotter",
+    "id": "1379873723061895168"
+  },
+  {
+    "name": "Bump Reminder",
+    "id": "1366111905533661288"
+  },
+  {
+    "name": "Dyno",
+    "id": "1391608681782575229"
+  },
+  {
+    "name": "Flood Alert",
+    "id": "1366113235560038430"
+  },
+  {
+    "name": "Aurora Borealis Alert",
+    "id": "1366113832413560906"
+  },
+  {
+    "name": "YouTube Moderator",
+    "id": "1366109794842312836"
+  },
+  {
+    "name": "On-Shift",
+    "id": "1488572588321018137"
+  },
+  {
+    "name": "PDS Flood Emergency",
+    "id": "1366113338144063558"
+  },
+  {
+    "name": "Partner",
+    "id": "1367479659562012723"
+  },
+  {
+    "name": "Southeast",
+    "id": "1366118007532949585"
+  },
+  {
+    "name": "Meteor Shower Alert",
+    "id": "1366114295838015620"
+  },
+  {
+    "name": "OG's",
+    "id": "1447357135745978572"
+  },
+  {
+    "name": "SkyAlert Network | Co Owner",
+    "id": "1374102711322153012"
+  },
+  {
+    "name": "Blizzard Alert",
+    "id": "1366113100226625726"
+  },
+  {
+    "name": "[PRM] | Public Relations Manager",
+    "id": "1474510020350578778"
+  },
+  {
+    "name": "NFL Fan",
+    "id": "1366115259752120493"
+  },
+  {
+    "name": "South Central States",
+    "id": "1366118119856148540"
+  },
+  {
+    "name": "YouTube Uploads",
+    "id": "1366111779050229821"
+  },
+  {
+    "name": "Xbox",
+    "id": "1366118660531552356"
+  },
+  {
+    "name": "[TS] | Trial Staff",
+    "id": "1366099517740552265"
+  },
+  {
+    "name": "Server Update",
+    "id": "1366111658363191347"
+  },
+  {
+    "name": "Server Creator",
+    "id": "1492277815276470272"
+  },
+  {
+    "name": "Tropical Update",
+    "id": "1366113392666087656"
+  },
+  {
+    "name": "Forecaster",
+    "id": "1366116544584876162"
+  },
+  {
+    "name": "SkySentinal",
+    "id": "1473864154052952166"
+  },
+  {
+    "name": "Birthday Bot",
+    "id": "1376960081274339424"
+  },
+  {
+    "name": "Railfan",
+    "id": "1366114922584608859"
+  },
+  {
+    "name": "Chat Revive",
+    "id": "1366111824256172102"
+  },
+  {
+    "name": "Winter Storm Warning",
+    "id": "1366113172632637460"
+  },
+  {
+    "name": "Storm Chaser",
+    "id": "1366115997064364193"
+  },
+  {
+    "name": "Chat Reviver",
+    "id": "1366107925428441159"
+  },
+  {
+    "name": "noah's personal discord helper",
+    "id": "1394079225350193323"
+  },
+  {
+    "name": "Unverified",
+    "id": "1371788186950434818"
+  },
+  {
+    "name": "Musician",
+    "id": "1366115862506901514"
+  },
+  {
+    "name": "25+",
+    "id": "1366114781349544026"
+  },
+  {
+    "name": "YouTube Stats | Bot",
+    "id": "1355407510915256455"
+  },
+  {
+    "name": "YAGPDB.xyz",
+    "id": "1377818145825488979"
+  },
+  {
+    "name": "Hurricane Watch",
+    "id": "1366113543556038708"
+  },
+  {
+    "name": "Major Earthquake Alert",
+    "id": "1366113643766354061"
+  },
+  {
+    "name": "Tornado Emergency",
+    "id": "1366112902838485093"
+  },
+  {
+    "name": "SlyAlert Network | Server Booster",
+    "id": "1374105451247042590"
+  },
+  {
+    "name": "TTS Bot",
+    "id": "1491439684675571904"
+  },
+  {
+    "name": "Climate Activist",
+    "id": "1366116655213838336"
+  },
+  {
+    "name": "→ Weather Pings ←",
+    "id": "1366112443264270518"
+  },
+  {
+    "name": "PC Gamer",
+    "id": "1366118783944622112"
+  },
+  {
+    "name": "Chief Meteorologist",
+    "id": "1366108872628113588"
+  },
+  {
+    "name": "Server Guide",
+    "id": "1366107493029380148"
+  },
+  {
+    "name": "azkaban death trial row",
+    "id": "1492226275320795378"
+  },
+  {
+    "name": "YouTube | Bot",
+    "id": "1277840160146587683"
+  },
+  {
+    "name": "YouTube Broadcast Team",
+    "id": "1366109627250507848"
+  },
+  {
+    "name": "Staffing - Public Relations Manager",
+    "id": "1473861192941568271"
+  },
+  {
+    "name": "Staff Blacklist",
+    "id": "1489082590139912303"
+  },
+  {
+    "name": "Ticket Tool | Bot",
+    "id": "1365720687125331989"
+  },
+  {
+    "name": "[A] | Admin",
+    "id": "1275838130498568334"
+  },
+  {
+    "name": "→ Server Ping Roles ←",
+    "id": "1366111346046931096"
+  },
+  {
+    "name": "SkyAlert Meteorologist",
+    "id": "1366108960976797888"
+  },
+  {
+    "name": "SkyAlert Network | TV Meteorologist",
+    "id": "1374104702681219195"
+  },
+  {
+    "name": "→ Astronomy Event ←",
+    "id": "1366113769515913296"
+  },
+  {
+    "name": "Certified Staff",
+    "id": "1380556212118229144"
+  },
+  {
+    "name": "Premium Members",
+    "id": "1379873719748395252"
+  },
+  {
+    "name": "GRLevel",
+    "id": "1366117548919095447"
+  },
+  {
+    "name": "IEM Alerter | Bot",
+    "id": "1366089471304667250"
+  },
+  {
+    "name": "Server Stats | Bot",
+    "id": "1356722386400968947"
+  },
+  {
+    "name": "Movie Buff",
+    "id": "1366115648039813261"
+  },
+  {
+    "name": "RadarScope",
+    "id": "1366116843521183855"
+  },
+  {
+    "name": "Announcements",
+    "id": "1366111577677238322"
+  },
+  {
+    "name": "Earthquake Alert",
+    "id": "1402424913914101934"
+  },
+  {
+    "name": "Suspension",
+    "id": "1373474789653741649"
+  },
+  {
+    "name": "[MOD] | Moderator",
+    "id": "1275838245468639385"
+  },
+  {
+    "name": "Hurricane Warning",
+    "id": "1366113595976319017"
+  },
+  {
+    "name": "Retro Gamer",
+    "id": "1366118882879995985"
+  },
+  {
+    "name": "Flood Emergency",
+    "id": "1366113282787774625"
+  },
+  {
+    "name": "Staffing - Weather Finders",
+    "id": "1478418058178723984"
+  },
+  {
+    "name": "Welcome Committee",
+    "id": "1366107304071663626"
+  },
+  {
+    "name": "Playstation",
+    "id": "1366180726902358169"
+  },
+  {
+    "name": "16-18",
+    "id": "1366114617256050698"
+  },
+  {
+    "name": "Shiftly",
+    "id": "1488571983351382186"
+  },
+  {
+    "name": "MyRadar",
+    "id": "1366117596512129224"
+  },
+  {
+    "name": "→ Radar Software ←",
+    "id": "1366116809949970474"
+  },
+  {
+    "name": "International",
+    "id": "1366118416775381204"
+  },
+  {
+    "name": "Weather Model Team",
+    "id": "1366109406022074428"
+  },
+  {
+    "name": "PT",
+    "id": "1477159649265319956"
+  },
+  {
+    "name": "Severe Weather Alert",
+    "id": "1366112605843886209"
+  },
+  {
+    "name": "Sports Fan",
+    "id": "1366115217225941043"
+  },
+  {
+    "name": "UnbelievaBoat | Server Owner",
+    "id": "1374100405293813911"
+  },
+  {
+    "name": "Suspended",
+    "id": "1397000186584109117"
+  },
+  {
+    "name": "Muted",
+    "id": "1489057954144714924"
+  },
+  {
+    "name": "SkyAlert Network | SPC Worker",
+    "id": "1374104403073695806"
+  },
+  {
+    "name": "Weather Alert Staff",
+    "id": "1366109157840916491"
+  },
+  {
+    "name": "Staff of the Day",
+    "id": "1382136745847554241"
+  },
+  {
+    "name": "[ST] | Support Team",
+    "id": "1366462474236334130"
+  },
+  {
+    "name": "→ Profile Roles ←",
+    "id": "1366114866934317156"
+  },
+  {
+    "name": "Northeast",
+    "id": "1366117738837184663"
+  },
+  {
+    "name": "→ YouTube Team ←",
+    "id": "1366109521256255621"
+  },
+  {
+    "name": "→ Random Roles ←",
+    "id": "1366119396782637238"
+  },
+  {
+    "name": "DM Open",
+    "id": "1366112177219702794"
+  },
+  {
+    "name": "FT",
+    "id": "1477159814449594483"
+  },
+  {
+    "name": "Off-Shift",
+    "id": "1488572624295428248"
+  },
+  {
+    "name": "Content Creator",
+    "id": "1366108177804034068"
+  },
+  {
+    "name": "Social Media Manager",
+    "id": "1366108281046565016"
+  },
+  {
+    "name": "Stupid",
+    "id": "1492226372192436224"
+  },
+  {
+    "name": "→ Regional Roles ←",
+    "id": "1366117632276697088"
+  },
+  {
+    "name": "→ Age Roles ←",
+    "id": "1366114353396318309"
+  },
+  {
+    "name": "RadarOmega",
+    "id": "1366117501670264852"
+  },
+  {
+    "name": "Fire Buff",
+    "id": "1366115686698586212"
+  },
+  {
+    "name": "19-20",
+    "id": "1366114675711934464"
+  },
+  {
+    "name": "Puerto Rico",
+    "id": "1370409521058414734"
+  },
+  {
+    "name": "Event Planner",
+    "id": "1366107833359269888"
+  },
+  {
+    "name": "@everyone",
+    "id": "1275838044531855433"
+  },
+  {
+    "name": "cornball",
+    "id": "1489391543495168150"
+  },
+  {
+    "name": "Car Enthusiast",
+    "id": "1366116707349037106"
+  },
+  {
+    "name": "Ralph",
+    "id": "1394127037001629706"
+  },
+  {
+    "name": "Gamer",
+    "id": "1366118508236116039"
+  },
+  {
+    "name": "Staff",
+    "id": "1276037406696538112"
+  },
+  {
+    "name": "Police Buff",
+    "id": "1366115728067002429"
+  },
+  {
+    "name": "SPC Chaser",
+    "id": "1366116326313300129"
+  },
+  {
+    "name": "Tupperbox",
+    "id": "1492031513880166583"
+  },
+  {
+    "name": "[SRA] | Sr Admin",
+    "id": "1366077117376364625"
+  }
+]

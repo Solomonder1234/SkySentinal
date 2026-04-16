@@ -5,7 +5,7 @@ import { SkyClient } from '../structures/SkyClient';
 
 // PR Questions
 const PR_QUESTIONS = [
-    "What is your Discord Tag and Age?",
+    "What is your Discord Username and Age?",
     "What time zone are you located in?",
     "Why do you want to join the Public Relations team here?",
     "What experience do you have with community engagement or PR roles?",
@@ -21,7 +21,7 @@ const PR_QUESTIONS = [
 
 // Trial Staff Questions
 const STAFF_QUESTIONS = [
-    "What is your Discord Tag and Age?",
+    "What is your Discord Username and Age?",
     "What time zone are you located in?",
     "What previous moderation experience do you have?",
     "Why do you want to become a Trial Staff member?",
@@ -40,7 +40,7 @@ const STAFF_QUESTIONS = [
 
 // Support Team Questions
 const SUPPORT_QUESTIONS = [
-    "What is your Discord Tag and Age?",
+    "What is your Discord Username and Age?",
     "What time zone are you located in?",
     "Have you ever worked in a support or ticking environment before?",
     "Scenario: A user opens a ticket complaining that they were unfairly banned. How do you respond?",
@@ -51,7 +51,7 @@ const SUPPORT_QUESTIONS = [
 
 // Social Media Team Questions
 const MEDIA_QUESTIONS = [
-    "What is your Discord Tag and Age?",
+    "What is your Discord Username and Age?",
     "Which social platforms are you most active on (Twitter, TikTok, Instagram)?",
     "Do you have previous experience managing social media accounts for a community or brand?",
     "What strategies would you use to increase engagement on a freshly posted tweet or video?",
@@ -62,7 +62,7 @@ const MEDIA_QUESTIONS = [
 
 // Content Creator Questions
 const CREATOR_QUESTIONS = [
-    "What is your Discord Tag and Age?",
+    "What is your Discord Username and Age?",
     "Please link your primary content platforms (YouTube, Twitch, TikTok, etc.).",
     "What type of content do you primarily create?",
     "How often do you upload or stream?",
@@ -73,7 +73,7 @@ const CREATOR_QUESTIONS = [
 
 // YouTube Broadcast Team
 const YOUTUBE_QUESTIONS = [
-    "What is your Discord Tag and Age?",
+    "What is your Discord Username and Age?",
     "Do you have experience moderating YouTube live chats or managing streams?",
     "Scenario: The live chat is being spammed with scam links. What are your immediate actions?",
     "How do you handle users who are constantly circumventing Nightbot filters?",
@@ -83,7 +83,7 @@ const YOUTUBE_QUESTIONS = [
 
 // Weather Team Questions
 const WEATHER_QUESTIONS = [
-    "What is your Discord Tag and Age?",
+    "What is your Discord Username and Age?",
     "What is your current level of meteorological knowledge? (Hobbyist, Student, Professional)",
     "Describe what a CAPE value indicates and why it's important for severe weather.",
     "Scenario: A Tornado Warning is issued for a major city. Walk me through your process of analyzing the radar and posting an alert.",
@@ -94,7 +94,7 @@ const WEATHER_QUESTIONS = [
 
 // Transit: PRA Questions
 const PRA_QUESTIONS = [
-    "What is your Discord Tag and Age?",
+    "What is your Discord Username and Age?",
     "What time zone are you located in?",
     "Why do you want to join the Public Relations team for the Transit Server?",
     "Scenario: A user is complaining in general chat about transit delays. How do you respond?",
@@ -108,7 +108,7 @@ const PRA_QUESTIONS = [
 
 // Transit: PCA Questions
 const PCA_QUESTIONS = [
-    "What is your Discord Tag and Age?",
+    "What is your Discord Username and Age?",
     "What time zone are you located in?",
     "Why are you interested in becoming a People & Culture Associate?",
     "How would you handle a report of harassment within the staff team?",
@@ -122,7 +122,7 @@ const PCA_QUESTIONS = [
 
 // Transit: OA Questions
 const OA_QUESTIONS = [
-    "What is your Discord Tag and Age?",
+    "What is your Discord Username and Age?",
     "What time zone are you located in?",
     "Why do you want to become an Operations Associate?",
     "What previous experience do you have with transit or operational simulations?",
@@ -136,7 +136,7 @@ const OA_QUESTIONS = [
 
 // Transit: TSV Questions
 const TSV_QUESTIONS = [
-    "What is your Discord Tag and Age?",
+    "What is your Discord Username and Age?",
     "What time zone are you located in?",
     "Why are you applying for Transit Supervisor?",
     "What leadership qualities do you possess that make you a good fit for this role?",
@@ -150,7 +150,7 @@ const TSV_QUESTIONS = [
 
 // Transit: TM Questions
 const TM_QUESTIONS = [
-    "What is your Discord Tag and Age?",
+    "What is your Discord Username and Age?",
     "What time zone are you located in?",
     "Why do you believe you are qualified for the Transit Manager position?",
     "What is your long-term vision for the operational success of the server?",

@@ -1,40 +1,26 @@
 import { Command } from '../../lib/structures/Command';
-import { ApplicationCommandType, Message } from 'discord.js';
+import { ApplicationCommandType } from 'discord.js';
 import { EmbedUtils } from '../../utils/EmbedUtils';
-
-const DAILY_COOLDOWN = 24 * 60 * 60 * 1000; // 24 Hours
-const DAILY_AMOUNT = 500n;
 
 export default {
     name: 'daily',
-    description: 'Claim your daily reward.',
+    description: 'Claim your daily reward of $500.',
     category: 'Economy',
     type: ApplicationCommandType.ChatInput,
     run: async (client, interaction) => {
-        const userId = interaction instanceof Message ? interaction.author.id : interaction.user.id;
-        const profile = await client.economy.getUserProfile(userId);
+        const userId = interaction.member?.user.id!;
+        const result = await client.economy.claimDaily(userId);
 
-        const now = new Date();
-        if (profile.lastDaily && now.getTime() - profile.lastDaily.getTime() < DAILY_COOLDOWN) {
-            const timeLeft = DAILY_COOLDOWN - (now.getTime() - profile.lastDaily.getTime());
-            const hours = Math.floor(timeLeft / 3600000);
-            const minutes = Math.ceil((timeLeft % 3600000) / 60000);
-            return interaction.reply({
-                embeds: [EmbedUtils.error('Already Claimed', `You can claim your daily reward in **${hours}h ${minutes}m**.`)]
+        if (!result.success) {
+            const h = Math.floor(result.timeLeft!);
+            const m = Math.floor((result.timeLeft! % 1) * 60);
+            return interaction.reply({ 
+                embeds: [EmbedUtils.error('Patience!', `You have already claimed your daily reward. Come back in **${h}h ${m}m**.`)] 
             });
         }
 
-        // Update DB
-        await client.database.prisma.userProfile.update({
-            where: { id: userId },
-            data: {
-                balance: { increment: DAILY_AMOUNT },
-                lastDaily: now
-            }
-        });
-
-        return interaction.reply({
-            embeds: [EmbedUtils.success('Daily Reward', `You claimed your daily reward of **$${DAILY_AMOUNT.toLocaleString()}**! 💰`)]
+        await interaction.reply({ 
+            embeds: [EmbedUtils.success('Daily Reward', `You claimed your daily bonus of **$${result.reward}**! 💰`)] 
         });
     },
 } as Command;

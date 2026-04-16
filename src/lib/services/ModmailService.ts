@@ -31,8 +31,17 @@ export class ModmailService {
         const guild = this.client.guilds.cache.get(config.id);
         if (!guild) return;
 
-        if (JSONDatabase.isModmailBlocked(config.id, message.author.id)) {
-            await message.react('❌').catch(() => { });
+        const modmailBlock = await this.client.database.prisma.case.findFirst({
+            where: {
+                guildId: config.id,
+                targetId: message.author.id,
+                type: 'MODMAIL_BLOCK',
+                active: true
+            }
+        });
+
+        if (modmailBlock) {
+            await message.react('🚫').catch(() => { });
             return;
         }
 

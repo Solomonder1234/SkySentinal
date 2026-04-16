@@ -1,6 +1,7 @@
 import { Command } from '../../lib/structures/Command';
 import { ApplicationCommandOptionType, ApplicationCommandType, Message, ChatInputCommandInteraction } from 'discord.js';
 import { EmbedUtils } from '../../utils/EmbedUtils';
+import { Logger } from '../../utils/Logger';
 import { STAFF_ROLE_MAP } from '../../config';
 
 export default {
@@ -81,7 +82,8 @@ export default {
                 { roleName: 'Admin', prefix: 'A', mainId: '1275838130498568334', staffId: '1387637516055613460' },
                 { roleName: 'Sr Admin', prefix: 'SRA', mainId: '1366077117376364625', staffId: '1387637479858901092' },
                 { roleName: 'Head Of Staff', prefix: 'HOS', mainId: '1366096466010968177', staffId: '1387637435583828129' },
-                { roleName: 'Co founder', prefix: 'CF', mainId: '1282527079828815944', staffId: '1387636614699679754' }
+                { roleName: 'Co founder', prefix: 'CF', mainId: '1282527079828815944', staffId: '1387636614699679754' },
+                { roleName: 'Founder', prefix: 'F', mainId: '1275838079718002829', staffId: '1387636546261487770' }
             ];
 
             // 1. Determine Current Rank
@@ -167,16 +169,18 @@ export default {
                 `<@${user.id}> has been officially promoted!\n${ansiContent}`
             );
 
-            // Log to specific channel
-            try {
-                const logChannelId = '1473466436449210511';
-                const logChannel = await client.channels.fetch(logChannelId);
-                if (logChannel && logChannel.isTextBased() && 'guild' in logChannel) {
-                    await logChannel.send({ embeds: [successEmbed] });
-                }
-            } catch (err: any) {
-                client.logger.error(`Failed to send promotion log to defined channel: ${err.message}`);
-            }
+            // High-Fidelity Administrative Logging
+            await Logger.modLog(
+                guild,
+                'Promotion',
+                interaction.member,
+                targetMember,
+                `Promoted from ${previousRankText} to ${nextRank.roleName}`,
+                [
+                    { name: '📊 New Display', value: `\`${newNickname}\``, inline: true }
+                ],
+                'Green'
+            );
 
             if (interaction instanceof Message) {
                 await interaction.reply({ embeds: [successEmbed] });

@@ -12,4 +12,12 @@ validateEnv();
 
 const client = new SkyClient();
 
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('[Anti-Crash] Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (err, origin) => {
+    console.error('[Anti-Crash] Uncaught Exception:', err, 'origin:', origin);
+});
+
 client.start();

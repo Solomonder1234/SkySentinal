@@ -140,4 +140,54 @@ export class EconomyService {
     async getInventory(userId: string) {
         return this.prisma.inventoryItem.findMany({ where: { userId } });
     }
+
+    async claimDaily(userId: string) {
+        const profile = await this.getUserProfile(userId);
+        const now = new Date();
+        const lastDaily = profile.lastDaily;
+
+        if (lastDaily) {
+            const diff = now.getTime() - lastDaily.getTime();
+            const hoursLeft = 24 - (diff / (1000 * 60 * 60));
+            if (hoursLeft > 0) {
+                return { success: false, timeLeft: hoursLeft };
+            }
+        }
+
+        const reward = 500; // Base daily reward
+        await this.prisma.userProfile.update({
+            where: { id: userId },
+            data: {
+                balance: { increment: BigInt(reward) },
+                lastDaily: now
+            }
+        });
+
+        return { success: true, reward };
+    }
+
+    async claimWork(userId: string) {
+        const profile = await this.getUserProfile(userId);
+        const now = new Date();
+        const lastWork = profile.lastWork;
+
+        if (lastWork) {
+            const diff = now.getTime() - lastWork.getTime();
+            const minutesLeft = 60 - (diff / (1000 * 60));
+            if (minutesLeft > 0) {
+                return { success: false, timeLeft: minutesLeft };
+            }
+        }
+
+        const reward = Math.floor(Math.random() * 200) + 100;
+        await this.prisma.userProfile.update({
+            where: { id: userId },
+            data: {
+                balance: { increment: BigInt(reward) },
+                lastWork: now
+            }
+        });
+
+        return { success: true, reward };
+    }
 }

@@ -1,0 +1,202 @@
+[
+  {
+    "name": "→ Staff ←",
+    "id": "1366074712412917901",
+    "color": 0,
+    "hoist": false,
+    "position": 185,
+    "permissions": "0"
+  },
+  {
+    "name": "[F] | Founder",
+    "id": "1275838079718002829",
+    "color": 460551,
+    "hoist": true,
+    "position": 184,
+    "permissions": "8864262743130111"
+  },
+  {
+    "name": "[CF] | Co-Founder",
+    "id": "1282527079828815944",
+    "color": 11127295,
+    "hoist": true,
+    "position": 183,
+    "permissions": "8864262743130111"
+  },
+  {
+    "name": "[EB] | Executive Board",
+    "id": "1478418323266994277",
+    "color": 11127295,
+    "hoist": true,
+    "position": 182,
+    "permissions": "1721826619162615"
+  },
+  {
+    "name": "[PRM] | Public Relations Manager",
+    "id": "1474510020350578778",
+    "color": 11342935,
+    "hoist": true,
+    "position": 181,
+    "permissions": "0"
+  },
+  {
+    "name": "[HOS] | Head of Staff",
+    "id": "1366096466010968177",
+    "color": 8547266,
+    "hoist": true,
+    "position": 180,
+    "permissions": "8582787229548543"
+  },
+  {
+    "name": "[SRA] | Sr Admin",
+    "id": "1366077117376364625",
+    "color": 9467253,
+    "hoist": true,
+    "position": 179,
+    "permissions": "8477225523347455"
+  },
+  {
+    "name": "[A] | Admin",
+    "id": "1275838130498568334",
+    "color": 13927485,
+    "hoist": true,
+    "position": 178,
+    "permissions": "8477225523347447"
+  },
+  {
+    "name": "[SRM] | Sr. Moderator",
+    "id": "1366097955676749844",
+    "color": 3577974,
+    "hoist": true,
+    "position": 177,
+    "permissions": "8477207000772551"
+  },
+  {
+    "name": "[MOD] | Moderator",
+    "id": "1275838245468639385",
+    "color": 7640178,
+    "hoist": true,
+    "position": 176,
+    "permissions": "8477207000770503"
+  },
+  {
+    "name": "[ST] | Support Team",
+    "id": "1366462474236334130",
+    "color": 15158332,
+    "hoist": true,
+    "position": 175,
+    "permissions": "8477207000772551"
+  },
+  {
+    "name": "[PRA] | Public Relations Associate",
+    "id": "1474509849218781204",
+    "color": 15277667,
+    "hoist": true,
+    "position": 174,
+    "permissions": "0"
+  },
+  {
+    "name": "[TS] | Trial Staff",
+    "id": "1366099517740552265",
+    "color": 2067276,
+    "hoist": true,
+    "position": 173,
+    "permissions": "1126593547587136"
+  },
+  {
+    "name": "[FS] | Former Staff",
+    "id": "1366441996796952657",
+    "color": 2123412,
+    "hoist": true,
+    "position": 172,
+    "permissions": "8477226060218359"
+  },
+  {
+    "name": "Staff",
+    "id": "1276037406696538112",
+    "color": 1146986,
+    "hoist": false,
+    "position": 170,
+    "permissions": "68608"
+  },
+  {
+    "name": "Staffing - Career & Staff Oversight",
+    "id": "1387234868924256448",
+    "color": 3447003,
+    "hoist": false,
+    "position": 167,
+    "permissions": "0"
+  },
+  {
+    "name": "Staffing - Public Relations Manager",
+    "id": "1473861192941568271",
+    "color": 3447003,
+    "hoist": false,
+    "position": 166,
+    "permissions": "0"
+  },
+  {
+    "name": "Staffing - People & Culture",
+    "id": "1478414354138534010",
+    "color": 3447003,
+    "hoist": false,
+    "position": 165,
+    "permissions": "1721807559716815"
+  },
+  {
+    "name": "Staffing - Weather Finders",
+    "id": "1478418058178723984",
+    "color": 3447003,
+    "hoist": false,
+    "position": 164,
+    "permissions": "1721807559716807"
+  },
+  {
+    "name": "Weather Alert Staff",
+    "id": "1366109157840916491",
+    "color": 6885612,
+    "hoist": true,
+    "position": 150,
+    "permissions": "1126037346307264"
+  },
+  {
+    "name": "YouTube Moderator",
+    "id": "1366109794842312836",
+    "color": 15597371,
+    "hoist": true,
+    "position": 146,
+    "permissions": "7896286904053703"
+  },
+  {
+    "name": "Staff of the Day",
+    "id": "1382136745847554241",
+    "color": 15007591,
+    "hoist": true,
+    "position": 144,
+    "permissions": "0"
+  },
+  {
+    "name": "Staff of the Week",
+    "id": "1382134588897234994",
+    "color": 16711908,
+    "hoist": true,
+    "position": 143,
+    "permissions": "0"
+  },
+  {
+    "name": "Certified Staff",
+    "id": "1380556212118229144",
+    "color": 0,
+    "hoist": false,
+    "position": 22,
+    "permissions": "2222085119528513"
+  },
+  {
+    "name": "Staff Blacklist",
+    "id": "1489082590139912303",
+    "color": 0,
+    "hoist": false,
+    "position": 6,
+    "permissions": "2222085119528513"
+  }
+]

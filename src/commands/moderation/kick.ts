@@ -1,6 +1,7 @@
 import { Command } from '../../lib/structures/Command';
 import { ApplicationCommandOptionType, ApplicationCommandType, PermissionFlagsBits, Message, EmbedBuilder, ChatInputCommandInteraction, GuildMember, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 import { EmbedUtils } from '../../utils/EmbedUtils';
+import { Logger } from '../../utils/Logger';
 
 export default {
     name: 'kick',
@@ -68,6 +69,19 @@ export default {
 
             await member.kick(reason);
             const successEmbed = EmbedUtils.success('User Kicked', `**${user.tag}** has been kicked.\nReason: ${reason}`);
+
+            // High-Fidelity Administrative Logging
+            if (interaction.guild) {
+                await Logger.modLog(
+                    interaction.guild,
+                    'Member Kick',
+                    interaction.author || interaction.user,
+                    user,
+                    reason,
+                    [],
+                    'Orange'
+                );
+            }
 
             if (interaction instanceof Message) {
                 await interaction.reply({ embeds: [successEmbed] });

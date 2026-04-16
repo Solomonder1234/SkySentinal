@@ -1,0 +1,53 @@
+{
+  "last_reminder": 1775767419097,
+  "cached_at": 1775767252917,
+  "version": "6.19.3",
+  "cli_path": "/Users/leobernstein/SkyAlertBot/node_modules/.bin/prisma",
+  "output": {
+    "product": "prisma",
+    "previous_version": "6.19.3",
+    "checkpoint_version": 4,
+    "local_timestamp_without_timezone": "2026-04-09T16:40:52Z",
+    "current_version": "7.7.0",
+    "current_release_date": 1775577373,
+    "client_event_id": "fd0d7e90-1fa0-4103-bea8-5e9086169ee1",
+    "current_download_url": "https://github.com/prisma/prisma",
+    "package": "prisma",
+    "release_tag": "latest",
+    "install_command": "npm install --save-dev prisma",
+    "schema_providers": [
+      "sqlite"
+    ],
+    "schema_preview_features": [],
+    "schema_generators_providers": [
+      "prisma-client-js"
+    ],
+    "current_changelog_url": "https://github.com/prisma/prisma",
+    "outdated": true,
+    "project_website": "https://prisma.io",
+    "alerts": []
+  },
+  "product": "prisma",
+  "cli_install_type": "local",
+  "local_timestamp": "2026-04-09T17:12:13-04:00",
+  "project_hash": "35949cf5",
+  "cli_path_hash": "80277217",
+  "endpoint": "https://checkpoint.prisma.io",
+  "arch": "arm64",
+  "os": "darwin",
+  "node_version": "v20.18.0",
+  "command": "db push",
+  "schema_providers": [
+    "sqlite"
+  ],
+  "schema_preview_features": [],
+  "schema_generators_providers": [
+    "prisma-client-js"
+  ],
+  "cache_file": "/Users/leobernstein/SkyAlertBot/.prisma_home/Library/Caches/checkpoint-nodejs/prisma-80277217",
+  "cache_duration": 43200000,
+  "remind_duration": 172800000,
+  "timeout": 5000,
+  "unref": true,
+  "child_path": "/Users/leobernstein/SkyAlertBot/node_modules/prisma/build/child"
+}

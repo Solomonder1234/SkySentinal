@@ -47,7 +47,6 @@ export default {
                 const annChannel = await interaction.guild?.channels.fetch(announceChannelId);
                 if (annChannel && annChannel.isTextBased()) {
                     await annChannel.send({
-                        content: '@everyone',
                         embeds: [EmbedUtils.warning('⚠️ Applications Closing Soon!', 'This is an official notice that **Staff Applications will be closing in a few days!**\n\nIf you have not yet submitted your application or completed your interview, please make sure to finalize it as soon as possible. Once applications are formally closed, all active interview channels will be locked. Good luck!')]
                     });
                     const replyOptions = { content: '✅ Closure warning announcement successfully broadcasted to the applications channel.' };
@@ -138,7 +137,7 @@ export default {
 
                     const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(selectMenu);
 
-                    const msgContent = silent ? 'Applications are now open!' : '@everyone';
+                    const msgContent = silent ? 'Applications are now open!' : 'Applications are now open!'; // Removed @everyone override
                     const msg = await annChannel.send({ content: msgContent, embeds: [embed], components: [row] });
 
                     // Save message ID to delete it later

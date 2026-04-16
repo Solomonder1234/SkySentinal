@@ -76,6 +76,16 @@ export default {
             newReason = chatInteraction.options.getString('new_reason', true);
         }
 
+        // Split reason and notes by |
+        let reason = newReason;
+        let notes = null;
+
+        if (newReason.includes('|')) {
+            const parts = newReason.split('|');
+            reason = parts[0]?.trim() || 'No reason provided';
+            notes = parts.slice(1).join('|').trim();
+        }
+
         if (!interaction.guild) return;
 
         try {
@@ -95,6 +105,8 @@ export default {
 
             // Auto-format the old reason for display
             let formattedOldReasonStr = caseRecord.reason?.trim() || 'No reason provided';
+            if (caseRecord.notes) formattedOldReasonStr += ` | ${caseRecord.notes}`;
+
             if (formattedOldReasonStr.length > 0) {
                 formattedOldReasonStr = formattedOldReasonStr.charAt(0).toUpperCase() + formattedOldReasonStr.slice(1);
                 if (!/[.!?]$/.test(formattedOldReasonStr)) {
@@ -103,7 +115,7 @@ export default {
             }
 
             // Auto-format the new reason
-            let formattedNewReasonStr = newReason.trim();
+            let formattedNewReasonStr = reason.trim();
             if (formattedNewReasonStr.length > 0) {
                 formattedNewReasonStr = formattedNewReasonStr.charAt(0).toUpperCase() + formattedNewReasonStr.slice(1);
                 if (!/[.!?]$/.test(formattedNewReasonStr)) {
@@ -111,15 +123,20 @@ export default {
                 }
             }
 
-            // Update the strike with the original new reason (or the formatted one, let's use the formatted one)
+            // Update the strike
             await client.database.prisma.case.update({
                 where: { id: caseId },
                 data: {
-                    reason: formattedNewReasonStr
+                    reason: formattedNewReasonStr,
+                    notes: notes
                 }
             });
 
-            const ansiContent = `\`\`\`ansi\n\u001b[1;36mOfficial Record Update\u001b[0m\n\u001b[0;34mCase\u001b[0m \u001b[1;37m#${caseId}\u001b[0m \u001b[0;34mfor\u001b[0m \u001b[1;37m${caseRecord.targetId}\u001b[0m \u001b[0;34mhas been formally revised by the Server Owner.\u001b[0m\n\n\u001b[1;36mPrevious Infraction Details\u001b[0m\n\u001b[0;34m${formattedOldReasonStr}\u001b[0m\n\n\u001b[1;36mRevised Infraction Details\u001b[0m\n\u001b[0;34m${formattedNewReasonStr}\u001b[0m\n\n\u001b[1;36mModerator Notes\u001b[0m\n\u001b[0;34mThis revision supersedes the previous infraction details. The central database has been updated to reflect these new circumstances. This incident remains logged on the user's permanent record for future review.\u001b[0m\n\`\`\``;
+            // Format displayed new reason with notes if exist
+            let displayNewReason = formattedNewReasonStr;
+            if (notes) displayNewReason += ` | ${notes}`;
+
+            const ansiContent = `\`\`\`ansi\n\u001b[1;36mOfficial Record Update\u001b[0m\n\u001b[0;34mCase\u001b[0m \u001b[1;37m#${caseId}\u001b[0m \u001b[0;34mfor\u001b[0m \u001b[1;37m${caseRecord.targetId}\u001b[0m \u001b[0;34mhas been formally revised by the Server Owner.\u001b[0m\n\n\u001b[1;36mPrevious Infraction Details\u001b[0m\n\u001b[0;34m${formattedOldReasonStr}\u001b[0m\n\n\u001b[1;36mRevised Infraction Details\u001b[0m\n\u001b[0;34m${displayNewReason}\u001b[0m\n\n\u001b[1;36mModerator Notes\u001b[0m\n\u001b[0;34mThis revision supersedes the previous infraction details. The central database has been updated to reflect these new circumstances. This incident remains logged on the user's permanent record for future review.\u001b[0m\n\`\`\``;
 
             const successEmbed = EmbedUtils.success(
                 'Formal Strike Revision Notice',

@@ -53,24 +53,29 @@ export default {
         }
 
         const durationMs = parseDuration(durationStr);
-        if (durationMs === 0 || durationMs > 24 * 60 * 60 * 1000) { // Limit to 24h for simple setTimeout
-            return interaction.reply({ content: 'Invalid duration. Please use format like 10m, 1h. Max 24h.' });
+        if (durationMs === 0) {
+            return interaction.reply({ content: 'Invalid duration! Please use format like `10m`, `1h`, or `3d`. ⏱️' });
         }
 
-        const embed = EmbedUtils.success('Reminder Set', `I will remind you in **${durationStr}**: ${messageStr}`);
-        await interaction.reply({ embeds: [embed] });
+        const expiresAt = new Date(Date.now() + durationMs);
 
-        setTimeout(async () => {
-            const reminderEmbed = EmbedUtils.info('⏰ Reminder', `**You asked me to remind you:**\n${messageStr}`);
-            if (interaction instanceof Message) {
-                await interaction.reply({ content: `<@${interaction.author.id}>`, embeds: [reminderEmbed] });
-            } else {
-                // Assuming interaction channel still exists and we can send to it
-                // or DM user? Let's try channel send if possible, else DM.
-                if (interaction.channel && interaction.channel.type === ChannelType.GuildText) {
-                    await (interaction.channel as TextChannel).send({ content: `<@${interaction.user.id}>`, embeds: [reminderEmbed] }).catch(() => { });
+        try {
+            await (client.database.prisma as any).reminder.create({
+                data: {
+                    guildId: interaction.guildId!,
+                    channelId: interaction.channelId,
+                    userId: interaction instanceof Message ? interaction.author.id : interaction.user.id,
+                    message: messageStr,
+                    expiresAt: expiresAt
                 }
-            }
-        }, durationMs);
+            });
+
+            const embed = EmbedUtils.success('Reminder Synchronized', `I have recorded your reminder in the permanent database.\n\n**Duration:** ${durationStr}\n**Notification Date:** <t:${Math.floor(expiresAt.getTime() / 1000)}:F> (<t:${Math.floor(expiresAt.getTime() / 1000)}:R>)\n**Message:** ${messageStr}`);
+            await interaction.reply({ embeds: [embed] });
+
+        } catch (err) {
+            client.logger.error('[Reminder Command] Error saving to DB:', err);
+            await interaction.reply({ content: 'I encountered a firewall error synchronizing your reminder to the database! ❌', ephemeral: true });
+        }
     },
 } as Command;

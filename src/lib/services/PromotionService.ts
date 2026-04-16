@@ -67,8 +67,8 @@ export class PromotionService {
             // Handle Nickname Prefixing
             if (highestRule.nicknamePrefix) {
                 const currentNickname = member.nickname || member.user.username;
-                let baseName = currentNickname.replace(/^\[.*?\]\s*|\{.*?\}\s*|\|.*?\|\s*/g, '').trim();
-                const newNickname = `[${highestRule.nicknamePrefix}] ${baseName}`.substring(0, 32);
+                let baseName = currentNickname.replace(/^\[.*?\]\s*[|]?\s*|\{.*?\}\s*|\|.*?\|\s*/g, '').trim();
+                const newNickname = `[${highestRule.nicknamePrefix}] | ${baseName}`.substring(0, 32);
 
                 await member.setNickname(newNickname).catch(err => {
                     this.client.logger.warn(`Could not set nickname for ${member.user.tag}: ${err.message}`);

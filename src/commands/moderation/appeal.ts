@@ -40,7 +40,7 @@ export default {
 
         if (interaction instanceof Message) {
             const args = interaction.content.split(' ').slice(1);
-            decision = args[0]?.toLowerCase();
+            decision = args[0] ? args[0].toLowerCase() : '';
 
             if (!['accept', 'deny', 'decline'].includes(decision)) {
                 return interaction.reply({ content: 'Invalid syntax. Use `!appeal accept <user> [message]` or `!appeal deny <user> [message]`.\nYou can also run `!appeal accept [message]` inside an active modmail thread.' });

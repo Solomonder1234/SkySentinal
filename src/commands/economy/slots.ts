@@ -1,73 +1,62 @@
 import { Command } from '../../lib/structures/Command';
-import { ApplicationCommandType, ApplicationCommandOptionType, Message, ChatInputCommandInteraction } from 'discord.js';
+import { ApplicationCommandType, ApplicationCommandOptionType, ChatInputCommandInteraction, Message } from 'discord.js';
 import { EmbedUtils } from '../../utils/EmbedUtils';
+
+const SLOTS = ['🍎', '🍊', '🍐', '🍋', '🍉', '🍇', '🍓', '🍒', '💎', '🔔'];
 
 export default {
     name: 'slots',
-    description: 'Bet money on the slot machine.',
+    description: 'Bet some money on the slot machine.',
     category: 'Economy',
     type: ApplicationCommandType.ChatInput,
     options: [
         {
-            name: 'amount',
-            description: 'Amount to bet.',
+            name: 'bet',
+            description: 'The amount of money to bet.',
             type: ApplicationCommandOptionType.Integer,
             required: true,
-            minValue: 10
-        }
+            minValue: 10,
+        },
     ],
     run: async (client, interaction) => {
-        const user = interaction instanceof Message ? interaction.author : interaction.user;
-        let betAmount: bigint;
+        const bet = interaction instanceof Message 
+            ? parseInt(interaction.content.split(' ')[1] || '0') 
+            : (interaction as ChatInputCommandInteraction).options.getInteger('bet', true);
 
-        if (interaction instanceof Message) {
-            const args = interaction.content.split(' ').slice(1);
-            if (!args[0]) return interaction.reply({ content: 'Please specify an amount to bet.' });
-            try {
-                betAmount = BigInt(args[0]);
-            } catch {
-                return interaction.reply({ content: 'Please specify a valid amount to bet.' });
-            }
+        if (!bet || bet < 10) return interaction.reply('Minimum bet is $10.');
+
+        const userId = interaction.member?.user.id!;
+        const profile = await client.economy.getUserProfile(userId);
+
+        if (profile.balance < BigInt(bet)) {
+            return interaction.reply({ embeds: [EmbedUtils.error('Insufficient Funds', `You only have **$${profile.balance}** in your wallet.`)] });
+        }
+
+        const reel1 = SLOTS[Math.floor(Math.random() * SLOTS.length)]!;
+        const reel2 = SLOTS[Math.floor(Math.random() * SLOTS.length)]!;
+        const reel3 = SLOTS[Math.floor(Math.random() * SLOTS.length)]!;
+
+        const win = (reel1 === reel2 && reel2 === reel3);
+        const partial = (reel1 === reel2 || reel2 === reel3 || reel1 === reel3);
+
+        let resultMsg = '';
+        let multiplier = 0;
+
+        if (win) {
+            multiplier = reel1 === '💎' ? 10 : 5;
+            resultMsg = `JACKPOT! You won **$${bet * multiplier}**! 🎉`;
+            await client.economy.addWallet(userId, bet * (multiplier - 1));
+        } else if (partial) {
+            multiplier = 1.5;
+            resultMsg = `Small win! You got **$${Math.floor(bet * multiplier)}**.`;
+            await client.economy.addWallet(userId, Math.floor(bet * (multiplier - 1)));
         } else {
-            betAmount = BigInt((interaction as ChatInputCommandInteraction).options.getInteger('amount', true));
+            resultMsg = `You lost **$${bet}**. Better luck next time.`;
+            await client.economy.removeWallet(userId, bet);
         }
 
-        if (betAmount < 10n) return interaction.reply({ content: 'Minimum bet is $10.' });
-
-        const profile = await client.economy.getUserProfile(user.id);
-        if (profile.balance < betAmount) {
-            return interaction.reply({
-                embeds: [EmbedUtils.error('Insufficient Funds', `You only have **$${profile.balance.toLocaleString()}**.`)]
-            });
-        }
-
-        // Deduct money first
-        await client.economy.removeWallet(user.id, betAmount);
-
-        const fruits = ['🍒', '🍊', '🍇', '🍋', '🔔', '💎', '7️⃣'];
-        const line1 = fruits[Math.floor(Math.random() * fruits.length)];
-        const line2 = fruits[Math.floor(Math.random() * fruits.length)];
-        const line3 = fruits[Math.floor(Math.random() * fruits.length)];
-
-        let winnings = 0n;
-        let resultText = 'You lost!';
-
-        if (line1 === line2 && line2 === line3) {
-            winnings = betAmount * 5n;
-            resultText = `**JACKPOT!** You won **$${winnings.toLocaleString()}**!`;
-        } else if (line1 === line2 || line2 === line3 || line1 === line3) {
-            winnings = (betAmount * 15n) / 10n; // 1.5xmultiplier
-            resultText = `**Nice!** You won **$${winnings.toLocaleString()}**!`;
-        }
-
-        if (winnings > 0n) {
-            await client.economy.addWallet(user.id, winnings);
-        }
-
-        const embed = winnings > 0
-            ? EmbedUtils.success('🎰 Slots 🎰', `| ${line1} | ${line2} | ${line3} |\n\n${resultText}`)
-            : EmbedUtils.error('🎰 Slots 🎰', `| ${line1} | ${line2} | ${line3} |\n\n${resultText}`);
-
-        return interaction.reply({ embeds: [embed] });
+        await interaction.reply({
+            embeds: [EmbedUtils.info('SkySlot Machine', `[ ${reel1} | ${reel2} | ${reel3} ]\n\n${resultMsg}`)]
+        });
     },
 } as Command;

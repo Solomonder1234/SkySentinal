@@ -1,6 +1,6 @@
 import { Events, Message, PartialMessage } from 'discord.js';
 import { Event } from '../lib/structures/Event';
-import { Logger } from '../utils/Logger';
+import { Logger, LogCategory } from '../utils/Logger';
 
 export default {
     name: Events.MessageDelete,
@@ -14,7 +14,8 @@ export default {
             'Red',
             [
                 { name: 'Content', value: message.content ? message.content.slice(0, 1024) : 'No content (embed/image)' }
-            ]
+            ],
+            LogCategory.Message
         );
     },
 } as Event<Events.MessageDelete>;

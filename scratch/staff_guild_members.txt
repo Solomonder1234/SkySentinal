@@ -1,0 +1,1 @@
+Command sent to SkySentinel: eval const guild = client.guilds.cache.get('1386826411666309201'); if (guild) { let out = ''; guild.members.cache.forEach(m => { out += m.user.username + ' | ' + m.id + '\n'; }); console.log(out); }

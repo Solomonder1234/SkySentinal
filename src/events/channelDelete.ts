@@ -1,6 +1,6 @@
 import { Events, GuildChannel, DMChannel } from 'discord.js';
 import { Event } from '../lib/structures/Event';
-import { Logger } from '../utils/Logger';
+import { Logger, LogCategory } from '../utils/Logger';
 
 export default {
     name: Events.ChannelDelete,
@@ -14,7 +14,11 @@ export default {
             'Red',
             [
                 { name: 'Type', value: `${channel.type}` }
-            ]
+            ],
+            LogCategory.Server
         );
+
+        // Antinuke Observation
+        await client.antinuke.recordAction(channel.guild, (await channel.guild.fetchAuditLogs({ type: 12, limit: 1 })).entries.first()?.executor as any, 'channel');
     },
 } as Event<Events.ChannelDelete>;

@@ -1,4 +1,5 @@
-import { TextChannel, EmbedBuilder, ChannelType, GuildMember, Message, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
+import { TextChannel, EmbedBuilder, ChannelType, GuildMember, Message, ActionRowBuilder, ButtonBuilder, ButtonStyle, AttachmentBuilder, PermissionFlagsBits } from 'discord.js';
+import { createCanvas, loadImage } from '@napi-rs/canvas';
 import { EmbedUtils } from '../../utils/EmbedUtils';
 import { SkyClient } from '../structures/SkyClient';
 
@@ -30,13 +31,31 @@ export class OnboardingService {
         const unverifiedRoleId = config.unverifiedRoleId || FALLBACK_UNVERIFIED_ROLE_ID;
 
         try {
+            // Attempt to DM the user instructions before proceeding with the rest of the onboarding
+            try {
+                await member.send({
+                    content: `👋 **Welcome to ${guild.name}!**`,
+                    embeds: [
+                        EmbedUtils.info(
+                            'How to gain access to the server',
+                            'Currently, your access is restricted. To unlock the rest of the server, please navigate to the **rules** and **onboarding** channels.\n\nOnce you complete the required steps, you will be granted the Member role and given full access!'
+                        )
+                    ]
+                });
+            } catch (dmError) {
+                this.client.logger.warn(`Could not send DM to ${member.user.tag} (DMs might be closed).`);
+            }
+
             // Validate or Reconstruct Category to prevent CHANNEL_PARENT_INVALID crash
             let validCategoryId = categoryId;
             const existingCategory = guild.channels.cache.get(categoryId);
             if (!existingCategory || existingCategory.type !== ChannelType.GuildCategory) {
                 const newCategory = await guild.channels.create({
-                    name: 'Onboarding (Auto-Recovered)',
-                    type: ChannelType.GuildCategory
+                    name: 'ONBOARDING AIRLOCK',
+                    type: ChannelType.GuildCategory,
+                    permissionOverwrites: [
+                        { id: guild.id, deny: [PermissionFlagsBits.ViewChannel] }
+                    ]
                 });
                 validCategoryId = newCategory.id;
             }
@@ -147,7 +166,7 @@ export class OnboardingService {
     /**
      * Finalizes onboarding by granting roles and cleaning up.
      */
-    public async approve(moderator: GuildMember, target: GuildMember, channel: TextChannel) {
+    public async approve(moderator: GuildMember, target: GuildMember, channel?: TextChannel) {
         const config = await this.client.database.prisma.guildConfig.findUnique({
             where: { id: moderator.guild.id }
         });
@@ -174,23 +193,73 @@ export class OnboardingService {
             // Add member role
             await target.roles.add(FALLBACK_MEMBER_ROLE_ID).catch(() => null);
 
-            await channel.send({
-                embeds: [EmbedUtils.success('Access Granted', `Welcome to the server, <@${target.id}>! You have been approved by <@${moderator.id}>.`)]
-            });
+            if (channel) {
+                await channel.send({
+                    embeds: [EmbedUtils.success('Access Granted', `Welcome to the server, <@${target.id}>! You have been approved by <@${moderator.id}>.`)]
+                });
+            }
 
             // Send specialized welcome message to General Chat (ID provided by user)
             const GENERAL_CHAT_ID = '1329128469166297159';
             try {
                 const welcomeChannel = target.guild.channels.cache.get(GENERAL_CHAT_ID) as TextChannel;
                 if (welcomeChannel && welcomeChannel.isTextBased()) {
+
+                    // --- STATIC GRAPHIC GENERATION ---
+                    const canvas = createCanvas(800, 400);
+                    const ctx = canvas.getContext('2d');
+
+                    const grad = ctx.createLinearGradient(0, 0, 800, 400);
+                    grad.addColorStop(0, '#1c1c1f');
+                    grad.addColorStop(1, '#0a0a0b');
+                    ctx.fillStyle = grad;
+                    ctx.fillRect(0, 0, 800, 400);
+
+                    const avatarURL = target.user.displayAvatarURL({ extension: 'png', size: 256 })
+                        || 'https://cdn.discordapp.com/embed/avatars/0.png';
+                    const avatarImg = await loadImage(avatarURL);
+
+                    const avatarRadius = 100;
+                    const avatarX = 800 / 2;
+                    const avatarY = 160;
+
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.arc(avatarX, avatarY, avatarRadius, 0, Math.PI * 2, true);
+                    ctx.closePath();
+                    ctx.clip();
+                    ctx.drawImage(avatarImg, avatarX - avatarRadius, avatarY - avatarRadius, avatarRadius * 2, avatarRadius * 2);
+
+                    ctx.lineWidth = 6;
+                    ctx.strokeStyle = '#2ecc71';
+                    ctx.stroke();
+                    ctx.restore();
+
+                    ctx.font = 'bold 42px sans-serif';
+                    ctx.fillStyle = '#ffffff';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('WELCOME TO THE SERVER', 400, 320);
+
+                    ctx.font = 'bold 36px sans-serif';
+                    ctx.fillStyle = '#9aa0a6';
+                    ctx.fillText(`@${target.user.username.toUpperCase()}`, 400, 365);
+
+                    const buffer = Buffer.from(await canvas.encode('png'));
+                    const attachment = new AttachmentBuilder(buffer, { name: 'welcome-image.png' });
+
                     await welcomeChannel.send({
-                        content: `🎉 Everyone welcome our newest member, <@${target.id}>! They have just cleared onboarding and are now part of the community!`
+                        content: `🎉 Everyone welcome our newest member, <@${target.id}>! They have just cleared onboarding and are now part of the community!`,
+                        files: [attachment]
                     });
                 }
-            } catch (e) { }
+            } catch (e) {
+                this.client.logger.error(`Canvas Graphic Generation failed for ${target.user.username}: `, e);
+            }
 
-            // Delete channel after a delay
-            setTimeout(() => channel.delete().catch(() => null), 5000);
+            // Delete channel after a delay if it's an onboarding channel
+            if (channel && channel.name.startsWith('onboard-')) {
+                setTimeout(() => channel.delete().catch(() => null), 5000);
+            }
         } catch (error) {
             this.client.logger.error(`Approve failed for ${target.user.tag}:`, error);
         }

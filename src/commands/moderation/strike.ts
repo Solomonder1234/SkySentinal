@@ -1,6 +1,7 @@
 import { Command } from '../../lib/structures/Command';
 import { ApplicationCommandOptionType, ApplicationCommandType, Message, ChatInputCommandInteraction, EmbedBuilder, Colors } from 'discord.js';
 import { EmbedUtils } from '../../utils/EmbedUtils';
+import { Logger } from '../../utils/Logger';
 
 export default {
     name: 'strike',
@@ -58,19 +59,20 @@ export default {
             }
         }
 
-        let user;
-        let reason = 'No reason provided';
+        let user: any;
+        let userText = '';
+        let fullReason = 'No reason provided';
         let member;
 
         if (interaction instanceof Message) {
             const args = interaction.content.split(' ').slice(1);
-            const userId = args[0]?.replace(/[<@!>]/g, '');
-            if (!userId) return interaction.reply({ content: 'Please provide a user to strike.' });
+            userText = args[0]?.replace(/[<@!>]/g, '') || '';
+            if (!userText) return interaction.reply({ content: 'Please provide a user to strike.' });
 
             try {
-                user = await client.users.fetch(userId);
-                member = await interaction.guild?.members.fetch(userId);
-                reason = args.slice(1).join(' ') || 'No reason provided';
+                user = await client.users.fetch(userText);
+                member = await interaction.guild?.members.fetch(user.id);
+                fullReason = args.slice(1).join(' ') || 'No reason provided';
             } catch (e) {
                 return interaction.reply({ content: 'User not found.' });
             }
@@ -78,7 +80,17 @@ export default {
             const chatInteraction = interaction as ChatInputCommandInteraction;
             user = chatInteraction.options.getUser('user', true);
             member = interaction.guild?.members.cache.get(user.id);
-            reason = chatInteraction.options.getString('reason', true);
+            fullReason = chatInteraction.options.getString('reason', true);
+        }
+
+        // Split reason and notes by |
+        let reason = fullReason;
+        let notes = null;
+
+        if (fullReason.includes('|')) {
+            const parts = fullReason.split('|');
+            reason = parts[0]?.trim() || 'No reason provided';
+            notes = parts.slice(1).join('|').trim();
         }
 
         if (!interaction.guild) return;
@@ -99,6 +111,7 @@ export default {
                     moderatorId: interaction instanceof Message ? interaction.author.id : interaction.user.id,
                     type: 'STRIKE',
                     reason: reason,
+                    notes: notes,
                 },
             });
 
@@ -227,7 +240,10 @@ export default {
 
             const strikeTitle = `⚠️ OFFICIAL INFRACTION NOTICE: STRIKE ${totalStrikes} / 3`;
 
-            const ansiContent = `\`\`\`ansi\n\u001b[1;31m>>> INFRACTION DETAILS <<<\u001b[0m\n\u001b[0;37mViolation:\u001b[0m \u001b[0;33m${formattedReasonStr}\u001b[0m\n\n\u001b[1;31m>>> AUTOMATED SYSTEM REVIEW <<<\u001b[0m\n\u001b[0;37mStatus:\u001b[0m \u001b[0;31mStrike Issued\u001b[0m\n\u001b[0;37mModerator Notes:\u001b[0m \u001b[0;33mThis strike has been issued due to a direct violation of SkyAlert Network guidelines. This incident has been permanently recorded in the moderation database. Further violations will result in automated escalation up to and including permanent termination of access.\u001b[0m\n\n\u001b[1;31m>>> PENALTY ESCALATION MATRIX <<<\u001b[0m\n\u001b[0;37m• Strike 1:\u001b[0m \u001b[0;33mFormal Warning Issued\u001b[0m\n\u001b[0;37m• Strike 2:\u001b[0m \u001b[0;31mImmediate 1-Week Suspension\u001b[0m ${totalStrikes === 2 ? '<< YOU ARE HERE' : ''}\n\u001b[0;37m• Strike 3:\u001b[0m \u001b[1;31mPermanent Demotion & Potential Exile\u001b[0m ${totalStrikes >= 3 ? '<< YOU ARE HERE' : ''}\n\n\u001b[1;36mCase ID:\u001b[0m \u001b[1;37m#${caseRecord.id}\u001b[0m\n\`\`\``;
+            // Format notes for ANSI if they exist
+            const notesSection = notes ? `\n\u001b[0;37mAdmin Notes:\u001b[0m \u001b[0;32m${notes}\u001b[0m` : '';
+
+            const ansiContent = `\`\`\`ansi\n\u001b[1;31m>>> INFRACTION DETAILS <<<\u001b[0m\n\u001b[0;37mViolation:\u001b[0m \u001b[0;33m${formattedReasonStr}\u001b[0m${notesSection}\n\n\u001b[1;31m>>> AUTOMATED SYSTEM REVIEW <<<\u001b[0m\n\u001b[0;37mStatus:\u001b[0m \u001b[0;31mStrike Issued\u001b[0m\n\u001b[0;37mModerator Notes:\u001b[0m \u001b[0;33mThis strike has been issued due to a direct violation of SkyAlert Network guidelines. This incident has been permanently recorded in the moderation database. Further violations will result in automated escalation up to and including permanent termination of access.\u001b[0m\n\n\u001b[1;31m>>> PENALTY ESCALATION MATRIX <<<\u001b[0m\n\u001b[0;37m• Strike 1:\u001b[0m \u001b[0;33mFormal Warning Issued\u001b[0m\n\u001b[0;37m• Strike 2:\u001b[0m \u001b[0;31mImmediate 1-Week Suspension\u001b[0m ${totalStrikes === 2 ? '<< YOU ARE HERE' : ''}\n\u001b[0;37m• Strike 3:\u001b[0m \u001b[1;31mPermanent Demotion & Potential Exile\u001b[0m ${totalStrikes >= 3 ? '<< YOU ARE HERE' : ''}\n\n\u001b[1;36mCase ID:\u001b[0m \u001b[1;37m#${caseRecord.id}\u001b[0m\n\`\`\``;
 
             const publicEmbed = new EmbedBuilder()
                 .setTitle(strikeTitle)
@@ -247,15 +263,20 @@ export default {
             const logEmbed = new EmbedBuilder(publicEmbed.toJSON());
             logEmbed.addFields({ name: 'Executing Moderator', value: `<@${caseRecord.moderatorId}>`, inline: true });
 
-            try {
-                const logChannelId = '1371279072067321896';
-                const logChannel = await interaction.guild.channels.fetch(logChannelId);
-                if (logChannel && logChannel.isTextBased()) {
-                    await logChannel.send({ embeds: [logEmbed] });
-                }
-            } catch (err) {
-                client.logger.error('Failed to send strike log to defined channel:', err);
-            }
+            // High-Fidelity Administrative Logging
+            await Logger.modLog(
+                interaction.guild,
+                'Formal Strike',
+                interaction.author || interaction.user,
+                user,
+                reason,
+                [
+                    { name: '⚖️ Case ID', value: `#${caseRecord.id}`, inline: true },
+                    { name: '📈 Total Strikes', value: String(totalStrikes), inline: true },
+                    { name: '📝 Admin Notes', value: notes || 'None', inline: false }
+                ],
+                'Red'
+            );
 
             if (interaction instanceof Message) {
                 await interaction.reply({ embeds: [publicEmbed] });

@@ -28,8 +28,106 @@ export default {
 
         if (message.author.bot) return;
 
-        // Modmail Hooks
+        // AI Rehab Protocol Interceptor
+        if (message.guildId) {
+            const rehabSession = await (client.database.prisma as any).rehabSession.findUnique({
+                where: { channelId: message.channelId }
+            });
+
+            if (rehabSession && rehabSession.userId === message.author.id) {
+                const wordCount = message.content.split(/\s+/).filter(w => w.length > 0).length;
+                if (wordCount < 50) {
+                    try {
+                        await message.reply({ embeds: [EmbedUtils.error('Rehabilitation Failed', `Your apology must be at least **50 words**. You only wrote ${wordCount} words.`)] });
+                    } catch (err: any) {
+                        if (err.code === 'ChannelNotCached') {
+                            const channel = await client.channels.fetch(message.channelId).catch(() => null);
+                            if (channel && channel.isTextBased()) await (channel as any).send({ embeds: [EmbedUtils.error('Rehabilitation Failed', `Your apology must be at least **50 words**. You only wrote ${wordCount} words.`)] });
+                        }
+                    }
+                    return;
+                }
+
+                if ('sendTyping' in message.channel) {
+                    await (message.channel as TextChannel).sendTyping().catch(() => {});
+                }
+                
+                const evalPrompt = `The user was placed in forced rehabilitation for: "${rehabSession.reason}". Here is their apology:\n\n"${message.content}"\n\nEvaluate if this is a sincere apology. A sincere apology should acknowledge the mistake and express a desire to improve. While you should be wary of low-effort or obvious AI-slop, you should be fair and allow users who genuinely seem to care back into the community.\n\nRespond in JSON format only: {"approved": boolean, "feedback": "Brief explanation or welcome message (under 300 chars)."}`;
+
+                try {
+                    const ctx = [
+                        "You are an impartial evaluator for a Discord community.",
+                        "If the apology seems genuine, handwritten, and specifically addresses the issue, approve it.",
+                        "Only deny if it is clearly low-effort, trolling, or generic boilerplate.",
+                        "Output ONLY valid JSON."
+                    ];
+                    const evaluation = await client.ai!.generateResponse(evalPrompt, ctx);
+                    
+                    // Robust JSON extraction
+                    let result = { approved: false, feedback: "Evaluation processing error." };
+                    const jsonMatch = evaluation.text.match(/\{[\s\S]*\}/);
+                    
+                    if (jsonMatch) {
+                        try {
+                            result = JSON.parse(jsonMatch[0]);
+                        } catch (parseErr) {
+                            // Fallback if JSON is still malformed but we can see the intent
+                            const lowered = evaluation.text.toLowerCase();
+                            if (lowered.includes('"approved": true') || (lowered.includes('true') && !lowered.includes('false'))) {
+                                result = { approved: true, feedback: "Apology accepted via intent-analysis." };
+                            }
+                        }
+                    } else {
+                        // Extreme fallback
+                        if (evaluation.text.toLowerCase().includes('approve') || evaluation.text.toLowerCase().includes('true')) {
+                            result = { approved: true, feedback: "Apology accepted via keyword-fallback." };
+                        }
+                    }
+
+                    if (result.approved) {
+                        await message.reply({ embeds: [EmbedUtils.success('Rehabilitation Successful', `Your apology was accepted by the AI.\n\n**Evaluation:** ${result.feedback}\n\nRestoring your roles and closing this facility.`)] });
+                        
+                        const member = await message.guild?.members.fetch(message.author.id).catch(() => null);
+                        if (member && rehabSession.originalRoles) {
+                            try {
+                                const roles = JSON.parse(rehabSession.originalRoles);
+                                for (const roleId of roles) {
+                                    await member.roles.add(roleId).catch(() => {});
+                                }
+                            } catch (err) {}
+                        }
+
+                        await (client.database.prisma as any).rehabSession.delete({ where: { id: rehabSession.id } });
+                        setTimeout(() => {
+                            (message.channel as TextChannel).delete().catch(() => {});
+                        }, 7000);
+
+                    } else {
+                        await (client.database.prisma as any).rehabSession.update({
+                            where: { id: rehabSession.id },
+                            data: { attempts: { increment: 1 } }
+                        });
+                        await message.reply({ embeds: [EmbedUtils.error('Rehabilitation Failed', `Your apology was **REJECTED** by the AI.\n\n**Evaluation:** ${result.feedback}\n\nTry again.`)] });
+                    }
+                } catch (e) {
+                    console.error('Rehab Eval Error:', e);
+                    try {
+                        await message.reply('The evaluator encountered a glitch diagnosing your brain. Please try again.');
+                    } catch (err: any) {
+                        if (err.code === 'ChannelNotCached') {
+                            const channel = await client.channels.fetch(message.channelId).catch(() => null);
+                            if (channel && channel.isTextBased()) await (channel as any).send('The evaluator encountered a glitch diagnosing your brain. Please try again.');
+                        }
+                    }
+                }
+                
+                return; // Stop any commands, XP, etc
+            }
+        }
+
+        // Modmail & Captcha Hooks
         if (!message.guildId) {
+            await client.captcha.handleDM(message);
             await client.modmail.handleDM(message);
             return;
         }
@@ -424,8 +522,12 @@ export default {
             }
         }
 
-        const handler = new CommandHandler(client);
-        await handler.handleMessage(message, prefix || '!');
+        try {
+            const handler = new CommandHandler(client);
+            await handler.handleMessage(message, prefix || '!');
+        } catch (err) {
+            client.logger.error('[messageCreate] Command Execution Critical Error:', err);
+        }
     }
 } as Event<Events.MessageCreate>;
 // XP Handler

@@ -1,6 +1,6 @@
 import { Events, Message, PartialMessage } from 'discord.js';
 import { Event } from '../lib/structures/Event';
-import { Logger } from '../utils/Logger';
+import { Logger, LogCategory } from '../utils/Logger';
 
 export default {
     name: Events.MessageUpdate,
@@ -16,7 +16,8 @@ export default {
             [
                 { name: 'Before', value: oldMessage.content ? oldMessage.content.slice(0, 1024) : 'Unknown' },
                 { name: 'After', value: newMessage.content ? newMessage.content.slice(0, 1024) : 'Unknown' }
-            ]
+            ],
+            LogCategory.Message
         );
     },
 } as Event<Events.MessageUpdate>;

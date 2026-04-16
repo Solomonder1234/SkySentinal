@@ -1,0 +1,46 @@
+.hudContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2.5rem;
+  background: rgba(2, 6, 23, 0.5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 0.5rem 2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  width: 100%;
+  position: sticky;
+  top: 0;
+  z-index: 9999;
+}
+
+.item {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.label {
+  color: #64748b;
+  font-weight: 500;
+}
+
+.value {
+  color: #f8fafc;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.divider {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .hudContainer {
+    display: none; /* Hide top bar on mobile for the cleaner look */
+  }
+}

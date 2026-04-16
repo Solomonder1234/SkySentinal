@@ -14,7 +14,8 @@ function uwuify(text: string): string {
 
 export default {
     name: 'uwu',
-    description: 'Uwuify text.',
+    description: 'uWu-ify some text.',
+    prefixOnly: true,
     category: 'Troll',
     type: ApplicationCommandType.ChatInput,
     defaultMemberPermissions: PermissionFlagsBits.SendMessages,

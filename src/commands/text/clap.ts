@@ -3,7 +3,8 @@ import { ApplicationCommandOptionType, ApplicationCommandType, Message, ChatInpu
 
 export default {
     name: 'clap',
-    description: 'Add claps between words.',
+    description: 'Add 👏 clap 👏 emojis 👏 to 👏 text.',
+    prefixOnly: true,
     category: 'Text',
     type: ApplicationCommandType.ChatInput,
     options: [

@@ -12,17 +12,23 @@ export default {
         const guild = interaction.guild;
         const owner = await guild.fetchOwner();
 
+        const members = await guild.members.fetch();
+        const humans = members.filter((m: any) => !m.user.bot).size;
+        const bots = members.filter((m: any) => m.user.bot).size;
+
+        const textChannels = guild.channels.cache.filter((c: any) => c.type === ChannelType.GuildText).size;
+        const voiceChannels = guild.channels.cache.filter((c: any) => c.type === ChannelType.GuildVoice).size;
+
         const embed = EmbedUtils.info(guild.name, 'Comprehensive server statistics and configuration summary.')
             .setThumbnail(guild.iconURL({ size: 1024 }) || null)
             .setFooter({ text: `SkySentinel AV • ${guild.id}` })
             .addFields(
                 { name: 'Owner', value: `${owner.user.tag}`, inline: true },
-                { name: 'ID', value: guild.id, inline: true },
                 { name: 'Created At', value: `<t:${Math.floor(guild.createdTimestamp / 1000)}:R>`, inline: true },
-                { name: 'Members', value: `${guild.memberCount}`, inline: true },
-                { name: 'Roles', value: `${guild.roles.cache.size}`, inline: true },
-                { name: 'Channels', value: `${guild.channels.cache.size}`, inline: true },
-                { name: 'Boosts', value: `${guild.premiumSubscriptionCount || 0} (Level ${guild.premiumTier})`, inline: false }
+                { name: 'Boosts', value: `${guild.premiumSubscriptionCount || 0} (Level ${guild.premiumTier})`, inline: true },
+                { name: 'Members', value: `Total: ${guild.memberCount}\n👤 Humans: ${humans}\n🤖 Bots: ${bots}`, inline: true },
+                { name: 'Channels', value: `Total: ${guild.channels.cache.size}\n💬 Text: ${textChannels}\n🔊 Voice: ${voiceChannels}`, inline: true },
+                { name: 'Security', value: `Verification: ${guild.verificationLevel}\n2FA: ${guild.mfaLevel ? 'Required' : 'Optional'}`, inline: true }
             );
 
         if (interaction instanceof Message) {

@@ -1,5 +1,5 @@
 import { Command } from '../../lib/structures/Command';
-import { ApplicationCommandType, Message, ChatInputCommandInteraction, StringSelectMenuBuilder, ActionRowBuilder, TextChannel } from 'discord.js';
+import { ApplicationCommandType, Message, ChatInputCommandInteraction, StringSelectMenuBuilder, ActionRowBuilder, TextChannel, EmbedBuilder } from 'discord.js';
 import { EmbedUtils } from '../../utils/EmbedUtils';
 
 export default {
@@ -23,10 +23,13 @@ export default {
         ];
         const selectedGif = ticketGifs[Math.floor(Math.random() * ticketGifs.length)];
 
-        const embed = EmbedUtils.premium(
-            'SkySentinel Support Terminal',
-            'Select the corresponding category below to open a direct, private communication channel with the staff network.\n\n**CATEGORIES**\n❓ **Support Request:** General inquiries and assistance.\n⚠️ **Member Report:** Privately report users breaking protocol.\n👔 **HR/Admin:** Highly-sensitive network issues.\n🕵️ **Investigations:** Dedicated intelligence reports.'
-        ).setImage(selectedGif || null);
+        const embed = new EmbedBuilder()
+            .setTitle('SkySentinel • AV Intelligence Module')
+            .setDescription('### ❖ SkySentinel Support Terminal\n\nSelect the corresponding category below to open a direct, private communication channel with the staff network.\n\n**CATEGORIES**\n❓ **Support Request:** General inquiries and assistance.\n⚠️ **Member Report:** Privately report users breaking protocol.\n👔 **HR/Admin:** Highly-sensitive network issues.\n🕵️ **Investigations:** Dedicated intelligence reports.')
+            .setColor(0x2b2d31)
+            .setImage(selectedGif || null)
+            .setFooter({ text: 'SkySentinel Protocol • Secure Terminal Gateway' })
+            .setTimestamp();
 
         const selectMenu = new StringSelectMenuBuilder()
             .setCustomId('ticket_select')

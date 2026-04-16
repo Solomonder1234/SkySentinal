@@ -1,6 +1,7 @@
 import { Command } from '../../lib/structures/Command';
 import { ApplicationCommandOptionType, ApplicationCommandType, PermissionFlagsBits, Message, ChatInputCommandInteraction, GuildMember, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 import { EmbedUtils } from '../../utils/EmbedUtils';
+import { Logger } from '../../utils/Logger';
 
 export default {
     name: 'warn',
@@ -68,6 +69,19 @@ export default {
             });
 
             const successEmbed = EmbedUtils.success('User Warned', `**${user.tag}** has been warned.\nReason: ${reason}\nCase ID: #${caseRecord.id}`);
+
+            // High-Fidelity Administrative Logging
+            await Logger.modLog(
+                interaction.guild,
+                'Formal Warning',
+                interaction.author || interaction.user,
+                user,
+                reason,
+                [
+                    { name: '⚖️ Case ID', value: `#${caseRecord.id}`, inline: true }
+                ],
+                'Yellow'
+            );
 
             if (interaction instanceof Message) {
                 await interaction.reply({ embeds: [successEmbed] });

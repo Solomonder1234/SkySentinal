@@ -14,9 +14,17 @@ model GuildConfig {
   id              String   @id // Guild ID
   prefix          String   @default("!")
   modLogChannelId String?
+  msgLogChannelId String?
+  memberLogChannelId String?
+  serverLogChannelId String?
+  voiceLogChannelId String?
+  joinLogChannelId String?
+  weatherAlertChannelId String?
+  weatherAlertZone    String?  @default("NYC") // Default zone
   watchLogChannelId String?
   modmailChannelId String?
   ticketCategoryId String?
+  transcriptChannelId String?
   adminRoleId     String?
   modRoleId       String?
   
@@ -116,6 +124,7 @@ model Case {
   moderatorId     String   // User ID of the moderator
   type            String   // WARN, KICK, BAN, MUTE, UNBAN, UNMUTE
   reason          String?
+  notes           String?
   duration        Int?     // Duration in milliseconds (for mutes/tempbans)
   active          Boolean  @default(true) // For mutes/bans that can expire
   
@@ -274,7 +283,68 @@ model PendingStaffJoin {
   userId      String
   roles       String   // JSON string of role IDs granted
   expiresAt   DateTime
+  reminded3d  Boolean  @default(false)
+  reminded24h Boolean  @default(false)
   createdAt   DateTime @default(now())
 
   @@index([guildId, userId])
+}
+
+model Giveaway {
+  id          String   @id // Message ID
+  guildId     String
+  channelId   String
+  hostId      String
+  prize       String
+  winnerCount Int      @default(1)
+  endsAt      DateTime
+  entries     String   @default("[]") // JSON stringified array of user IDs
+  status      String   @default("OPEN") // OPEN, ENDED
+  
+  createdAt   DateTime @default(now())
+}
+
+model StaffShift {
+  id        Int      @id @default(autoincrement())
+  guildId   String
+  userId    String
+  startTime DateTime @default(now())
+  endTime   DateTime?
+  duration  Int?     // Duration in minutes
+  status    String   @default("ACTIVE") // ACTIVE, COMPLETED
+  
+  @@index([guildId, userId])
+}
+
+model RehabSession {
+  id              Int      @id @default(autoincrement())
+  guildId         String
+  userId          String
+  channelId       String   @unique
+  originalRoles   String   // JSON string of role IDs they lost
+  reason          String?
+  attempts        Int      @default(0)
+  createdAt       DateTime @default(now())
+
+  @@index([guildId, userId])
+}
+
+model Reminder {
+  id        Int      @id @default(autoincrement())
+  guildId   String
+  channelId String
+  userId    String
+  message   String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model StaffMember {
+  id        String   @id // Discord User ID
+  username  String
+  avatarUrl String?
+  tier      String   // Owners, Founders, Executive Board, etc.
+  role      String?  
+  priority  Int      @default(0) // Higher = Higher on page
+  updatedAt DateTime @updatedAt
 }

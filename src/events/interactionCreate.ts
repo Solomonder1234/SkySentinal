@@ -2,6 +2,7 @@ import { Events, Interaction, ActionRowBuilder, ButtonBuilder, ButtonStyle, Chan
 import { Event } from '../lib/structures/Event';
 import { PromotionService } from '../lib/services/PromotionService';
 import { JSONDatabase } from '../utils/JSONDatabase';
+import { ActivityStore } from '../utils/ActivityStore';
 import { Logger } from '../utils/Logger';
 import { EmbedUtils } from '../utils/EmbedUtils';
 
@@ -83,15 +84,19 @@ export default {
                 if (value === 'ticket_investigation') { prettyType = 'Investigation'; channelName = `inv-${sanitizedUsername}`.substring(0, 100); }
 
                 try {
+                    const overwrites: any = [
+                        { id: interaction.guild.id, deny: ['ViewChannel'] },
+                        { id: interaction.user.id, allow: ['ViewChannel', 'SendMessages', 'ReadMessageHistory'] },
+                        { id: client.user.id, allow: ['ViewChannel', 'SendMessages', 'ManageChannels'] }
+                    ];
+                    if (guildConf?.modRoleId) overwrites.push({ id: guildConf.modRoleId, allow: ['ViewChannel', 'SendMessages', 'ReadMessageHistory'] });
+                    if (guildConf?.adminRoleId) overwrites.push({ id: guildConf.adminRoleId, allow: ['ViewChannel', 'SendMessages', 'ReadMessageHistory'] });
+
                     const channel = await interaction.guild.channels.create({
                         name: channelName,
                         type: ChannelType.GuildText,
                         parent: categoryRaw || null,
-                        permissionOverwrites: [
-                            { id: interaction.guild.id, deny: ['ViewChannel'] },
-                            { id: interaction.user.id, allow: ['ViewChannel', 'SendMessages', 'ReadMessageHistory'] },
-                            { id: client.user.id, allow: ['ViewChannel', 'SendMessages', 'ManageChannels'] }
-                        ]
+                        permissionOverwrites: overwrites
                     });
 
                     await client.database.prisma.ticket.create({
@@ -102,18 +107,22 @@ export default {
                         }
                     });
 
-                    const embed = EmbedUtils.info(`${prettyType}`, `Welcome ${interaction.user}!\n\nPlease describe your issue or report in detail.\nOur team will be with you shortly.`)
-                        .setFooter({ text: 'SkySentinel AV • Ticket Service' });
+                    const embed = new EmbedBuilder()
+                        .setTitle('SkySentinel • AV Intelligence Module')
+                        .setDescription(`### ❖ Support Session Initiated\n\nWelcome ${interaction.user}!\n\n**Category:** ${prettyType}\n\nPlease describe your issue or report in detail.\nOur staff team will be with you shortly.`)
+                        .setColor(0x2b2d31)
+                        .setFooter({ text: 'SkySentinel AV • Ticket Service' })
+                        .setTimestamp();
 
                     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
                         new ButtonBuilder().setCustomId('close_ticket').setLabel('Close Ticket').setStyle(ButtonStyle.Danger).setEmoji('🔒')
                     );
 
-                    await channel.send({ content: `${interaction.user}`, embeds: [embed], components: [row as any] });
-                    await interaction.editReply({ content: `Ticket created: ${channel}` });
+                    await channel.send({ content: `${interaction.user} ${guildConf?.modRoleId ? `<@&${guildConf.modRoleId}>` : ''}`, embeds: [embed], components: [row as any] });
+                    await interaction.editReply({ content: `✅ Ticket created: ${channel}` });
                 } catch (error) {
                     client.logger.error('Error creating ticket:', error);
-                    await interaction.editReply({ content: 'Failed to create ticket channel. Please contact an admin.' });
+                    await interaction.editReply({ content: '❌ Failed to create ticket channel. Please contact an admin.' });
                 }
             } else if (interaction.customId === 'music_filters_select') {
                 const guildId = interaction.guildId;
@@ -135,8 +144,41 @@ export default {
                 return;
             }
         } else if (interaction.isButton()) {
-            if (interaction.customId === 'app_start_interview' || interaction.customId === 'app_2fa_yes') {
-                await interaction.deferUpdate();
+            // Defensive deferral: Immediately notify API of activity to prevent "Unknown Interaction" timeouts under load
+            // We use deferReply for buttons that create new messages/content, and deferUpdate for buttons that just want to show progress.
+            if (interaction.customId === 'btn_activity_verify' || 
+                interaction.customId === 'btn_giveaway_enter' || 
+                interaction.customId === 'create_ticket') {
+                await interaction.deferReply({ flags: ['Ephemeral'] }).catch(() => null);
+            } else if (interaction.customId.startsWith('app_') || interaction.customId === 'close_ticket') {
+                await interaction.deferUpdate().catch(() => null);
+            }
+
+            // If we still haven't deferred or replied, and we're about to do logic that might take time,
+            // we should probably reply or defer here. But let's stick to specific fixes for now.
+
+            if (interaction.customId === 'btn_activity_verify') {
+                try {
+                    // Record their explicit click in off-site memory storage mapped exactly to the Button's root Message ID
+                    ActivityStore.recordVerification(interaction.message.id, interaction.user.id);
+
+                    // Update their profile timestamp. Prisma 'upsert' automatically forces the 'updatedAt' field to the current Date, mechanically resetting the HR 14-day inactivity sweep.
+                    await client.database.prisma.userProfile.upsert({
+                        where: { id: interaction.user.id },
+                        create: { id: interaction.user.id, xp: 0, level: 0 },
+                        update: { messageCount: { increment: 0 } } // Meaningless update specifically designed to force the updatedAt database refresh
+                    });
+                    await interaction.editReply({ content: '✅ Your activity status has been perfectly validated. You are secured against automated HR sweeps for another 14 days.' });
+                    
+                    client.logger.info(`[ActivityCheck] Staff Member ${interaction.user.tag} successfully manually verified their activity status.`);
+                } catch (error) {
+                    client.logger.error(`[ActivityCheck] Prisma failed processing verification for ${interaction.user.id}`, error);
+                    await interaction.editReply({ content: '❌ Database failed to update your activity timestamp. Try sending a raw message in chat to verify naturally.' });
+                }
+            } else if (interaction.customId === 'btn_giveaway_enter') {
+                const result = await client.giveaways.handleEntry(interaction.message.id, interaction.user.id);
+                await interaction.editReply({ content: result.success ? `✅ ${result.message}` : `❌ ${result.message}` });
+            } else if (interaction.customId === 'app_start_interview' || interaction.customId === 'app_2fa_yes') {
                 await client.applicationService.sendNextQuestion(interaction.message.channel.id);
             } else if (interaction.customId === 'app_2fa_no') {
                 await interaction.reply({ content: 'Application cancelled due to missing 2FA. This channel will be deleted shortly.', components: [] });
@@ -144,8 +186,6 @@ export default {
                     if (interaction.channel) await interaction.channel.delete().catch(() => null);
                 }, 5000);
             } else if (interaction.customId === 'create_ticket') {
-                await interaction.deferReply({ flags: ['Ephemeral'] });
-
                 const existingTicket = await client.database.prisma.ticket.findFirst({
                     where: { userId: interaction.user.id, open: true }
                 });
@@ -164,21 +204,19 @@ export default {
                 const channelName = `ticket-${sanitizedUsername}`.substring(0, 100);
 
                 try {
+                    const overwrites: any = [
+                        { id: interaction.guild.id, deny: ['ViewChannel'] },
+                        { id: interaction.user.id, allow: ['ViewChannel', 'SendMessages', 'ReadMessageHistory'] },
+                        { id: client.user.id, allow: ['ViewChannel', 'SendMessages', 'ManageChannels'] }
+                    ];
+                    if (guildConf?.modRoleId) overwrites.push({ id: guildConf.modRoleId, allow: ['ViewChannel', 'SendMessages', 'ReadMessageHistory'] });
+                    if (guildConf?.adminRoleId) overwrites.push({ id: guildConf.adminRoleId, allow: ['ViewChannel', 'SendMessages', 'ReadMessageHistory'] });
+
                     const channel = await interaction.guild.channels.create({
                         name: channelName,
                         type: ChannelType.GuildText,
                         parent: categoryRaw || null,
-                        permissionOverwrites: [
-                            {
-                                id: interaction.guild.id,
-                                deny: ['ViewChannel'],
-                            },
-                            {
-                                id: interaction.user.id,
-                                allow: ['ViewChannel', 'SendMessages', 'ReadMessageHistory'],
-                            },
-                            // Add staff role permissions here if configured
-                        ],
+                        permissionOverwrites: overwrites
                     });
 
                     await client.database.prisma.ticket.create({
@@ -189,8 +227,12 @@ export default {
                         }
                     });
 
-                    const embed = EmbedUtils.info('Ticket Created', `Welcome ${interaction.user}! Please describe your issue.\nSupport will be with you shortly.`)
-                        .setFooter({ text: 'SkySentinel AV • Ticket Service' });
+                    const embed = new EmbedBuilder()
+                        .setTitle('SkySentinel • AV Intelligence Module')
+                        .setDescription(`### ❖ Support Session Initiated\n\nWelcome ${interaction.user}!\n\nPlease describe your issue or report in detail.\nOur staff team will be with you shortly.`)
+                        .setColor(0x2b2d31)
+                        .setFooter({ text: 'SkySentinel AV • Ticket Service' })
+                        .setTimestamp();
 
                     const row = new ActionRowBuilder<ButtonBuilder>()
                         .addComponents(
@@ -201,11 +243,11 @@ export default {
                                 .setEmoji('🔒')
                         );
 
-                    await channel.send({ content: `${interaction.user}`, embeds: [embed], components: [row] });
-                    await interaction.editReply({ content: `Ticket created: ${channel}` });
+                    await channel.send({ content: `${interaction.user} ${guildConf?.modRoleId ? `<@&${guildConf.modRoleId}>` : ''}`, embeds: [embed], components: [row] });
+                    await interaction.editReply({ content: `✅ Ticket created: ${channel}` });
                 } catch (error) {
                     console.error('Error creating ticket:', error);
-                    await interaction.editReply({ content: 'Failed to create ticket channel. Please contact an admin.' });
+                    await interaction.editReply({ content: '❌ Failed to create ticket channel. Please contact an admin.' });
                 }
 
             } else if (interaction.customId === 'close_ticket') {
@@ -222,12 +264,17 @@ export default {
                             const buffer = Buffer.from(transcriptData, 'utf-8');
                             const attach = new AttachmentBuilder(buffer, { name: `transcript-${(interaction.channel as any).name || 'ticket'}.txt` });
 
-                            const tChannel = await client.channels.fetch('1470074406134087691').catch(() => null);
-                            if (tChannel && tChannel.isTextBased()) {
-                                await (tChannel as TextChannel).send({
-                                    content: `Transcript for closed ticket \`#${(interaction.channel as any).name || 'ticket'}\``,
-                                    files: [attach]
-                                });
+                            const guildId = interaction.guild?.id;
+                            if (guildId) {
+                                const guildConf = await client.database.prisma.guildConfig.findUnique({ where: { id: guildId } });
+                                const tChannelId = guildConf?.transcriptChannelId || '1470074406134087691';
+                                const tChannel = await client.channels.fetch(tChannelId).catch(() => null);
+                                if (tChannel && tChannel.isTextBased()) {
+                                    await (tChannel as TextChannel).send({
+                                        content: `Transcript for closed ticket \`#${(interaction.channel as any).name || 'ticket'}\``,
+                                        files: [attach]
+                                    });
+                                }
                             }
                         } catch (e) {
                             client.logger.error('Failed to send transcript:', e);

@@ -47,7 +47,13 @@ const commandFiles = getFiles(commandsPath);
 for (const file of commandFiles) {
     try {
         const command = require(file).default;
-        if (command && command.name && !command.prefixOnly) {
+        // Discord places a hard limit on global/guild slash commands (100).
+        // Since the bot has 164 commands, we must filter out non-essential 
+        // slash commands and leave them as prefix-only.
+        const essentialCategories = ['admin', 'configuration', 'moderation', 'utility'];
+        const isEssential = essentialCategories.some(cat => file.includes(`/${cat}/`));
+
+        if (command && command.name && (!command.prefixOnly && isEssential)) {
             const apiCommand = {
                 name: command.name,
                 description: command.description,
@@ -92,35 +98,33 @@ if (!clientId) {
 }
 
 (async () => {
-    console.log(`Starting sequential deployment of ${commands.length} commands...`);
+    console.log(`Deploying ${commands.length} commands...`);
 
-    for (const cmd of commands) {
-        try {
-            if (guildId) {
-                await rest.put(
-                    Routes.applicationGuildCommands(clientId!, guildId),
-                    { body: [cmd] }
-                );
-            } else {
-                await rest.put(
-                    Routes.applicationCommands(clientId!),
-                    { body: [cmd] }
-                );
-            }
-            console.log(`✅ Successfully deployed: ${cmd.name}`);
-        } catch (error: any) {
-            console.error(`❌ FAILED to deploy: ${cmd.name}`);
-            if (error.rawError) {
-                console.error('API Error Details:', JSON.stringify(error.rawError, null, 2));
-                // If it's the 110 length error, log the object
-                if (JSON.stringify(error.rawError).includes('110')) {
-                    console.error('Faulty command object:', JSON.stringify(cmd, null, 2));
-                }
-            } else {
-                console.error('An error occurred:', error);
-            }
-            process.exit(1);
+    try {
+        if (guildId) {
+            console.log('Clearing global commands just in case to prevent duplicates...');
+            await rest.put(Routes.applicationCommands(clientId!), { body: [] });
+            
+            console.log('Deploying to guild...');
+            await rest.put(
+                Routes.applicationGuildCommands(clientId!, guildId),
+                { body: commands }
+            );
+        } else {
+            console.log('Deploying globally...');
+            await rest.put(
+                Routes.applicationCommands(clientId!),
+                { body: commands }
+            );
         }
+        console.log('✅ All commands processed successfully.');
+    } catch (error: any) {
+        console.error(`❌ FAILED to deploy commands`);
+        if (error.rawError) {
+            console.error('API Error Details:', JSON.stringify(error.rawError, null, 2));
+        } else {
+            console.error('An error occurred:', error);
+        }
+        process.exit(1);
     }
-    console.log('All commands processed successfully.');
 })();

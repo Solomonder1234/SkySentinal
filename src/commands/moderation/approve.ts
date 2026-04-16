@@ -1,4 +1,4 @@
-import { PermissionFlagsBits, Message, TextChannel } from 'discord.js';
+import { PermissionFlagsBits, Message, TextChannel, ChannelType } from 'discord.js';
 import { Command } from '../../lib/structures/Command';
 import { EmbedUtils } from '../../utils/EmbedUtils';
 
@@ -19,11 +19,26 @@ export default {
             return interaction.reply({ embeds: [EmbedUtils.error('Invalid Member', 'Please mention a valid member to approve.')] });
         }
 
-        const channel = interaction.channel as TextChannel;
-        if (!channel.name.startsWith('onboard-')) {
-            return interaction.reply({ embeds: [EmbedUtils.error('Invalid Channel', 'This command can only be used in an onboarding channel.')] });
+        // Determine if we are IN the member's onboarding channel, or if we need to find it
+        let onboardingChannel: TextChannel | undefined = undefined;
+        const currentChannel = interaction.channel as TextChannel;
+        
+        if (currentChannel.name === `onboard-${target.user.username.toLowerCase()}`) {
+            onboardingChannel = currentChannel;
+        } else {
+            // Try to find the channel elsewhere in the guild
+            onboardingChannel = interaction.guild.channels.cache.find(c => 
+                c.name === `onboard-${target.user.username.toLowerCase()}` && c.type === ChannelType.GuildText
+            ) as TextChannel;
         }
 
-        await client.onboarding.approve(interaction.member as any, target, channel);
+        await client.onboarding.approve(interaction.member as any, target, onboardingChannel);
+
+        // If command was executed outside the onboarding channel, provide feedback to the moderator
+        if (currentChannel.id !== onboardingChannel?.id) {
+            return interaction.reply({ 
+                embeds: [EmbedUtils.success('Member Approved', `Successfully verified **${target.user.tag}** and synchronized roles.`)] 
+            });
+        }
     },
 } as Command;

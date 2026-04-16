@@ -1,9 +1,10 @@
-import { Collection, CommandInteraction, Message } from 'discord.js';
+import { Collection, CommandInteraction, Message, GuildMember, EmbedBuilder } from 'discord.js';
 import { SkyClient } from '../structures/SkyClient';
 import { Command } from '../structures/Command';
 import fs from 'fs';
 import path from 'path';
 import { OWNER_IDS, BOT_VERSION } from '../../config';
+import { hasClearance, getMemberClearance, clearanceLabel } from '../../utils/ClearanceGuard';
 
 export class CommandHandler {
     private client: SkyClient;
@@ -87,6 +88,29 @@ export class CommandHandler {
             setTimeout(() => timestamps.delete(interaction.user.id), cooldownAmount);
         }
 
+        // Clearance Level gate (slash commands)
+        if (command.clearanceLevel && interaction.member instanceof GuildMember) {
+            if (!hasClearance(interaction.member, command.clearanceLevel)) {
+                const userLevel = getMemberClearance(interaction.member);
+                const embed = new EmbedBuilder()
+                    .setColor(0xED4245)
+                    .setAuthor({ 
+                        name: 'SkyAlert Network Security', 
+                        iconURL: 'https://i.imgur.com/ODp0S0h.png' 
+                    })
+                    .setTitle('❖ ACCESS DENIED')
+                    .setThumbnail('https://i.imgur.com/ODp0S0h.png')
+                    .setDescription(`Your current clearance level is insufficient to execute this directive.`)
+                    .addFields(
+                        { name: 'IDENTIFIED CLEARANCE', value: `\`${clearanceLabel(userLevel)}\``, inline: true },
+                        { name: 'PROTOCOL REQUIREMENT', value: `\`${clearanceLabel(command.clearanceLevel)}\``, inline: true }
+                    )
+                    .setTimestamp()
+                    .setFooter({ text: 'SkyAlert Intelligence Hub • Security Protocol 6-A' });
+                return interaction.reply({ embeds: [embed], ephemeral: true });
+            }
+        }
+
         try {
             await command.run(this.client, interaction, []);
         } catch (error) {
@@ -125,13 +149,19 @@ export class CommandHandler {
                     const protectedCommands = ['disablecmd', 'enablecmd', 'help'];
 
                     if (!protectedCommands.includes(command.name) && (disabledList.includes(command.name) || disabledList.includes('all'))) {
-                        const embed = {
-                            color: 0xff0000,
-                            title: '❌ Command Disabled',
-                            description: `The \`${command.name}\` command has been disabled by administrators in this server.`
-                        };
+                        const embed = new EmbedBuilder()
+                            .setColor(0xED4245)
+                            .setAuthor({ 
+                                name: 'SkyAlert Network Protocol', 
+                                iconURL: 'https://i.imgur.com/ODp0S0h.png' 
+                            })
+                            .setTitle('❖ COMMAND DEACTIVATED')
+                            .setThumbnail('https://i.imgur.com/ODp0S0h.png')
+                            .setDescription(`The \`${command.name}\` command has been administratively disabled in this sector.`)
+                            .setTimestamp()
+                            .setFooter({ text: 'SkyAlert Intelligence Hub • Directive 4-C' });
                         const msg = await message.reply({ embeds: [embed] });
-                        setTimeout(() => msg.delete().catch(() => { }), 5000);
+                        setTimeout(() => msg.delete().catch(() => { }), 8000);
                         return;
                     }
                 }
@@ -144,6 +174,31 @@ export class CommandHandler {
         if (command.defaultMemberPermissions) {
             if (!OWNER_IDS.includes(message.author.id) && !message.member?.permissions.has(command.defaultMemberPermissions)) {
                 await message.reply({ content: 'You do not have permission to use this command.' });
+                return;
+            }
+        }
+
+        // Clearance Level gate (prefix commands)
+        if (command.clearanceLevel && message.member instanceof GuildMember) {
+            if (!hasClearance(message.member, command.clearanceLevel)) {
+                const userLevel = getMemberClearance(message.member);
+                const embed = new EmbedBuilder()
+                    .setColor(0xED4245)
+                    .setAuthor({ 
+                        name: 'SkyAlert Network Security', 
+                        iconURL: 'https://i.imgur.com/ODp0S0h.png' 
+                    })
+                    .setTitle('❖ ACCESS DENIED')
+                    .setThumbnail('https://i.imgur.com/ODp0S0h.png')
+                    .setDescription(`Your current clearance level is insufficient to execute this directive.`)
+                    .addFields(
+                        { name: 'IDENTIFIED CLEARANCE', value: `\`${clearanceLabel(userLevel)}\``, inline: true },
+                        { name: 'PROTOCOL REQUIREMENT', value: `\`${clearanceLabel(command.clearanceLevel)}\``, inline: true }
+                    )
+                    .setTimestamp()
+                    .setFooter({ text: 'SkyAlert Intelligence Hub • Security Protocol 6-A' });
+                const msg = await message.reply({ embeds: [embed] });
+                setTimeout(() => msg.delete().catch(() => {}), 8000);
                 return;
             }
         }
@@ -179,7 +234,7 @@ export class CommandHandler {
             await command.run(this.client, message, args);
         } catch (error) {
             this.client.logger.error(`Error executing command ${commandName}:`, error);
-            await message.reply({ content: 'There was an error while executing this command!' });
+            await message.reply({ content: 'There was an error while executing this command!' }).catch(() => {});
         }
     }
 }

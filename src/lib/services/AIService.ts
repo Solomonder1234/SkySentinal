@@ -483,6 +483,8 @@ export class AIService {
         } catch (error: any) {
             if (error?.status === 429 || error?.message?.includes('429')) {
                 this.log('WARN', 'Toxicity Check Skipped (API Rate Limited: 429).');
+            } else if (error?.message?.includes('API_KEY_INVALID') || error?.message?.includes('API key not valid')) {
+                // Silently skip if API key is invalid to prevent log spam
             } else {
                 console.error('[AIService] Toxicity Check Error:', error.message || error);
             }

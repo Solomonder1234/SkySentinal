@@ -1,6 +1,6 @@
 import { Events, GuildMember } from 'discord.js';
 import { Event } from '../lib/structures/Event';
-import { Logger } from '../utils/Logger';
+import { Logger, LogCategory } from '../utils/Logger';
 import { MAIN_TO_STAFF_ROLE_MAP, MAIN_GUILD_ID, STAFF_GUILD_ID } from '../config';
 
 export default {
@@ -52,9 +52,9 @@ export default {
         }
         // --- END AUTO-ROLE SYNC ---
 
-        // Trigger Onboarding
+        // Trigger Captcha Security Gateway
         if (member.guild.id !== '1437983121822715946') {
-            await client.onboarding.handleMemberJoin(member);
+            await client.captcha.initiateGateway(member);
         }
 
         await Logger.log(
@@ -65,7 +65,8 @@ export default {
             [
                 { name: 'Account Created', value: `<t:${Math.floor(member.user.createdTimestamp / 1000)}:R>` },
                 { name: 'Member Count', value: `${member.guild.memberCount}` }
-            ]
+            ],
+            LogCategory.Join
         );
     },
 } as Event<Events.GuildMemberAdd>;

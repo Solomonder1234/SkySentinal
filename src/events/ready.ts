@@ -10,17 +10,38 @@ export default {
         // Initialize Bump Service (Persistence)
         await client.bump.init().catch(err => client.logger.error('[BumpService] Init Error:', err));
 
+        // Initialize Auto-Demotion Staff Activity Sweep
+        // EMERGENCY SHUTOFF: client.activityEnforcer.start();
+
+        // Initialize Giveaway Schedulers
+        client.giveaways.startHeartbeat();
+
         // Global Slash Command & Database Configuration (Existing Servers)
         if (client.user?.id && process.env.DISCORD_TOKEN) {
             const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
+            const truncateOptions = (options: any[]): any[] => {
+                return (options || []).map(opt => ({
+                    ...opt,
+                    name: (opt.name || '').substring(0, 32),
+                    description: (opt.description || 'No description').substring(0, 100),
+                    options: opt.options ? truncateOptions(opt.options) : undefined,
+                    choices: (opt.choices || []).map((choice: any) => ({
+                        ...choice,
+                        name: (choice.name || 'Choice').substring(0, 100),
+                        value: typeof choice.value === 'string' ? choice.value.substring(0, 100) : choice.value
+                    }))
+                }));
+            };
+
             const slashCommands = client.commands
                 .filter(cmd => !cmd.prefixOnly && cmd.description && cmd.description.length > 0)
                 .map(cmd => {
                     const obj: any = {
-                        name: cmd.name,
-                        description: cmd.description,
-                        options: cmd.options || [],
-                        type: cmd.type
+                        name: cmd.name.substring(0, 32),
+                        description: (cmd.description || 'No description').substring(0, 100),
+                        options: truncateOptions((cmd.options as any) || []),
+                        type: cmd.type,
+                        category: cmd.category || 'General' // Used for priority sorting
                     };
                     if (cmd.defaultMemberPermissions) {
                         obj.default_member_permissions = cmd.defaultMemberPermissions.toString();
@@ -28,25 +49,42 @@ export default {
                     return obj;
                 });
 
+            // Priority Sorting: Push Moderation, Fun, and Info to the top to ensure they are registered first
+            const PRIORITY_ORDER = ['Moderation', 'Fun', 'Info', 'Economy', 'Utility'];
+            slashCommands.sort((a, b) => {
+                const priorityA = PRIORITY_ORDER.indexOf(a.category);
+                const priorityB = PRIORITY_ORDER.indexOf(b.category);
+                if (priorityA !== -1 && priorityB !== -1) return priorityA - priorityB;
+                if (priorityA !== -1) return -1;
+                if (priorityB !== -1) return 1;
+                return a.name.localeCompare(b.name);
+            });
+
+            // Discord enforces a strict limit of 100 top-level slash commands per guild.
+            const cappedSlashCommands = slashCommands.slice(0, 100);
+            const omittedCommands = slashCommands.slice(100).map(c => c.name);
+
+            if (omittedCommands.length > 0) {
+                client.logger.warn(`Registered ${cappedSlashCommands.length} slash commands. Quota reached! ${omittedCommands.length} commands omitted from slash registration (available via ! prefix): ${omittedCommands.join(', ')}`);
+            }
+        
             for (const guild of client.guilds.cache.values()) {
                 try {
-                    // Automatically insert database configuration for existing guilds
                     await client.database.prisma.guildConfig.upsert({
                         where: { id: guild.id },
                         update: {},
                         create: { id: guild.id }
                     });
 
-                    // Set slash commands per-guild for instant propagation
                     await rest.put(
                         Routes.applicationGuildCommands(client.user.id, guild.id),
-                        { body: slashCommands }
+                        { body: cappedSlashCommands }
                     );
                 } catch (err: any) {
-                    client.logger.warn(`Failed to configure/sync slash commands for existing guild ${guild.name}: ${err.message}`);
+                    client.logger.warn(`Failed to configure/sync slash commands for guild ${guild.name}: ${err.message}`);
                 }
             }
-            client.logger.info(`Successfully synchronized configuration and ${slashCommands.length} slash commands across all existing servers.`);
+            client.logger.info(`Successfully synchronized configuration and ${cappedSlashCommands.length} slash commands across ${client.guilds.cache.size} servers.`);
         }
 
         // Debug Startup Message
@@ -66,64 +104,94 @@ export default {
         // Set default presence to DND
         client.user?.setStatus('dnd');
 
-        // Rotating Presence (EAS Alerts, Modmail, Watching)
+        // Rotating Presence (EAS Alerts, Modmail, Watching, Stats)
         let presenceState = 0;
         setInterval(async () => {
             try {
-                if (presenceState === 0) {
-                    let alertCount = 0;
-                    if (client.ai?.weatherService) {
-                        alertCount = await client.ai.weatherService.getActiveAlertCount();
+                switch (presenceState) {
+                    case 0: { // EAS Alerts
+                        let alertCount = 0;
+                        if (client.ai?.weatherService) {
+                            alertCount = await client.ai.weatherService.getActiveAlertCount();
+                        }
+                        client.user?.setActivity(`${alertCount} EAS Alerts 📡`, { type: 3 });
+                        presenceState = 1;
+                        break;
                     }
-                    // Type 3 is "Watching"
-                    client.user?.setActivity(`${alertCount} EAS Alerts 📡`, { type: 3 });
-                    presenceState = 1;
-                } else if (presenceState === 1) {
-                    client.user?.setActivity('DM me for Modmail 📩', { type: 3 });
-                    presenceState = 2;
-                } else {
-                    client.user?.setActivity('SkyAlert Network', { type: 3 });
-                    presenceState = 0;
+                    case 1: { // Modmail
+                        client.user?.setActivity('DM me for Modmail 📩', { type: 3 });
+                        presenceState = 2;
+                        break;
+                    }
+                    case 2: { // Member Count
+                        const totalMembers = client.guilds.cache.reduce((acc, guild) => acc + guild.memberCount, 0);
+                        client.user?.setActivity(`${totalMembers.toLocaleString()} members 👥`, { type: 3 });
+                        presenceState = 3;
+                        break;
+                    }
+                    case 3: { // Case Count (Database)
+                        const caseCount = await client.database.prisma.case.count();
+                        client.user?.setActivity(`${caseCount} administrative cases ⚖️`, { type: 3 });
+                        presenceState = 4;
+                        break;
+                    }
+                    case 4: { // Uptime
+                        const uptimeMs = client.uptime || 0;
+                        const hours = Math.floor(uptimeMs / 3600000);
+                        const mins = Math.floor((uptimeMs % 3600000) / 60000);
+                        client.user?.setActivity(`Uptime: ${hours}h ${mins}m ⏱️`, { type: 3 });
+                        presenceState = 0;
+                        break;
+                    }
+                    default: {
+                        client.user?.setActivity('SkyAlert Network', { type: 3 });
+                        presenceState = 0;
+                    }
                 }
             } catch (err) {
                 client.logger.error('Failed to update presence:', err);
             }
         }, 30000);
 
-        // Scheduler for Tempbans
+        // Scheduler for Tempbans & Probations
         setInterval(async () => {
             try {
                 const now = new Date();
-                const expiredBans = await client.database.prisma.case.findMany({
+                const activeCases = await client.database.prisma.case.findMany({
                     where: {
-                        type: 'TEMPBAN',
+                        type: { in: ['TEMPBAN', 'PROBATION', 'MODMAIL_BLOCK'] },
                         active: true,
                     },
                 });
-
-                for (const ban of expiredBans) {
-                    if (!ban.duration) continue;
-                    const expiresAt = new Date(ban.createdAt.getTime() + ban.duration);
-
+ 
+                for (const modCase of activeCases) {
+                    if (!modCase.duration) continue;
+                    const expiresAt = new Date(modCase.createdAt.getTime() + modCase.duration);
+ 
                     if (now >= expiresAt) {
-                        const guild = client.guilds.cache.get(ban.guildId);
+                        const guild = client.guilds.cache.get(modCase.guildId);
                         if (guild) {
                             try {
-                                await guild.members.unban(ban.targetId, 'Tempban expired');
-                                client.logger.info(`Unbanned user ${ban.targetId} in guild ${guild.name} (Tempban expired)`);
+                                if (modCase.type === 'TEMPBAN') {
+                                    await guild.members.unban(modCase.targetId, 'Tempban expired');
+                                    client.logger.info(`Unbanned user ${modCase.targetId} in guild ${guild.name} (Tempban expired)`);
+                                } else if (modCase.type === 'PROBATION') {
+                                    await guild.members.ban(modCase.targetId, { reason: 'Probation period expired. Automatic re-ban.' });
+                                    client.logger.info(`Re-banned user ${modCase.targetId} in guild ${guild.name} (Probation expired)`);
+                                }
                             } catch (e) {
-                                client.logger.error(`Failed to auto-unban ${ban.targetId}:`, e);
+                                client.logger.error(`Failed to process moderation expiry for ${modCase.targetId} (${modCase.type}):`, e);
                             }
                         }
-
+ 
                         await client.database.prisma.case.update({
-                            where: { id: ban.id },
+                            where: { id: modCase.id },
                             data: { active: false },
                         });
                     }
                 }
             } catch (error) {
-                client.logger.error('Error in tempban scheduler:', error);
+                client.logger.error('Error in moderation scheduler:', error);
             }
         }, 60000); // Check every minute
 
@@ -172,5 +240,9 @@ export default {
                 client.logger.error('Error in onboarding kicker scheduler:', error);
             }
         }, 30 * 60 * 1000); // Check every 30 minutes
+
+        client.weatherAlerts.start();
+        client.staffCompliance.start();
+        client.reminders.start();
     },
 } as Event<Events.ClientReady>;

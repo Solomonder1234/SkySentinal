@@ -1,10 +1,52 @@
 import { Events, GuildMember, PartialGuildMember } from 'discord.js';
+import { Logger, LogCategory } from '../utils/Logger';
 import { MAIN_TO_STAFF_ROLE_MAP, STAFF_TO_MAIN_ROLE_MAP, MAIN_GUILD_ID, STAFF_GUILD_ID } from '../config';
 
 export default {
     name: Events.GuildMemberUpdate,
     run: async (client: any, oldMember: GuildMember | PartialGuildMember, newMember: GuildMember) => {
         if (client.logger) client.logger.info(`[AutoSync Debug] Detected role update for ${newMember.user.tag} in Guild ${newMember.guild.id}`);
+
+        // --- MEMBER LOGS (Roles & Nicknames) ---
+        const oldRoles = oldMember.roles.cache;
+        const newRoles = newMember.roles.cache;
+
+        if (!oldRoles.equals(newRoles)) {
+            const addedRoles = newRoles.filter(role => !oldRoles.has(role.id));
+            const removedRoles = oldRoles.filter(role => !newRoles.has(role.id));
+            const totalAdded = addedRoles.map(r => `\`${r.name}\``).join(', ');
+            const totalRemoved = removedRoles.map(r => `\`${r.name}\``).join(', ');
+
+            if (addedRoles.size > 0 || removedRoles.size > 0) {
+                const fields = [];
+                if (addedRoles.size > 0) fields.push({ name: '📈 Roles Added', value: totalAdded });
+                if (removedRoles.size > 0) fields.push({ name: '📉 Roles Removed', value: totalRemoved });
+
+                await Logger.log(
+                    newMember.guild,
+                    'Manual Role Modification',
+                    `Member: <@${newMember.id}> (\`${newMember.user.tag}\`)`,
+                    'Blue',
+                    fields,
+                    LogCategory.Member
+                );
+            }
+        }
+
+        if (oldMember.nickname !== newMember.nickname) {
+            await Logger.log(
+                newMember.guild,
+                'Manual Nickname Update',
+                `Member: <@${newMember.id}> (\`${newMember.user.tag}\`)`,
+                'Blue',
+                [
+                    { name: '⬅️ Previous Display', value: `\`${oldMember.nickname || 'Default'}\``, inline: true },
+                    { name: '➡️ New Display', value: `\`${newMember.nickname || 'Default'}\``, inline: true }
+                ],
+                LogCategory.Member
+            );
+        }
+        // --- END MEMBER LOGS ---
 
         // --- AUTO-ROLE SYNC ON PROMOTION ---
         if (newMember.guild.id === MAIN_GUILD_ID) {

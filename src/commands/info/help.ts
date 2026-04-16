@@ -39,32 +39,71 @@ export default {
             return interaction.reply({ embeds: [embed] });
         } else {
             const commands = client.commands;
-            const categories = [...new Set(commands.map(c => c.category || 'Uncategorized'))].sort();
 
-            const emojiMap: Record<string, string> = {
-                'Moderation': '🛡️', 'Utility': '🛠️', 'Info': 'ℹ️',
-                'Fun': '🎮', 'Economy': '💰', 'Image': '🖼️',
-                'Leveling': '📈', 'Configuration': '⚙️', 'Voice': '🎙️', 'Troll': '🤡'
-            };
+            // Define High-Fidelity Intelligence Modules
+            const MODULES = [
+                {
+                    id: 'security',
+                    label: 'Shield & Security Ops',
+                    description: 'Directives for hostiles, clearance, and network defense.',
+                    emoji: '🛡️',
+                    categories: ['Moderation', 'Admin', 'Verification', 'Antinuke']
+                },
+                {
+                    id: 'executive',
+                    label: 'Executive Command',
+                    description: 'System-wide configuration and owner-level overrides.',
+                    emoji: '📡',
+                    categories: ['Owner', 'Configuration']
+                },
+                {
+                    id: 'intelligence',
+                    label: 'Network Intelligence',
+                    description: 'Telemetry data, system info, and core utility links.',
+                    emoji: 'ℹ️',
+                    categories: ['Info', 'Server', 'Utility']
+                },
+                {
+                    id: 'field',
+                    label: 'Field Operations',
+                    description: 'Communication relays, tickets, and audio telemetry.',
+                    emoji: '📟',
+                    categories: ['Tickets', 'Voice', 'Radio']
+                },
+                {
+                    id: 'citizenship',
+                    label: 'Citizenship & Economy',
+                    description: 'User progression, leveling, and financial records.',
+                    emoji: '💰',
+                    categories: ['Economy', 'Leveling']
+                },
+                {
+                    id: 'engagement',
+                    label: 'Broadcast Engagement',
+                    description: 'Multimedia tools, simulated content, and troll protocols.',
+                    emoji: '🎮',
+                    categories: ['Fun', 'Image', 'Text', 'Troll']
+                }
+            ];
 
-            const options = categories.map(cat => {
+            const options = MODULES.map(mod => {
                 return new StringSelectMenuOptionBuilder()
-                    .setLabel(cat.substring(0, 80))
-                    .setValue(cat) // Safely matched without trailing spaces to prevent string mismatch bugs!
-                    .setDescription(`Browse commands in the ${cat} section.`)
-                    .setEmoji(emojiMap[cat] || '📁');
+                    .setLabel(mod.label)
+                    .setValue(mod.id)
+                    .setDescription(mod.description)
+                    .setEmoji(mod.emoji);
             });
 
             const selectMenu = new StringSelectMenuBuilder()
                 .setCustomId('help_category_select')
-                .setPlaceholder('Select a Command Module...')
+                .setPlaceholder('Deploy a specific Intelligence Module...')
                 .addOptions(options);
 
             const row = new ActionRowBuilder<any>().addComponents(selectMenu);
 
             const embed = EmbedUtils.info(
-                '✨ SkySentinel Control Panel',
-                `Welcome to the advanced administration suite. Explore our extensive toolset using the dropdown menu below.\n\n**System Statistics**\n• Total Modules Loaded: **${commands.size}**\n• Prefix: \`!\` or \`/\`\n\n*Select a category to view its corresponding commands.*`
+                '✨ SkySentinel Intelligence Hub',
+                `Welcome to the advanced administration suite. Explore our extensive toolset using the tactical module selection below.\n\n**Operational Statistics**\n• Active Command Nodes: **${commands.size}**\n• Primary Protocols: \`!\` | \`/\`\n\n*Select a module to view its corresponding operational directives.*`
             ).setFooter({ text: VERSION_STRING });
 
             let replyMessage: Message;
@@ -88,14 +127,28 @@ export default {
                     return i.reply({ content: 'These options are not for you.', ephemeral: true });
                 }
 
-                const catName = i.values[0] || 'Uncategorized';
-                const categoryCommands = commands.filter((c: any) => (c.category || 'Uncategorized') === catName);
+                const moduleId = i.values[0];
+                const selectedModule = MODULES.find(m => m.id === moduleId);
+                
+                if (!selectedModule) return;
 
-                // Detailed command list formatting
-                const commandList = categoryCommands.map(c => `**\`${c.name}\`** - ${c.description || 'No description available'}`).join('\n');
+                const moduleCommands = commands.filter((c: any) => 
+                    selectedModule.categories.includes(c.category)
+                );
 
-                const newEmbed = EmbedUtils.info(`${emojiMap[catName] || '📁'} ${catName} Commands`, commandList)
-                    .setFooter({ text: `Total: ${categoryCommands.size} commands • Use /help <command> for more info.` });
+                // Group by sub-category in the display
+                let fieldContent = '';
+                for (const cat of selectedModule.categories) {
+                    const catCmds = moduleCommands.filter((c: any) => c.category === cat);
+                    if (catCmds.size > 0) {
+                        fieldContent += `\n**[ ${cat.toUpperCase()} ]**\n`;
+                        fieldContent += catCmds.map(c => `• \`${c.name}\``).join(', ') + '\n';
+                    }
+                }
+
+                const newEmbed = EmbedUtils.info(`${selectedModule.emoji} ${selectedModule.label}`, fieldContent || 'No directives found in this sector.')
+                    .setDescription(`*Current operational tools in the ${selectedModule.label} sector:*\n${fieldContent}`)
+                    .setFooter({ text: `Sub-Sector: ${selectedModule.id.toUpperCase()} • Total: ${moduleCommands.size} commands` });
 
                 await i.update({ embeds: [newEmbed], components: [row] });
             });

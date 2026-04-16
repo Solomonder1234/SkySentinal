@@ -33,11 +33,11 @@ export default {
 
         await message.reply({ embeds: [EmbedUtils.success('Modmail Closed', `The Modmail session has been ended. Reason relayed to user: \`${reason}\``)] });
 
-        if (message.channel.isThread()) {
-            await (message.channel as ThreadChannel).setArchived(true);
+        if (message.channel?.isThread()) {
+            await (message.channel as ThreadChannel).setArchived(true).catch(() => {});
         } else {
             // Delete text channel after a 5 second delay to let the staff see the confirmation
-            setTimeout(() => message.channel.delete().catch(() => { }), 5000);
+            setTimeout(() => message.channel?.delete().catch(() => { }), 5000);
         }
     }
 } as Command;

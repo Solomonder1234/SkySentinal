@@ -1,6 +1,7 @@
 import { Command } from '../../lib/structures/Command';
 import { ApplicationCommandOptionType, ApplicationCommandType, Message, ChatInputCommandInteraction } from 'discord.js';
 import { EmbedUtils } from '../../utils/EmbedUtils';
+import { Logger } from '../../utils/Logger';
 
 export default {
     name: 'suspend',
@@ -138,6 +139,20 @@ export default {
             const successEmbed = EmbedUtils.success(
                 'Staff Member Suspended',
                 `<@${user.id}> has been officially suspended.\n\n**Case ID:** #${suspensionRecord.id}\n**Action Details:**\n- Role <@&${suspendRoleId}> granted.\n- Nickname updated to \`${newName.substring(0, 32)}\`.\n- Reason: ${reason}`
+            );
+
+            // High-Fidelity Administrative Logging
+            await Logger.modLog(
+                guild,
+                'Staff Suspension',
+                interaction.author || interaction.user,
+                user,
+                reason,
+                [
+                    { name: '⚖️ Case ID', value: `#${suspensionRecord.id}`, inline: true },
+                    { name: '📊 Display', value: `\`${newName.substring(0, 32)}\``, inline: true }
+                ],
+                'Orange'
             );
 
             if (interaction instanceof Message) {

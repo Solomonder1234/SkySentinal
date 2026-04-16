@@ -1,24 +1,39 @@
-import { ChatInputCommandInteraction, Message, EmbedBuilder, Colors, TextChannel, ThreadChannel, Client } from 'discord.js';
+import { Message, PermissionFlagsBits } from 'discord.js';
 import { Command } from '../../lib/structures/Command';
 import { EmbedUtils } from '../../utils/EmbedUtils';
-import { JSONDatabase } from '../../utils/JSONDatabase';
 
 export default {
     name: 'mmunblock',
-    description: '✅ Remove a user from the Modmail blocklist.',
-    userPermissions: ['ModerateMembers'],
-    cooldown: 5,
+    description: '🔓 Lift a Modmail restriction from a user.',
+    defaultMemberPermissions: PermissionFlagsBits.ModerateMembers,
+    prefixOnly: true,
     run: async (client, message, args) => {
-        if (!args[0]) return message.reply({ embeds: [EmbedUtils.error('Missing Argument', 'Please provide a User ID or mention a user to unblock.')] });
+        if (!args || !args[0]) {
+            return message.reply({ embeds: [EmbedUtils.error('Missing Argument', 'Please provide a User ID or mention a user to unblock.')] });
+        }
 
         const userId = args[0].replace(/[<@!>]/g, '');
 
-        const success = JSONDatabase.unblockModmailUser(message.guildId!, userId);
+        // Find active block
+        const activeBlock = await client.database.prisma.case.findFirst({
+            where: {
+                guildId: message.guildId!,
+                targetId: userId,
+                type: 'MODMAIL_BLOCK',
+                active: true
+            }
+        });
 
-        if (!success) {
-            return message.reply({ embeds: [EmbedUtils.error('Not Blocked', `That user is not currently on the Modmail blocklist.`)] });
+        if (!activeBlock) {
+            return message.reply({ embeds: [EmbedUtils.error('Not Restricted', 'That user does not have an active Modmail blacklist record.')] });
         }
 
-        return message.reply({ embeds: [EmbedUtils.success('Modmail Unblock', `The user \`${userId}\` has had their Modmail privileges restored.`)] });
+        // Deactivate
+        await client.database.prisma.case.update({
+            where: { id: activeBlock.id },
+            data: { active: false }
+        });
+
+        return message.reply({ embeds: [EmbedUtils.success('Modmail Restored', `Modmail access has been restored for <@${userId}> (ID: \`${userId}\`).`)] });
     }
 } as Command;

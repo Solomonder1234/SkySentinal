@@ -6,6 +6,7 @@ export default {
     name: 'fakeban',
     description: 'Fake ban a user (sends them a DM).',
     category: 'Troll',
+    prefixOnly: true,
     type: ApplicationCommandType.ChatInput,
     defaultMemberPermissions: PermissionFlagsBits.Administrator,
     options: [

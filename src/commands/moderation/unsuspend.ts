@@ -1,6 +1,7 @@
 import { Command } from '../../lib/structures/Command';
 import { ApplicationCommandOptionType, ApplicationCommandType, Message, ChatInputCommandInteraction } from 'discord.js';
 import { EmbedUtils } from '../../utils/EmbedUtils';
+import { Logger } from '../../utils/Logger';
 
 export default {
     name: 'unsuspend',
@@ -135,6 +136,20 @@ export default {
             const successEmbed = EmbedUtils.success(
                 'Staff Member Unsuspended',
                 `<@${user.id}> has been officially unsuspended.\n\n**Case ID:** #${activeSuspension.id} Resolved\n**Action Details:**\n- Suspended role removed.\n- Original staff roles restored.\n- Prefix restored to \`${activeSuspension.originalName}\`.\n- Reason: ${reason}`
+            );
+
+            // High-Fidelity Administrative Logging
+            await Logger.modLog(
+                guild,
+                'Staff Unsuspension',
+                interaction.author || interaction.user,
+                user,
+                reason,
+                [
+                    { name: '⚖️ Case ID', value: `#${activeSuspension.id} Resolved`, inline: true },
+                    { name: '🔄 Prefix Restored', value: `\`${activeSuspension.originalName}\``, inline: true }
+                ],
+                'Green'
             );
 
             if (interaction instanceof Message) {

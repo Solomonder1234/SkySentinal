@@ -1,6 +1,7 @@
 import { Command } from '../../lib/structures/Command';
 import { ApplicationCommandOptionType, ApplicationCommandType, PermissionFlagsBits, Message, ChatInputCommandInteraction, GuildMember, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 import { EmbedUtils } from '../../utils/EmbedUtils';
+import { Logger } from '../../utils/Logger';
 
 export default {
     name: 'ban',
@@ -71,6 +72,19 @@ export default {
 
             await interaction.guild?.members.ban(user, { reason });
             const successEmbed = EmbedUtils.success('User Banned', `**${user.tag}** has been banned.\nReason: ${reason}`);
+
+            // High-Fidelity Administrative Logging
+            if (interaction.guild) {
+                await Logger.modLog(
+                    interaction.guild,
+                    'Server Ban',
+                    interaction.author || interaction.user,
+                    user,
+                    reason,
+                    [],
+                    'Red'
+                );
+            }
 
             if (interaction instanceof Message) {
                 await interaction.reply({ embeds: [successEmbed] });
