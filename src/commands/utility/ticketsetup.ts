@@ -26,10 +26,10 @@ export default {
         const embed = new EmbedBuilder()
             .setTitle('SkySentinel • AV Intelligence Module')
             .setDescription('### ❖ SkySentinel Support Terminal\n\nSelect the corresponding category below to open a direct, private communication channel with the staff network.\n\n**CATEGORIES**\n❓ **Support Request:** General inquiries and assistance.\n⚠️ **Member Report:** Privately report users breaking protocol.\n👔 **HR/Admin:** Highly-sensitive network issues.\n🕵️ **Investigations:** Dedicated intelligence reports.')
-            .setColor(0x2b2d31)
+            .setColor('#2B2D31')
             .setImage(selectedGif || null)
-            .setFooter({ text: 'SkySentinel Protocol • Secure Terminal Gateway' })
-            .setTimestamp();
+
+            ;
 
         const selectMenu = new StringSelectMenuBuilder()
             .setCustomId('ticket_select')

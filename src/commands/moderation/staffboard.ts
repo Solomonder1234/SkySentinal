@@ -57,7 +57,7 @@ export default {
             const embed = new EmbedBuilder()
                 .setTitle('📊 SkySentinel AV: Global Staff Dashboard')
                 .setThumbnail(client.user?.displayAvatarURL() || null)
-                .setColor('#2F3136' as ColorResolvable)
+                .setColor('#2B2D31')
                 .addFields(
                     {
                         name: '🛡️ Moderation Activity (24h)',
@@ -75,8 +75,8 @@ export default {
                         inline: false
                     }
                 )
-                .setFooter({ text: 'Confidential Staff Overview • AV Design Edition' })
-                .setTimestamp();
+
+                ;
 
             if (interaction instanceof Message) {
                 await interaction.reply({ embeds: [embed] });

@@ -38,8 +38,8 @@ export default {
         const claimEmbed = new EmbedBuilder()
             .setTitle(`🔓 ${type} Unclaimed`)
             .setDescription(`This ${type.toLowerCase()} has been unclaimed by <@${message.author.id}> and is now open for any staff member to handle.`)
-            .setColor(Colors.LightGrey)
-            .setTimestamp();
+            .setColor('#2B2D31')
+            ;
 
         await message.reply({ embeds: [claimEmbed] });
     }

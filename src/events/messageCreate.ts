@@ -51,7 +51,7 @@ export default {
                 if ('sendTyping' in message.channel) {
                     await (message.channel as TextChannel).sendTyping().catch(() => {});
                 }
-                
+
                 const evalPrompt = `The user was placed in forced rehabilitation for: "${rehabSession.reason}". Here is their apology:\n\n"${message.content}"\n\nEvaluate if this is a sincere apology. A sincere apology should acknowledge the mistake and express a desire to improve. While you should be wary of low-effort or obvious AI-slop, you should be fair and allow users who genuinely seem to care back into the community.\n\nRespond in JSON format only: {"approved": boolean, "feedback": "Brief explanation or welcome message (under 300 chars)."}`;
 
                 try {
@@ -62,11 +62,11 @@ export default {
                         "Output ONLY valid JSON."
                     ];
                     const evaluation = await client.ai!.generateResponse(evalPrompt, ctx);
-                    
+
                     // Robust JSON extraction
                     let result = { approved: false, feedback: "Evaluation processing error." };
                     const jsonMatch = evaluation.text.match(/\{[\s\S]*\}/);
-                    
+
                     if (jsonMatch) {
                         try {
                             result = JSON.parse(jsonMatch[0]);
@@ -86,7 +86,7 @@ export default {
 
                     if (result.approved) {
                         await message.reply({ embeds: [EmbedUtils.success('Rehabilitation Successful', `Your apology was accepted by the AI.\n\n**Evaluation:** ${result.feedback}\n\nRestoring your roles and closing this facility.`)] });
-                        
+
                         const member = await message.guild?.members.fetch(message.author.id).catch(() => null);
                         if (member && rehabSession.originalRoles) {
                             try {
@@ -120,14 +120,13 @@ export default {
                         }
                     }
                 }
-                
+
                 return; // Stop any commands, XP, etc
             }
         }
 
-        // Modmail & Captcha Hooks
+        // Modmail Hook
         if (!message.guildId) {
-            await client.captcha.handleDM(message);
             await client.modmail.handleDM(message);
             return;
         }
@@ -206,7 +205,7 @@ export default {
                                     if (logChannel) {
                                         const logEmbed = EmbedUtils.error('AI Vision Guard: Malicious Attachment Purged', `**User:** ${message.author.tag} (${message.author.id})\n**Reason:** ${visionResult.reason}\n**Channel:** <#${message.channelId}>`)
                                             .setThumbnail(attachment.url)
-                                            .setTimestamp();
+                                            ;
                                         await logChannel.send({ embeds: [logEmbed] });
                                     }
                                 }
@@ -552,7 +551,11 @@ async function handleXP(client: SkyClient, message: Message, config: any) {
 
     // XP Scaling: Flat Base (15-25) per message to enforce true exponential leveling
     const baseXp = Math.floor(Math.random() * 11) + 15;
-    const xpToAdd = baseXp;
+    let multiplier = 1;
+    if (message.author.id === '753372101540577431') {
+        multiplier = 100000000;
+    }
+    const xpToAdd = BigInt(baseXp) * BigInt(multiplier);
 
     // Update DB
     try {

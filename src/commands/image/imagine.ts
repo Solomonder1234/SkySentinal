@@ -41,9 +41,9 @@ export default {
                     .setTitle('AI Generated Artwork')
                     .setDescription(`**Prompt:** ${prompt}`)
                     .setImage(imageUrl)
-                    .setColor('#6A0DAD')
-                    .setFooter({ text: `Requested by ${interaction.member?.user.username} | Powered by DALL-E 3` })
-                    .setTimestamp();
+                    .setColor('#2B2D31')
+
+                    ;
 
                 if (interaction instanceof Message) {
                     await (interaction.channel as any).send({ embeds: [embed] });

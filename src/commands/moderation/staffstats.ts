@@ -66,9 +66,9 @@ export default {
                     ? `Last shift was ${lastShift.startTime.toLocaleDateString()} for ${lastShift.duration} mins.` 
                     : 'No completed shifts this week.' }
             )
-            .setColor(activeShift ? '#2ecc71' : '#3498db')
-            .setFooter({ text: 'SkySentinel Staff Engagement Tracking' })
-            .setTimestamp();
+            .setColor('#2B2D31')
+
+            ;
 
         await interaction.reply({ embeds: [embed] });
     },

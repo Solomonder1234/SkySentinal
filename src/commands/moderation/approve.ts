@@ -22,7 +22,7 @@ export default {
         // Determine if we are IN the member's onboarding channel, or if we need to find it
         let onboardingChannel: TextChannel | undefined = undefined;
         const currentChannel = interaction.channel as TextChannel;
-        
+
         if (currentChannel.name === `onboard-${target.user.username.toLowerCase()}`) {
             onboardingChannel = currentChannel;
         } else {

@@ -23,20 +23,21 @@ export default function LiveHUD() {
   }, []);
 
   return (
-    <div className={styles.hudContainer}>
-      <div className={styles.item}>
-        <span className={styles.label}>NETWORK PROTOCOL:</span>
-        <span className={styles.value}>AV-INTELLIGENCE-ACTIVE</span>
+    <div className={styles.hudCard}>
+      <div className={styles.cardHeader}>
+        <span className={styles.protocolLabel}>Network Protocol</span>
+        <h3 className={styles.protocolValue}>AV-INTELLIGENCE-ACTIVE</h3>
       </div>
-      <div className={styles.divider}>//</div>
-      <div className={styles.item}>
-        <span className={styles.label}>ENCRYPTION:</span>
-        <span className={styles.value}>DISABLED (PUBLIC HUD)</span>
-      </div>
-      <div className={styles.divider}>//</div>
-      <div className={styles.item}>
-        <span className={styles.label}>SYSTEM TIME:</span>
-        <span className={styles.value}>{time || '--:--:-- --'}</span>
+      
+      <div className={styles.gridContainer}>
+        <div className={styles.item}>
+          <span className={styles.label}>Encryption</span>
+          <span className={styles.value}>Disabled (Public)</span>
+        </div>
+        <div className={styles.item}>
+          <span className={styles.label}>System Time</span>
+          <span className={styles.value}>{time || '--:--:-- --'}</span>
+        </div>
       </div>
     </div>
   );

@@ -15,11 +15,14 @@ export class OnboardingService {
      */
     public async handleMemberJoin(member: GuildMember) {
         const guild = member.guild;
-        const config = await this.client.database.prisma.guildConfig.findUnique({
+        let config: any = await this.client.database.prisma.guildConfig.findUnique({
             where: { id: guild.id }
         });
 
-        if (!config) return;
+        if (!config) {
+            config = {} as any;
+            this.client.logger.warn(`No guildConfig found for ${guild.id}, using hardcoded fallbacks for onboarding!`);
+        }
 
         // Hardcoded IDs provided by user (FALLBACKS)
         const FALLBACK_CATEGORY_ID = '1475582320718118963';
@@ -113,11 +116,11 @@ export class OnboardingService {
         if (message.author.bot || !message.guild || !message.channel.isTextBased()) return;
         if (!(message.channel as TextChannel).name.startsWith('onboard-')) return;
 
-        const config = await this.client.database.prisma.guildConfig.findUnique({
+        let config: any = await this.client.database.prisma.guildConfig.findUnique({
             where: { id: message.guild.id }
         });
 
-        if (!config) return;
+        if (!config) config = {} as any;
 
         // Ignore messages starting with the prefix (they are commands)
         const prefix = config.prefix || '!';
@@ -167,11 +170,11 @@ export class OnboardingService {
      * Finalizes onboarding by granting roles and cleaning up.
      */
     public async approve(moderator: GuildMember, target: GuildMember, channel?: TextChannel) {
-        const config = await this.client.database.prisma.guildConfig.findUnique({
+        let config: any = await this.client.database.prisma.guildConfig.findUnique({
             where: { id: moderator.guild.id }
         });
 
-        if (!config) return;
+        if (!config) config = {} as any;
 
         // Hardcoded IDs provided by user (FALLBACKS)
         const FALLBACK_UNVERIFIED_ROLE_ID = '1371788188087226428';

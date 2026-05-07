@@ -46,7 +46,7 @@ export default {
                 .addFields(
                     { name: 'Rating', value: `👍 ${def.thumbs_up} | 👎 ${def.thumbs_down}` }
                 )
-                .setFooter({ text: `Author: ${def.author} • SkySentinel AV Edition` });
+                ;
 
             await interaction.reply({ embeds: [embed] });
 

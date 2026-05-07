@@ -36,9 +36,9 @@ const command: Command = {
 
             const embed = new EmbedBuilder()
                 .setTitle('✈️ Active Staff LOA Tracking Database')
-                .setColor('#FFD700')
+                .setColor('#2B2D31')
                 .setDescription(`Currently monitoring **${activeLOAs.length}** approved leaves of absence across the server.`)
-                .setTimestamp();
+                ;
 
             for (const loa of activeLOAs) {
                 if (embed.data.fields && embed.data.fields.length >= 25) break;

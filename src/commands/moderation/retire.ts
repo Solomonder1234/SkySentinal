@@ -70,10 +70,10 @@ export default {
             // 3. Dispatch Retirement DM
             const dmEmbed = new EmbedBuilder()
                 .setTitle('🎖️ Honorable Retirement')
-                .setColor(0x00AAFF)
+                .setColor('#2B2D31')
                 .setDescription(`Congratulations on your retirement from the **${message.guild.name}** Staff Team.\n\nThank you for your dedicated service and contributions to the network. You have been transitioned to **Former Staff** status.\n\n**Reason for Transition:** ${reason}`)
-                .setFooter({ text: 'SkyAlert Network HR Department' })
-                .setTimestamp();
+
+                ;
 
             let dmStatus = '`Status: Delivered`';
             try {
@@ -88,7 +88,7 @@ export default {
                 const logChannel = message.guild.channels.cache.get(config.modLogChannelId);
                 if (logChannel && logChannel.isTextBased()) {
                     await (logChannel as any).send({
-                        embeds: [EmbedUtils.info('🛡️ Staff Retirement', `**Target:** ${member.toString()} (\`${member.id}\`)\n**Moderator:** ${message.author.toString()}\n**Reason:** ${reason}\n\n**Action:** Active roles stripped, granted \`Former Staff\`, and nickname prefixed with \`[FS]\`.`).setTimestamp()]
+                        embeds: [EmbedUtils.info('🛡️ Staff Retirement', `**Target:** ${member.toString()} (\`${member.id}\`)\n**Moderator:** ${message.author.toString()}\n**Reason:** ${reason}\n\n**Action:** Active roles stripped, granted \`Former Staff\`, and nickname prefixed with \`[FS]\`.`)]
                     }).catch(() => null);
                 }
             }

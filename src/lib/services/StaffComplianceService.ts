@@ -1,4 +1,4 @@
-import { EmbedBuilder, TextChannel } from 'discord.js';
+import { EmbedBuilder, TextChannel, PermissionFlagsBits } from 'discord.js';
 import { SkyClient } from '../structures/SkyClient';
 import { EmbedUtils } from '../../utils/EmbedUtils';
 
@@ -22,7 +22,12 @@ export class StaffComplianceService {
     }
 
     private async runCheck() {
-        this.client.logger.info('[StaffComplianceService] Scanning for compliance deadlines...');
+        this.client.logger.info('[StaffComplianceService] Executing compliance and permission checks...');
+
+        // 1. Enforce Staff Role based on Category Access
+        await this.enforceStaffCategoryAccess();
+
+        // 2. Scan for Compliance Deadlines (Existing Logic)
         const now = new Date();
 
         try {
@@ -60,14 +65,14 @@ export class StaffComplianceService {
 
         const embed = new EmbedBuilder()
             .setTitle('⚠️ URGENT: Staff Compliance Reminder')
-            .setColor('#F1C40F')
+            .setColor('#2B2D31')
             .setDescription(
                 `This is an automated notice regarding your staff position in **${guild.name}**.\n\n` +
                 `You have **${timeText}** remaining to join the official staff server. Failure to comply will result in an automated termination of your credentials.\n\n` +
                 `🔗 **Join Link:** https://discord.gg/URd5UBJ3Wz`
             )
-            .setFooter({ text: 'SkySentinel Automated Compliance' })
-            .setTimestamp();
+
+            ;
 
         try {
             await user.send({ embeds: [embed] });
@@ -99,14 +104,14 @@ export class StaffComplianceService {
                 // DM User
                 const dmEmbed = new EmbedBuilder()
                     .setTitle('💀 Termination Notice: Compliance Failure')
-                    .setColor('#E74C3C')
+                    .setColor('#2B2D31')
                     .setDescription(
                         `Your staff position in **${guild.name}** has been automatically terminated.\n\n` +
                         `**Reason:** Failure to join the official staff server within the 7-day inauguration window.\n\n` +
                         `If you believe this is an error, please contact a Founder or Head of Staff.`
                     )
-                    .setFooter({ text: 'SkySentinel Automated Enforcement' })
-                    .setTimestamp();
+
+                    ;
 
                 await member.send({ embeds: [dmEmbed] }).catch(() => null);
             } catch (err) {
@@ -123,11 +128,51 @@ export class StaffComplianceService {
             const logEmbed = EmbedUtils.error(
                 '🛡️ Automated Staff Termination',
                 `**Target:** <@${hire.userId}> (\`${hire.userId}\`)\n**Reason:** Compliance Failure (7-Day Join Deadline Missed)\n\n**Action:** All granted staff permissions have been automatically revoked.`
-            ).setTimestamp();
+            );
             await logChannel.send({ embeds: [logEmbed] }).catch(() => null);
         }
 
         // Delete the record
         await this.client.database.prisma.pendingStaffJoin.delete({ where: { id: hire.id } });
+    }
+
+    /**
+     * Periodically ensures that anyone with view access to the Staff Hub
+     * automatically possesses the Staff role.
+     */
+    private async enforceStaffCategoryAccess() {
+        const MAIN_GUILD_ID = '1275838044531855433';
+        const STAFF_HUB_CATEGORY_ID = '1276034047931453440';
+        const STAFF_ROLE_ID = '1276037406696538112';
+
+        const guild = this.client.guilds.cache.get(MAIN_GUILD_ID);
+        if (!guild) return;
+
+        try {
+            const category = guild.channels.cache.get(STAFF_HUB_CATEGORY_ID);
+            if (!category) return;
+
+            const members = await guild.members.fetch();
+            let enforcementCount = 0;
+
+            for (const member of members.values()) {
+                if (member.user.bot) continue;
+
+                const hasAccess = member.permissionsIn(category).has(PermissionFlagsBits.ViewChannel);
+                const hasRole = member.roles.cache.has(STAFF_ROLE_ID);
+
+                if (hasAccess && !hasRole) {
+                    await member.roles.add(STAFF_ROLE_ID, 'Automated Hierarchy Enforcement: Category Access Detected').catch(() => null);
+                    enforcementCount++;
+                    this.client.logger.info(`[StaffComplianceService] Granted Staff role to ${member.user.tag} due to Hub access.`);
+                }
+            }
+
+            if (enforcementCount > 0) {
+                this.client.logger.info(`[StaffComplianceService] Enforcement complete. ${enforcementCount} role(s) granted.`);
+            }
+        } catch (err) {
+            this.client.logger.error('[StaffComplianceService] Failed to enforce category access roles:', err);
+        }
     }
 }

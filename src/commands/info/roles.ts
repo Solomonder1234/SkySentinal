@@ -43,8 +43,8 @@ export default {
             .join(' ');
 
         const embed = EmbedUtils.info(`${member.user.username}'s Roles`, roles || 'No roles')
-            .setColor(member.displayColor || 'Blue')
-            .setFooter({ text: `SkySentinel AV • Total Roles: ${member.roles.cache.size - 1}` });
+            .setColor('#2B2D31')
+            ;
 
         if (interaction instanceof Message) {
             await interaction.reply({ embeds: [embed] });

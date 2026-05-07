@@ -2,7 +2,6 @@ import { Command } from '../../lib/structures/Command';
 import { ApplicationCommandOptionType, ApplicationCommandType, PermissionFlagsBits, Message, ChatInputCommandInteraction, EmbedBuilder } from 'discord.js';
 import { EmbedUtils } from '../../utils/EmbedUtils';
 
-
 export default {
     name: 'banner',
     description: 'Get a user\'s banner.',

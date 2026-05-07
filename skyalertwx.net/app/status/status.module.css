@@ -1,0 +1,121 @@
+.statusMain {
+  padding: 10rem 2rem 6rem 2rem;
+  max-width: 1300px;
+  margin: 0 auto;
+}
+
+.statusHeader {
+  text-align: center;
+  margin-bottom: 5rem;
+}
+
+.statusTitle {
+  font-size: 3.5rem;
+  margin-bottom: 1rem;
+}
+
+.highlight {
+  color: var(--accent-primary);
+}
+
+.overallStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  padding: 0.6rem 1.25rem;
+  border-radius: 2rem;
+  color: #10b981;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  background: #10b981;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #10b981;
+  animation: pulse 2s infinite;
+}
+
+.statusGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.statusCard {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.sysName {
+  font-size: 1.15rem;
+  color: #fff;
+}
+
+.statusBadge {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-weight: 700;
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.metric {
+  display: flex;
+  flex-direction: column;
+}
+
+.metricLabel {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.metricValue {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.1rem;
+  color: #fff;
+}
+
+.miniGraph {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 30px;
+  opacity: 0.3;
+}
+
+.graphBar {
+  flex: 1;
+  background: var(--accent-primary);
+  border-radius: 1px;
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.95); opacity: 0.5; }
+  50% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(0.95); opacity: 0.5; }
+}
+
+@media (max-width: 1024px) {
+  .statusGrid { grid-template-columns: 1fr; }
+}

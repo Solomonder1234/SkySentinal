@@ -23,7 +23,7 @@ export default {
             'Hangman',
             `Word: \`${getDisplay()}\`\nLives: ${lives}\nGuessed: ${Array.from(guessed).join(', ')}`
         );
-        embed.setFooter({ text: 'Type a letter to guess!' });
+        embed;
 
         const gameMessage = await interaction.reply({ embeds: [embed], fetchReply: true });
 

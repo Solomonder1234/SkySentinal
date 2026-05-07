@@ -34,7 +34,7 @@ export default {
 
             // Clear existing staff members first (or update them)
             // For simplicity, we'll update or create
-            
+
             for (const [, member] of members) {
                 if (member.user.bot) continue;
 

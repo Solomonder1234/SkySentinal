@@ -86,7 +86,7 @@ export class BumpService {
                 const embed = EmbedUtils.info(
                     '🔔 Disboard Bump Reminder',
                     'It\'s time to bump the server! Use `/bump` to keep our community growing! 🚀'
-                ).setColor(0x2ecc71); // Green
+                ).setColor('#2B2D31'); // Green
 
                 await channel.send({ content: '||@here||', embeds: [embed] });
                 this.client.logger.info(`[BumpService] Sent bump reminder to guild ${guildId}`);

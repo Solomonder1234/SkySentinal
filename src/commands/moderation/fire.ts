@@ -37,7 +37,7 @@ export default {
         try {
             // Identify all roles the user has that classify as an administrative clearance
             const STAFF_KEYWORDS = ['staff', 'mod', 'admin', 'management'];
-            
+
             const rolesToRemove = member.roles.cache.filter((r: any) => 
                 STAFF_KEYWORDS.some(k => r.name.toLowerCase().includes(k))
             );
@@ -58,13 +58,41 @@ export default {
                 where: { userId: member.id, guildId: message.guild.id }
             });
 
+            // Suspend (Timeout) the user for 3 days in the main server
+            let suspendStatus = '`Status: Success`';
+            try {
+                await member.timeout(3 * 24 * 60 * 60 * 1000, `Terminated: ${reason}`);
+            } catch (err) {
+                client.logger.warn(`Could not timeout fired user ${member.id}: ${err}`);
+                suspendStatus = '`Status: FAILED (Check Perms)`';
+            }
+
+            // Also kick from Staff Server
+            const STAFF_GUILD_ID = '1386826411666309201';
+            let staffKickStatus = '`Status: N/A`';
+            try {
+                const staffGuild = await client.guilds.fetch(STAFF_GUILD_ID).catch(() => null);
+                if (staffGuild) {
+                    const staffMember = await staffGuild.members.fetch(member.id).catch(() => null);
+                    if (staffMember) {
+                        await staffMember.kick(`Terminated via !fire by ${message.author.tag} in main server.`);
+                        staffKickStatus = '`Status: Success`';
+                    } else {
+                        staffKickStatus = '`Status: Not in Staff Server`';
+                    }
+                }
+            } catch (err) {
+                client.logger.warn(`Could not kick fired user ${member.id} from staff server: ${err}`);
+                staffKickStatus = '`Status: FAILED (Check Perms)`';
+            }
+
             // Dispatch Termination Briefing to their Direct Messages
             const dmEmbed = new EmbedBuilder()
                 .setTitle('⚠️ Employment Terminated')
-                .setColor(0xFF0000)
+                .setColor('#2B2D31')
                 .setDescription(`You have been officially terminated from your Staff position in **${message.guild.name}**.\n\n**Reason:** ${reason}\n**Clearances Revoked:** \`${removedRolesList}\``)
-                .setFooter({ text: 'Automated HR Operations' })
-                .setTimestamp();
+
+                ;
 
             let dmStatus = '`Status: Delivered`';
             try {
@@ -89,7 +117,7 @@ export default {
 
             // Finish
             await pendingMessage.edit({
-                embeds: [EmbedUtils.success('Termination Finalized', `**${member.user.tag}** has been officially removed from the staff team!\n\n**Roles Revoked:** \`${removedRolesList}\`\n**Termination DM:** ${dmStatus}`)]
+                embeds: [EmbedUtils.success('Termination Finalized', `**${member.user.tag}** has been officially removed from the staff team!\n\n**Roles Revoked:** \`${removedRolesList}\`\n**3-Day Suspension:** ${suspendStatus}\n**Staff Server Kick:** ${staffKickStatus}\n**Termination DM:** ${dmStatus}`)]
             });
 
         } catch (err: any) {

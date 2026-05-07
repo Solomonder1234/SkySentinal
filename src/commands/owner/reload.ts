@@ -46,12 +46,12 @@ export default {
             }
 
             const embed = EmbedUtils.success('System Reload', `Successfully reloaded database and core logic for **${target}**.`)
-                .setFooter({ text: 'SkySentinel AV • System Maintenance' });
+                ;
 
             return interaction.reply({ embeds: [embed] });
         } catch (error: any) {
             const embed = EmbedUtils.error('Reload Failed', `System reload interrupted.\n\n\`\`\`ts\n${error.message}\n\`\`\``)
-                .setFooter({ text: 'SkySentinel AV • Recovery Mode' });
+                ;
 
             return interaction.reply({ embeds: [embed] });
         }

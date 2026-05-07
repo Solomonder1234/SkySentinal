@@ -43,7 +43,7 @@ ${context}`;
             const embed = EmbedUtils.premium('SkySentinel Server Insights', 'Advanced AI-driven analysis of recent atmospheric data.')
                 .setThumbnail(interaction.guild?.iconURL() || null)
                 .setDescription(response.text)
-                .setFooter({ text: 'Powered by SkySentinel AI • Last 50 messages analyzed' });
+                ;
 
             return (interaction as any).editReply({ content: null, embeds: [embed] });
         } catch (err: any) {

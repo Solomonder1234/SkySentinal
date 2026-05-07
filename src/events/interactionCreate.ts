@@ -5,6 +5,9 @@ import { JSONDatabase } from '../utils/JSONDatabase';
 import { ActivityStore } from '../utils/ActivityStore';
 import { Logger } from '../utils/Logger';
 import { EmbedUtils } from '../utils/EmbedUtils';
+import fs from 'fs';
+import path from 'path';
+import { Colors } from '../utils/EmbedUtils';
 
 export default {
     name: Events.InteractionCreate,
@@ -110,9 +113,9 @@ export default {
                     const embed = new EmbedBuilder()
                         .setTitle('SkySentinel • AV Intelligence Module')
                         .setDescription(`### ❖ Support Session Initiated\n\nWelcome ${interaction.user}!\n\n**Category:** ${prettyType}\n\nPlease describe your issue or report in detail.\nOur staff team will be with you shortly.`)
-                        .setColor(0x2b2d31)
-                        .setFooter({ text: 'SkySentinel AV • Ticket Service' })
-                        .setTimestamp();
+                        .setColor('#2B2D31')
+
+                        ;
 
                     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
                         new ButtonBuilder().setCustomId('close_ticket').setLabel('Close Ticket').setStyle(ButtonStyle.Danger).setEmoji('🔒')
@@ -169,7 +172,7 @@ export default {
                         update: { messageCount: { increment: 0 } } // Meaningless update specifically designed to force the updatedAt database refresh
                     });
                     await interaction.editReply({ content: '✅ Your activity status has been perfectly validated. You are secured against automated HR sweeps for another 14 days.' });
-                    
+
                     client.logger.info(`[ActivityCheck] Staff Member ${interaction.user.tag} successfully manually verified their activity status.`);
                 } catch (error) {
                     client.logger.error(`[ActivityCheck] Prisma failed processing verification for ${interaction.user.id}`, error);
@@ -230,9 +233,9 @@ export default {
                     const embed = new EmbedBuilder()
                         .setTitle('SkySentinel • AV Intelligence Module')
                         .setDescription(`### ❖ Support Session Initiated\n\nWelcome ${interaction.user}!\n\nPlease describe your issue or report in detail.\nOur staff team will be with you shortly.`)
-                        .setColor(0x2b2d31)
-                        .setFooter({ text: 'SkySentinel AV • Ticket Service' })
-                        .setTimestamp();
+                        .setColor('#2B2D31')
+
+                        ;
 
                     const row = new ActionRowBuilder<ButtonBuilder>()
                         .addComponents(
@@ -325,7 +328,7 @@ export default {
                         const embed = EmbedBuilder.from(originalEmbed);
                         embed.setTitle(`Application ${decision === 'ACCEPTED' ? 'Approved' : 'Denied'}`);
                         embed.addFields({ name: 'Reviewed By', value: `<@${interaction.user.id}>` });
-                        embed.setColor(decision === 'ACCEPTED' ? '#00ff00' : '#ff0000');
+                        embed.setColor('#2B2D31');
 
                         await interaction.message.edit({ embeds: [embed], components: [] });
                     } else {
@@ -449,7 +452,7 @@ export default {
                         const originalEmbed = interaction.message.embeds[0];
                         if (originalEmbed) {
                             const embed = EmbedBuilder.from(originalEmbed);
-                            embed.setColor(decision === 'ACCEPTED' ? '#00ff00' : '#ff0000');
+                            embed.setColor('#2B2D31');
                             embed.addFields({ name: 'Decision', value: `${decision} by <@${interaction.user.id}>` });
                             await interaction.message.edit({ embeds: [embed], components: [] });
                         }
@@ -516,6 +519,53 @@ export default {
                 );
 
                 await interaction.showModal(modal);
+            } else if (interaction.customId === 'nda_sign') {
+                await interaction.deferReply({ flags: ['Ephemeral'] });
+
+                const STAFF_JSON_PATH = path.join(process.cwd(), 'skyalertwx.net/data/staff.json');
+
+                try {
+                    const staffMember = await client.database.prisma.staffMember.findUnique({
+                        where: { id: interaction.user.id }
+                    });
+
+                    if (!staffMember) {
+                        return interaction.editReply({ 
+                            content: '❌ Your identity was not found in the official registry. Please ensure you are synced with the staff directory or contact an administrator.' 
+                        });
+                    }
+
+                    await client.database.prisma.staffMember.update({
+                        where: { id: interaction.user.id },
+                        data: { hasSignedNDA: true }
+                    });
+
+                    // Trigger an immediate JSON refresh to reflect the signature on the site
+                    // @ts-ignore
+                    await client.startStaffSyncTask(true); 
+
+
+                    const successEmbed = EmbedUtils.premium(
+                        'Administrative Vanguard Agreement Signed',
+                        `### ❖ Digital Signature Confirmed\n\nThank you, <@${interaction.user.id}>.\n\nYour formal acknowledgement of the **SkyAlert Administrative Vanguard Agreement** has been securely synchronized with the network database.\n\n**Operational Clearance: Secured.**`
+                    ).setColor('#2B2D31');
+
+                    await interaction.editReply({ embeds: [successEmbed] });
+
+                    // Log the signature
+                    await Logger.log(
+                        interaction.guild!,
+                        'NDA Signature Confirmed',
+                        `Staff member **${interaction.user.tag}** has formally signed the Administrative Vanguard Agreement.`,
+                        'Green'
+                    );
+
+                } catch (error) {
+                    client.logger.error('[NDA Signature] Failed to process:', error);
+                    if (interaction.deferred) {
+                        await interaction.editReply({ content: '❌ A system error occurred while synchronizing your signature. Please try again later.' });
+                    }
+                }
             }
         } else if (interaction.isModalSubmit()) {
             if (interaction.customId.startsWith('modal_appeal_')) {
@@ -573,7 +623,7 @@ export default {
                 const appealEmbed = EmbedUtils.premium(
                     'Formal Infraction Appeal',
                     `**User:** <@${interaction.user.id}> (\`${interaction.user.id}\`)\n**Action Appealed:** ${actionMsg}\n**Date of Incident:** ${dateMsg}\n**Issuing Staff Member:** ${staffMsg}\n\n**Reason / Statement:**\n${reasonMsg}\n\n**Additional Proof/Context:**\n${proofMsg}`
-                ).setColor(0xffaa00).setTimestamp();
+                ).setColor('#2B2D31');
 
                 await targetChannel.send({ embeds: [appealEmbed] });
                 await interaction.editReply({ content: '✅ Your appeal has been securely transmitted to the Senior Enforcement Branch!' });

@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 
 async function main() {
     console.log('--- Exporting Staff Data to Website ---');
-    
+
     const staffMembers = await prisma.staffMember.findMany({
         orderBy: [
             { priority: 'desc' },
@@ -23,12 +23,12 @@ async function main() {
 
     // Grouping into tiers for easier rendering
     const tiers: Record<string, any[]> = {};
-    
+
     for (const staff of staffMembers) {
         if (!tiers[staff.tier]) {
             tiers[staff.tier] = [];
         }
-        
+
         // Map color based on tier
         let color: string = 'gray';
         if (staff.tier === 'Owners') color = 'neonRed';

@@ -60,8 +60,8 @@ export class SuggestionService {
             const embed = new EmbedBuilder()
                 .setTitle('💡 New Suggestion Ticket')
                 .setDescription(`**Member:** <@${member.id}>\n**Content:** ${content}\n\nStaff will review this suggestion shortly.`)
-                .setColor('#5865F2' as ColorResolvable)
-                .setTimestamp();
+                .setColor('#2B2D31')
+                ;
 
             const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
                 new ButtonBuilder().setCustomId(`suggest_accept_${suggestion.id}`).setLabel('Accept').setStyle(ButtonStyle.Success),

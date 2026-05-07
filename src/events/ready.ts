@@ -67,7 +67,7 @@ export default {
             if (omittedCommands.length > 0) {
                 client.logger.warn(`Registered ${cappedSlashCommands.length} slash commands. Quota reached! ${omittedCommands.length} commands omitted from slash registration (available via ! prefix): ${omittedCommands.join(', ')}`);
             }
-        
+
             for (const guild of client.guilds.cache.values()) {
                 try {
                     await client.database.prisma.guildConfig.upsert({
@@ -163,11 +163,11 @@ export default {
                         active: true,
                     },
                 });
- 
+
                 for (const modCase of activeCases) {
                     if (!modCase.duration) continue;
                     const expiresAt = new Date(modCase.createdAt.getTime() + modCase.duration);
- 
+
                     if (now >= expiresAt) {
                         const guild = client.guilds.cache.get(modCase.guildId);
                         if (guild) {
@@ -183,7 +183,7 @@ export default {
                                 client.logger.error(`Failed to process moderation expiry for ${modCase.targetId} (${modCase.type}):`, e);
                             }
                         }
- 
+
                         await client.database.prisma.case.update({
                             where: { id: modCase.id },
                             data: { active: false },

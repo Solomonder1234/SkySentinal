@@ -49,8 +49,8 @@ export default {
         const startEmbed = new EmbedBuilder()
             .setTitle('🔔 Direct Contact Initialized')
             .setDescription(`**Staff:** <@${message.author.id}>\n**User:** <@${targetUser.id}> (\`${targetUser.id}\`)\n\nYou have force-opened this thread. Please send your message below. It will be relayed via DM.`)
-            .setColor(Colors.Blue)
-            .setTimestamp();
+            .setColor('#2B2D31')
+            ;
 
         await targetThread.send({ embeds: [startEmbed] });
         return message.reply({ embeds: [EmbedUtils.success('Thread Created', `A dedicated Modmail thread has been initialized here: <#${targetThread.id}>`)] });

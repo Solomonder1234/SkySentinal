@@ -11,7 +11,7 @@ export default {
         const message = interaction as Message;
 
         if (!message.guild) return message.reply('This command can only be used in a server.');
-        
+
         const guild = message.guild;
 
         const sentMessage = await message.reply({ 
@@ -57,7 +57,7 @@ export default {
 
                 if (isClassified) {
                     if (channel.type === ChannelType.GuildCategory) restrictedCategories++;
-                    
+
                     // Forcefully hide from everyone and member
                     await (channel as any).permissionOverwrites.edit(everyoneRole, { ViewChannel: false }).catch(() => null);
                     if (memberRole) {
@@ -79,7 +79,7 @@ export default {
 
                 // If it is a normal channel or category, completely hide it from @everyone, and EXPLICITLY show it to @Member
                 await (channel as any).permissionOverwrites.edit(everyoneRole, { ViewChannel: false }).catch(() => null);
-                
+
                 if (memberRole) {
                     await (channel as any).permissionOverwrites.edit(memberRole, { 
                         ViewChannel: true,

@@ -1,160 +1,33 @@
-import { Events, GuildMember, PartialGuildMember } from 'discord.js';
-import { Logger, LogCategory } from '../utils/Logger';
-import { MAIN_TO_STAFF_ROLE_MAP, STAFF_TO_MAIN_ROLE_MAP, MAIN_GUILD_ID, STAFF_GUILD_ID } from '../config';
+import { Events, GuildMember, PermissionFlagsBits } from 'discord.js';
+import { Event } from '../lib/structures/Event';
+import { SkyClient } from '../lib/structures/SkyClient';
 
 export default {
     name: Events.GuildMemberUpdate,
-    run: async (client: any, oldMember: GuildMember | PartialGuildMember, newMember: GuildMember) => {
-        if (client.logger) client.logger.info(`[AutoSync Debug] Detected role update for ${newMember.user.tag} in Guild ${newMember.guild.id}`);
+    run: async (client: SkyClient, oldMember: GuildMember, newMember: GuildMember) => {
+        const MAIN_GUILD_ID = '1275838044531855433';
+        const STAFF_HUB_CATEGORY_ID = '1276034047931453440';
+        const STAFF_ROLE_ID = '1276037406696538112';
 
-        // --- MEMBER LOGS (Roles & Nicknames) ---
-        const oldRoles = oldMember.roles.cache;
-        const newRoles = newMember.roles.cache;
+        if (newMember.guild.id !== MAIN_GUILD_ID) return;
+        if (newMember.user.bot) return;
 
-        if (!oldRoles.equals(newRoles)) {
-            const addedRoles = newRoles.filter(role => !oldRoles.has(role.id));
-            const removedRoles = oldRoles.filter(role => !newRoles.has(role.id));
-            const totalAdded = addedRoles.map(r => `\`${r.name}\``).join(', ');
-            const totalRemoved = removedRoles.map(r => `\`${r.name}\``).join(', ');
+        // Detect if roles changed
+        if (oldMember.roles.cache.size === newMember.roles.cache.size) return;
 
-            if (addedRoles.size > 0 || removedRoles.size > 0) {
-                const fields = [];
-                if (addedRoles.size > 0) fields.push({ name: '📈 Roles Added', value: totalAdded });
-                if (removedRoles.size > 0) fields.push({ name: '📉 Roles Removed', value: totalRemoved });
+        try {
+            const category = newMember.guild.channels.cache.get(STAFF_HUB_CATEGORY_ID);
+            if (!category) return;
 
-                await Logger.log(
-                    newMember.guild,
-                    'Manual Role Modification',
-                    `Member: <@${newMember.id}> (\`${newMember.user.tag}\`)`,
-                    'Blue',
-                    fields,
-                    LogCategory.Member
-                );
+            const hasAccess = newMember.permissionsIn(category).has(PermissionFlagsBits.ViewChannel);
+            const hasRole = newMember.roles.cache.has(STAFF_ROLE_ID);
+
+            if (hasAccess && !hasRole) {
+                await newMember.roles.add(STAFF_ROLE_ID, 'Automated Hierarchy Enforcement: Category Access Detected').catch(() => null);
+                client.logger.info(`[Event:StaffSync] Automatically granted Staff role to ${newMember.user.tag} (Real-time).`);
             }
+        } catch (err) {
+            client.logger.error('[Event:StaffSync] Failed real-time role enforcement:', err);
         }
-
-        if (oldMember.nickname !== newMember.nickname) {
-            await Logger.log(
-                newMember.guild,
-                'Manual Nickname Update',
-                `Member: <@${newMember.id}> (\`${newMember.user.tag}\`)`,
-                'Blue',
-                [
-                    { name: '⬅️ Previous Display', value: `\`${oldMember.nickname || 'Default'}\``, inline: true },
-                    { name: '➡️ New Display', value: `\`${newMember.nickname || 'Default'}\``, inline: true }
-                ],
-                LogCategory.Member
-            );
-        }
-        // --- END MEMBER LOGS ---
-
-        // --- AUTO-ROLE SYNC ON PROMOTION ---
-        if (newMember.guild.id === MAIN_GUILD_ID) {
-            // This update occurred in the Main Server. Find the Staff Server in cache.
-            const staffGuild = client.guilds.cache.get(STAFF_GUILD_ID);
-
-            if (staffGuild) {
-                try {
-                    const staffMember = await staffGuild.members.fetch(newMember.id).catch(() => null);
-                    if (staffMember) {
-                        const rolesToAdd: string[] = [];
-                        const rolesToRemove: string[] = [];
-                        const expectedStaffRoles = new Set<string>();
-
-                        // Calculate which IDs the user mathematically SHOULD have right now.
-                        newMember.roles.cache.forEach((role: any) => {
-                            const mappedStaffId = MAIN_TO_STAFF_ROLE_MAP[role.id];
-                            if (mappedStaffId && staffGuild.roles.cache.has(mappedStaffId)) {
-                                expectedStaffRoles.add(mappedStaffId);
-                            }
-                        });
-
-                        expectedStaffRoles.forEach(id => {
-                            if (!staffMember.roles.cache.has(id)) {
-                                rolesToAdd.push(id);
-                            }
-                        });
-
-                        const allPossibleStaffRoleIds = Object.values(MAIN_TO_STAFF_ROLE_MAP);
-                        staffMember.roles.cache.forEach((role: any) => {
-                            if (allPossibleStaffRoleIds.includes(role.id) && !expectedStaffRoles.has(role.id)) {
-                                rolesToRemove.push(role.id);
-                            }
-                        });
-
-                        if (rolesToAdd.length > 0) {
-                            await staffMember.roles.add(rolesToAdd).catch((e: any) => {
-                                if (client.logger) client.logger.error(`[AutoSync] Failed to ADD roles for ${newMember.user.tag}: ${e.message}`);
-                            });
-                        }
-                        if (rolesToRemove.length > 0) {
-                            await staffMember.roles.remove(rolesToRemove).catch((e: any) => {
-                                if (client.logger) client.logger.error(`[AutoSync] Failed to REMOVE roles for ${newMember.user.tag}: ${e.message}`);
-                            });
-                        }
-
-                        if (rolesToAdd.length > 0 || rolesToRemove.length > 0) {
-                            if (client.logger) {
-                                client.logger.info(`[AutoSync] Synced promotion/demotion roles for ${newMember.user.tag} in Staff Server.`);
-                            }
-                        }
-                    }
-                } catch (err) {
-                    if (client.logger) client.logger.warn(`[AutoSync] Failed promotion sync for ${newMember.user.tag}: ${err}`);
-                }
-            }
-        } else if (newMember.guild.id === STAFF_GUILD_ID) {
-            // REVERSE SYNC: Staff Server -> Main Server
-            const mainGuild = client.guilds.cache.get(MAIN_GUILD_ID);
-            if (mainGuild) {
-                try {
-                    const mainMember = await mainGuild.members.fetch(newMember.id).catch(() => null);
-                    if (mainMember) {
-                        const expectedMainRoleIds = new Set<string>();
-                        newMember.roles.cache.forEach((role: any) => {
-                            const mappedMainId = STAFF_TO_MAIN_ROLE_MAP[role.id];
-                            if (mappedMainId && mainGuild.roles.cache.has(mappedMainId)) {
-                                expectedMainRoleIds.add(mappedMainId);
-                            }
-                        });
-
-                        const rolesToAdd: string[] = [];
-                        const rolesToRemove: string[] = [];
-
-                        expectedMainRoleIds.forEach(id => {
-                            if (!mainMember.roles.cache.has(id)) {
-                                rolesToAdd.push(id);
-                            }
-                        });
-
-                        const allPossibleMainRoleIds = Object.values(STAFF_TO_MAIN_ROLE_MAP);
-                        mainMember.roles.cache.forEach((role: any) => {
-                            if (allPossibleMainRoleIds.includes(role.id) && !expectedMainRoleIds.has(role.id)) {
-                                rolesToRemove.push(role.id);
-                            }
-                        });
-
-                        if (rolesToAdd.length > 0) {
-                            await mainMember.roles.add(rolesToAdd).catch((e: any) => {
-                                if (client.logger) client.logger.error(`[AutoSync REVERSE] Failed to ADD roles in Main Server: ${e.message}`);
-                            });
-                        }
-                        if (rolesToRemove.length > 0) {
-                            await mainMember.roles.remove(rolesToRemove).catch((e: any) => {
-                                if (client.logger) client.logger.error(`[AutoSync REVERSE] Failed to REMOVE roles in Main Server: ${e.message}`);
-                            });
-                        }
-                        if (rolesToAdd.length > 0 || rolesToRemove.length > 0) {
-                            if (client.logger) {
-                                client.logger.info(`[AutoSync REVERSE] Synced tracking profile for ${newMember.user.tag} securely back to Main Server.`);
-                            }
-                        }
-                    }
-                } catch (err) {
-                    if (client.logger) client.logger.warn(`[AutoSync REVERSE] Failed reverse sync for ${newMember.user.tag}: ${err}`);
-                }
-            }
-        }
-        // --- END AUTO-ROLE SYNC ---
-    }
-};
+    },
+} as Event<Events.GuildMemberUpdate>;

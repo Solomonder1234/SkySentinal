@@ -6,7 +6,7 @@ interface StaffMember {
   role: string | null;
   clearance: string;
   color: 'red' | 'blue' | 'yellow' | 'gray' | 'neonRed' | 'neonBlue' | 'blue' | 'yellow'; // Added 'blue' and 'yellow' as literal strings
-  avatar?: string;
+  avatar?: string | null;
 }
 
 interface StaffTier {

@@ -23,22 +23,22 @@ export default {
 
         const embed = new EmbedBuilder()
             .setTitle('🚫 Modmail Blacklist')
-            .setColor('#2F3136')
-            .setTimestamp();
+            .setColor('#2B2D31')
+            ;
 
         let description = '';
         for (const block of activeBlocks) {
             const expires = block.duration 
                 ? `<t:${Math.floor((block.createdAt.getTime() + block.duration) / 1000)}:R>` 
                 : '`Permanent`';
-            
+
             description += `**ID:** \`${block.targetId}\`\n**Expires:** ${expires}\n**Reason:** ${block.reason}\n\n`;
         }
 
         embed.setDescription(description || 'Empty list.');
-        
+
         if (activeBlocks.length === 25) {
-            embed.setFooter({ text: 'Showing first 25 entries. Use the database for full list.' });
+            embed;
         }
 
         return message.reply({ embeds: [embed] });

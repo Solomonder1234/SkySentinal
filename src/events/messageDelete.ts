@@ -7,6 +7,13 @@ export default {
     run: async (client, message: Message | PartialMessage) => {
         if (!message.guild || message.author?.bot) return;
 
+        client.snipes.set(message.channel.id, {
+            content: message.content,
+            author: message.author,
+            image: message.attachments.first()?.proxyURL || null,
+            timestamp: Date.now()
+        });
+
         await Logger.log(
             message.guild,
             'Message Deleted',

@@ -3,11 +3,28 @@
     "title": "Owners",
     "members": [
       {
+        "name": "equinoxicon.0",
+        "role": "Owner / Founder",
+        "clearance": "Level 10",
+        "color": "neonRed",
+        "avatar": "https://cdn.discordapp.com/avatars/1279672537873252405/f4d7e3801466d72aca7dc7b904e63c27.png?size=512",
+        "nda": true
+      },
+      {
+        "name": "mnrr.6131",
+        "role": "Owner / Founder",
+        "clearance": "Level 10",
+        "color": "neonRed",
+        "avatar": "https://cdn.discordapp.com/avatars/559552595295731746/85011829f9b23684c4ad69dc48439ebb.png?size=512",
+        "nda": false
+      },
+      {
         "name": "thegrinnerwx",
         "role": "Owner / Founder",
         "clearance": "Level 10",
         "color": "neonRed",
-        "avatar": "https://cdn.discordapp.com/avatars/753372101540577431/c64f7ee38cf7f613f16b55aa8025b536.png?size=512"
+        "avatar": "https://cdn.discordapp.com/avatars/753372101540577431/c3a0473ebafa3e5d9af54e4add15e682.png?size=512",
+        "nda": true
       }
     ]
   },
@@ -15,25 +32,36 @@
     "title": "Founders",
     "members": [
       {
+        "name": "bloridaban",
+        "role": "Founders",
+        "clearance": "Level 9",
+        "color": "neonBlue",
+        "avatar": "https://cdn.discordapp.com/avatars/1171297322261549106/def1f5bfc152233d4d0816cdfe0425cf.png?size=512",
+        "nda": true
+      },
+      {
+        "name": "destr.lyyy",
+        "role": "Founders",
+        "clearance": "Level 9",
+        "color": "neonBlue",
+        "avatar": "https://cdn.discordapp.com/avatars/1394303273514827937/8569adcbd36c70a7578c017bf5604ea5.png?size=512",
+        "nda": false
+      },
+      {
         "name": "io3q.",
-        "role": null,
+        "role": "Founders",
         "clearance": "Level 9",
         "color": "neonBlue",
-        "avatar": "https://cdn.discordapp.com/avatars/1134583635928952842/c74a209e26521b7f6a76d85acacccda7.png?size=512"
+        "avatar": "https://cdn.discordapp.com/avatars/1134583635928952842/a_c74a209e26521b7f6a76d85acacccda7.gif?size=512",
+        "nda": true
       },
       {
-        "name": "mnrr.6131",
-        "role": null,
+        "name": "kira_.killer",
+        "role": "Founders",
         "clearance": "Level 9",
         "color": "neonBlue",
-        "avatar": "https://cdn.discordapp.com/avatars/559552595295731746/85011829f9b23684c4ad69dc48439ebb.png?size=512"
-      },
-      {
-        "name": "thegrinnerwxalt",
-        "role": null,
-        "clearance": "Level 9",
-        "color": "neonBlue",
-        "avatar": "https://cdn.discordapp.com/avatars/544873607923236872/2b3940e50f636e434e6abcc349205851.png?size=512"
+        "avatar": "https://cdn.discordapp.com/avatars/1271166754520956989/8c63ded97a8a8af8f6c6fc285a233271.png?size=512",
+        "nda": false
       }
     ]
   },
@@ -41,53 +69,49 @@
     "title": "Co-Founders",
     "members": [
       {
-        "name": "baguettethingy",
-        "role": null,
+        "name": "cutejojo",
+        "role": "Co-Founders",
         "clearance": "Level 8",
         "color": "red",
-        "avatar": "https://cdn.discordapp.com/avatars/1111789464273047592/f4f40c9194743cae4fb30887abebb0d1.png?size=512"
+        "avatar": "https://cdn.discordapp.com/avatars/825770378051584021/fb69e1fb147a0f5b0a60b7b87cbdfb3a.png?size=512",
+        "nda": false
       },
       {
         "name": "cutejojo143_33407",
-        "role": null,
+        "role": "Co-Founders",
         "clearance": "Level 8",
         "color": "red",
-        "avatar": "https://cdn.discordapp.com/avatars/1172246748970881114/50ee8f5357c4081fe6070904cd277ea3.png?size=512"
+        "avatar": "https://cdn.discordapp.com/avatars/1172246748970881114/50ee8f5357c4081fe6070904cd277ea3.png?size=512",
+        "nda": false
       },
       {
         "name": "cyanthar5622",
-        "role": null,
+        "role": "Co-Founders",
         "clearance": "Level 8",
         "color": "red",
-        "avatar": "https://cdn.discordapp.com/avatars/798263472801447936/e70f59ab0003971ea30a4be1d03a12b7.png?size=512"
+        "avatar": "https://cdn.discordapp.com/avatars/798263472801447936/e70f59ab0003971ea30a4be1d03a12b7.png?size=512",
+        "nda": true
+      }
+    ]
+  },
+  {
+    "title": "Executive Board",
+    "members": [
+      {
+        "name": ".lowbudget.",
+        "role": "Executive Board",
+        "clearance": "Level 7",
+        "color": "red",
+        "avatar": "https://cdn.discordapp.com/avatars/1451979531433934971/cb3e67f16340627d1c6fce87d0819015.png?size=512",
+        "nda": false
       },
       {
-        "name": "equinoxicon.0",
-        "role": null,
-        "clearance": "Level 8",
+        "name": "itztherealmash",
+        "role": "Executive Board",
+        "clearance": "Level 7",
         "color": "red",
-        "avatar": "https://cdn.discordapp.com/avatars/1279672537873252405/0357d25b24afb2a67bec2d25eaa67ea6.png?size=512"
-      },
-      {
-        "name": "jet_official.",
-        "role": null,
-        "clearance": "Level 8",
-        "color": "red",
-        "avatar": "https://cdn.discordapp.com/avatars/1021056096380665936/b83f50a6e2edac1217d8a461af677e62.png?size=512"
-      },
-      {
-        "name": "kira_.killer",
-        "role": null,
-        "clearance": "Level 8",
-        "color": "red",
-        "avatar": "https://cdn.discordapp.com/avatars/1271166754520956989/1010daf49b7fede7f3b92f486b1ef080.png?size=512"
-      },
-      {
-        "name": "sl2todesigncenter",
-        "role": null,
-        "clearance": "Level 8",
-        "color": "red",
-        "avatar": "https://cdn.discordapp.com/avatars/1336110334125019167/43a61cf7cb44c03f9b1d9572108afcb7.png?size=512"
+        "avatar": "https://cdn.discordapp.com/avatars/1411825143667363962/7331f9b582ff57245f9451488dd69a10.png?size=512",
+        "nda": true
       }
     ]
   },
@@ -95,25 +119,36 @@
     "title": "Head of Staff",
     "members": [
       {
-        "name": ".xde60.",
-        "role": null,
-        "clearance": "Level 7",
-        "color": "yellow",
-        "avatar": "https://cdn.discordapp.com/avatars/1451979531433934971/3c4dd37f7ac3dcd07c617fa88fd2fcfd.png?size=512"
-      },
-      {
         "name": "dante050241",
-        "role": null,
+        "role": "Head of Staff",
         "clearance": "Level 7",
         "color": "yellow",
-        "avatar": "https://cdn.discordapp.com/avatars/1490471325129510952/73f0f31951a8fcdd4eb4be9f21e72531.png?size=512"
+        "avatar": "https://cdn.discordapp.com/avatars/1490471325129510952/73f0f31951a8fcdd4eb4be9f21e72531.png?size=512",
+        "nda": false
       },
       {
         "name": "ltocanarsie",
-        "role": null,
+        "role": "Head of Staff",
         "clearance": "Level 7",
         "color": "yellow",
-        "avatar": "https://cdn.discordapp.com/avatars/948271691279245312/a96b85dc69e48d62f24a4684fa045554.png?size=512"
+        "avatar": "https://cdn.discordapp.com/avatars/948271691279245312/a96b85dc69e48d62f24a4684fa045554.png?size=512",
+        "nda": true
+      },
+      {
+        "name": "nostalgiacoded",
+        "role": "Head of Staff",
+        "clearance": "Level 7",
+        "color": "yellow",
+        "avatar": "https://cdn.discordapp.com/avatars/527676522669277205/af9362951f91c08b217f24d1e4585872.png?size=512",
+        "nda": false
+      },
+      {
+        "name": "sl2todesigncenter",
+        "role": "Head of Staff",
+        "clearance": "Level 7",
+        "color": "yellow",
+        "avatar": "https://cdn.discordapp.com/avatars/1336110334125019167/43a61cf7cb44c03f9b1d9572108afcb7.png?size=512",
+        "nda": false
       }
     ]
   },
@@ -121,18 +156,20 @@
     "title": "Senior Admin",
     "members": [
       {
-        "name": "silverlay_wx",
-        "role": null,
+        "name": "roxasthekeybladewelder",
+        "role": "Senior Admin",
         "clearance": "Level 6",
         "color": "yellow",
-        "avatar": "https://cdn.discordapp.com/avatars/1380251624068485180/83f7d47de0b0dee51145df76148310a0.png?size=512"
+        "avatar": "https://cdn.discordapp.com/avatars/1380251624068485180/0226e70d7c13ab0de08c3e9ce221478d.png?size=512",
+        "nda": true
       },
       {
         "name": "theflink",
-        "role": null,
+        "role": "Senior Admin",
         "clearance": "Level 6",
         "color": "yellow",
-        "avatar": "https://cdn.discordapp.com/avatars/212284147446710272/8d6d213fc565b34d9df050008525d4b9.png?size=512"
+        "avatar": "https://cdn.discordapp.com/avatars/212284147446710272/8d6d213fc565b34d9df050008525d4b9.png?size=512",
+        "nda": true
       }
     ]
   },
@@ -140,11 +177,20 @@
     "title": "Admin",
     "members": [
       {
-        "name": "stickyglue13",
-        "role": null,
+        "name": "mta_xd40guy2257",
+        "role": "Admin",
         "clearance": "Level 5",
         "color": "blue",
-        "avatar": "https://cdn.discordapp.com/avatars/1318578925441515598/d3f4c7ea5446a9d23447029634ce6c14.png?size=512"
+        "avatar": "https://cdn.discordapp.com/avatars/1214390245894782977/5ce3cca727ea4550d3f0881acf594abc.png?size=512",
+        "nda": false
+      },
+      {
+        "name": "stickyglue13",
+        "role": "Admin",
+        "clearance": "Level 5",
+        "color": "blue",
+        "avatar": "https://cdn.discordapp.com/avatars/1318578925441515598/ed73f4382500d0a57e5248f79d97cfd1.png?size=512",
+        "nda": false
       }
     ]
   },
@@ -152,25 +198,28 @@
     "title": "Senior Moderator",
     "members": [
       {
-        "name": "atrain_123_88605",
-        "role": null,
-        "clearance": "Level 4",
-        "color": "blue",
-        "avatar": "https://cdn.discordapp.com/avatars/1221484059491045467/8b57afde9633512b433497cd28fcd3a8.png?size=512"
-      },
-      {
         "name": "northcentraltxwx026",
-        "role": null,
+        "role": "Senior Moderator",
         "clearance": "Level 4",
         "color": "blue",
-        "avatar": "https://cdn.discordapp.com/avatars/1177024582075555944/006a18edcfc1c2c844f96c70c7a2b9aa.png?size=512"
+        "avatar": "https://cdn.discordapp.com/avatars/1177024582075555944/006a18edcfc1c2c844f96c70c7a2b9aa.png?size=512",
+        "nda": false
       },
       {
         "name": "nyctmtakid2",
-        "role": null,
+        "role": "Senior Moderator",
         "clearance": "Level 4",
         "color": "blue",
-        "avatar": "https://cdn.discordapp.com/avatars/1259658235741339648/205d018fa269580527382e588e993593.png?size=512"
+        "avatar": "https://cdn.discordapp.com/avatars/1259658235741339648/fef6175028734d8c86e5447cabea067f.png?size=512",
+        "nda": false
+      },
+      {
+        "name": "ohiovalleyweather14",
+        "role": "Senior Moderator",
+        "clearance": "Level 4",
+        "color": "blue",
+        "avatar": "https://cdn.discordapp.com/avatars/592887384979406858/75e65f533fe63621b434311b68af70b3.png?size=512",
+        "nda": true
       }
     ]
   },
@@ -178,32 +227,68 @@
     "title": "Moderator",
     "members": [
       {
-        "name": "appleheck14",
-        "role": null,
+        "name": "ad475293",
+        "role": "Moderator",
         "clearance": "Level 3",
         "color": "blue",
-        "avatar": "https://cdn.discordapp.com/avatars/1206501684575076424/8869668b6af909182db14c8511bf9d6b.png?size=512"
+        "avatar": "https://cdn.discordapp.com/avatars/1157893330928156692/8d3ad261fb8222327516525eaf8e1d30.png?size=512",
+        "nda": true
       },
       {
-        "name": "itztherealmash",
-        "role": null,
+        "name": "excessyy",
+        "role": "Moderator",
         "clearance": "Level 3",
         "color": "blue",
-        "avatar": "https://cdn.discordapp.com/avatars/1411825143667363962/7331f9b582ff57245f9451488dd69a10.png?size=512"
+        "avatar": "https://cdn.discordapp.com/avatars/1206501684575076424/466ea70fd21f9c0d3c41f04e69be6a0c.png?size=512",
+        "nda": false
+      },
+      {
+        "name": "finalcobra23",
+        "role": "Moderator",
+        "clearance": "Level 3",
+        "color": "blue",
+        "avatar": "https://cdn.discordapp.com/avatars/1197612415802691689/876e58809a80be37b030b807e7650270.png?size=512",
+        "nda": false
       },
       {
         "name": "koda1033",
-        "role": null,
+        "role": "Moderator",
         "clearance": "Level 3",
         "color": "blue",
-        "avatar": "https://cdn.discordapp.com/avatars/1454348712104169638/7138b629c75047a5eb2e8c69d95ff0df.png?size=512"
+        "avatar": "https://cdn.discordapp.com/avatars/1454348712104169638/9b0a10dd55be76363d024bbd75f733cf.png?size=512",
+        "nda": false
+      },
+      {
+        "name": "mtafan333",
+        "role": "Moderator",
+        "clearance": "Level 3",
+        "color": "blue",
+        "avatar": "https://cdn.discordapp.com/avatars/1490140071851069615/f462176ccae13618777c93e5909f59e7.png?size=512",
+        "nda": false
       },
       {
         "name": "peroxidee.",
-        "role": null,
+        "role": "Moderator",
         "clearance": "Level 3",
         "color": "blue",
-        "avatar": "https://cdn.discordapp.com/avatars/1360368060279554118/418dc437433c3a45eb4211c5cc50f75f.png?size=512"
+        "avatar": "https://cdn.discordapp.com/avatars/1360368060279554118/418dc437433c3a45eb4211c5cc50f75f.png?size=512",
+        "nda": false
+      },
+      {
+        "name": "wolgang_amadeusmozart",
+        "role": "Moderator",
+        "clearance": "Level 3",
+        "color": "blue",
+        "avatar": "https://cdn.discordapp.com/avatars/1137137041923129434/0c2d75c31d6383662c3e1b8ee1ad111f.png?size=512",
+        "nda": false
+      },
+      {
+        "name": "xman2131",
+        "role": "Moderator",
+        "clearance": "Level 3",
+        "color": "blue",
+        "avatar": "https://cdn.discordapp.com/avatars/1280787005361491990/1730a104f88a0b6d2a7473a5ac4f8db5.png?size=512",
+        "nda": false
       }
     ]
   },
@@ -211,39 +296,73 @@
     "title": "Trial Staff",
     "members": [
       {
-        "name": "ad475293",
-        "role": null,
-        "clearance": "Level 2",
-        "color": "gray",
-        "avatar": "https://cdn.discordapp.com/avatars/1157893330928156692/cc618d1f7329874017c392fba051b1b3.png?size=512"
-      },
-      {
         "name": "andrewraul8478",
-        "role": null,
+        "role": "Trial Staff",
         "clearance": "Level 2",
         "color": "gray",
-        "avatar": "https://cdn.discordapp.com/avatars/1404861923631042622/2376a5a8dc444d42ea6d067e71558479.png?size=512"
+        "avatar": "https://cdn.discordapp.com/avatars/1404861923631042622/2376a5a8dc444d42ea6d067e71558479.png?size=512",
+        "nda": true
       },
       {
         "name": "corncatoffical",
-        "role": null,
+        "role": "Trial Staff",
         "clearance": "Level 2",
         "color": "gray",
-        "avatar": "https://cdn.discordapp.com/avatars/1487947096584749056/456b74d34c98817266094391724da8eb.png?size=512"
+        "avatar": "https://cdn.discordapp.com/avatars/1487947096584749056/456b74d34c98817266094391724da8eb.png?size=512",
+        "nda": false
       },
       {
         "name": "nikitos6712",
-        "role": null,
+        "role": "Trial Staff",
         "clearance": "Level 2",
         "color": "gray",
-        "avatar": "https://cdn.discordapp.com/avatars/1023742877806907402/4d9970ce0e4626afd24a96c503c81b8c.png?size=512"
+        "avatar": "https://cdn.discordapp.com/avatars/1023742877806907402/4d9970ce0e4626afd24a96c503c81b8c.png?size=512",
+        "nda": false
+      },
+      {
+        "name": "rip_psx",
+        "role": "Trial Staff",
+        "clearance": "Level 2",
+        "color": "gray",
+        "avatar": "https://cdn.discordapp.com/avatars/787862906071023627/422de26a5dcafff68d77c33ede13ff4c.png?size=512",
+        "nda": true
       },
       {
         "name": "wheredoyoulive",
-        "role": null,
+        "role": "Trial Staff",
         "clearance": "Level 2",
         "color": "gray",
-        "avatar": "https://cdn.discordapp.com/avatars/431822020464869377/2282f684fa304e63c11162c68d94c220.png?size=512"
+        "avatar": "https://cdn.discordapp.com/avatars/431822020464869377/2282f684fa304e63c11162c68d94c220.png?size=512",
+        "nda": false
+      },
+      {
+        "name": "wiiuenjoyer36",
+        "role": "Trial Staff",
+        "clearance": "Level 2",
+        "color": "gray",
+        "avatar": "https://cdn.discordapp.com/avatars/784196422131646514/c8e297ba4926cc783573c18292494474.png?size=512",
+        "nda": false
+      }
+    ]
+  },
+  {
+    "title": "Network Staff",
+    "members": [
+      {
+        "name": "hecfrmbx",
+        "role": "Staff Member",
+        "clearance": "Level 1",
+        "color": "gray",
+        "avatar": "https://cdn.discordapp.com/avatars/536733353341222915/3e9c7dc280e86070f1d426161ef70777.png?size=512",
+        "nda": false
+      },
+      {
+        "name": "poliziekl",
+        "role": "Staff Member",
+        "clearance": "Level 1",
+        "color": "gray",
+        "avatar": "https://cdn.discordapp.com/avatars/803359282254577704/a2e072e88813ff8702514cf81b1c7db0.png?size=512",
+        "nda": false
       }
     ]
   }

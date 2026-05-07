@@ -14,13 +14,13 @@ export default {
         const level = interaction.guild.premiumTier;
 
         const embed = EmbedUtils.info('Server Boosts', 'Current server enrichment and tier status.')
-            .setColor('Purple')
+            .setColor('#2B2D31')
             .addFields(
                 { name: 'Level', value: `\`${level}\``, inline: true },
                 { name: 'Total Boosts', value: `\`${count}\``, inline: true },
                 { name: 'Boosters', value: boosters.size > 0 ? boosters.map((m: any) => m.user.tag).join(', ').slice(0, 1000) : 'None', inline: false }
             )
-            .setFooter({ text: 'SkySentinel AV • Boosting Service' });
+            ;
 
         if (interaction instanceof Message) {
             await interaction.reply({ embeds: [embed] });

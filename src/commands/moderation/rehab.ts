@@ -44,7 +44,7 @@ export default {
         // Don't strip roles that are managed (bot roles / nitro booster roles)
         const managedRoles = member.roles.cache.filter((r: any) => r.managed).map((r: any) => r.id);
         const rolesToRemove = member.roles.cache.filter((r: any) => !exemptRoles.includes(r.id) && !managedRoles.includes(r.id));
-        
+
         const originalRolesArray = Array.from(rolesToRemove.keys());
 
         try {
@@ -90,7 +90,7 @@ export default {
             // Send instructions
             const embed = new EmbedBuilder()
                 .setTitle('⚖️ MANDATORY REHABILITATION INITIATED ⚖️')
-                .setColor(0xFF0000)
+                .setColor('#2B2D31')
                 .setDescription(`Welcome to the Rehabilitation Zone, <@${member.id}>.\n\nYou have been placed here by the Administration.\n\n**Reason:** ${reason}\n\n**HOW TO ESCAPE:**\nTo unlock your account and receive your roles back, you must type a sincere, genuine apology of at least **50 words**. Explain what you did wrong and how you will improve.\n\n*Be warned: Your apology will be evaluated by SkySentinel's AI Engine. Sarcasm, trolling, or ChatGPT-generated essays will be detected and instantly rejected.*`);
 
             await rehabChannel.send({ content: `<@${member.id}>`, embeds: [embed] });

@@ -17,7 +17,7 @@ export class GiveawayService {
         if (this.timer) clearInterval(this.timer);
         this.timer = setInterval(() => this.checkGiveaways(), 30000); // Check every 30 seconds
         this.client.logger.info('[GiveawayService] Heartbeat initialized.');
-        
+
         // Immediate check on startup
         this.checkGiveaways();
     }
@@ -27,13 +27,13 @@ export class GiveawayService {
      */
     public async startGiveaway(channel: TextChannel, hostId: string, durationMs: number, winners: number, prize: string) {
         const endsAt = new Date(Date.now() + durationMs);
-        
+
         const embed = new EmbedBuilder()
             .setTitle('🎁 GIVEAWAY STARTING!')
             .setDescription(`**Prize:** ${prize}\n**Winners:** ${winners}\n**Ends:** <t:${Math.floor(endsAt.getTime() / 1000)}:R> (<t:${Math.floor(endsAt.getTime() / 1000)}:f>)\n**Hosted By:** <@${hostId}>`)
-            .setColor(0x5865F2)
-            .setFooter({ text: 'Click the button below to enter!' })
-            .setTimestamp(endsAt);
+            .setColor('#2B2D31')
+
+            ;
 
         const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
             new ButtonBuilder()
@@ -102,7 +102,7 @@ export class GiveawayService {
         if (!channel) return;
 
         const message = await channel.messages.fetch(messageId).catch(() => null);
-        
+
         const entries: string[] = JSON.parse(giveaway.entries);
         const winners: string[] = [];
 
@@ -119,10 +119,10 @@ export class GiveawayService {
         if (message && message.embeds[0]) {
             const endEmbed = EmbedBuilder.from(message.embeds[0])
                 .setTitle('🎁 GIVEAWAY ENDED!')
-                .setColor(0x2B2D31)
+                .setColor('#2B2D31')
                 .setDescription(`**Prize:** ${giveaway.prize}\n**Winners:** ${winners.length > 0 ? winners.map(w => `<@${w}>`).join(', ') : 'No winners (not enough entries)'}\n**Hosted By:** <@${giveaway.hostId}>`)
-                .setFooter({ text: 'Giveaway Ended' })
-                .setTimestamp();
+
+                ;
 
             await message.edit({ embeds: [endEmbed], components: [] });
         }
@@ -148,10 +148,10 @@ export class GiveawayService {
         if (entries.length === 0) return null;
 
         const winner = entries[Math.floor(Math.random() * entries.length)];
-        
+
         const guild = this.client.guilds.cache.get(giveaway.guildId);
         const channel = guild?.channels.cache.get(giveaway.channelId) as TextChannel;
-        
+
         if (channel) {
             await channel.send(`🎉 **New Winner Rerolled:** <@${winner}>! You won the **${giveaway.prize}**!`);
         }

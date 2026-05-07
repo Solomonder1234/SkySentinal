@@ -25,7 +25,7 @@ export default {
         const u1 = (interaction instanceof Message) 
             ? interaction.author 
             : (interaction as ChatInputCommandInteraction).options.getUser('user1', true);
-        
+
         const u2 = (interaction instanceof Message) 
             ? (interaction.mentions.users.last() || interaction.author) 
             : ((interaction as ChatInputCommandInteraction).options.getUser('user2') || interaction.user);

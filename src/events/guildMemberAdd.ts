@@ -51,10 +51,9 @@ export default {
             }
         }
         // --- END AUTO-ROLE SYNC ---
-
-        // Trigger Captcha Security Gateway
-        if (member.guild.id !== '1437983121822715946') {
-            await client.captcha.initiateGateway(member);
+        // --- ONBOARDING GATE ---
+        if (member.guild.id === MAIN_GUILD_ID) {
+            await client.onboarding.handleMemberJoin(member);
         }
 
         await Logger.log(

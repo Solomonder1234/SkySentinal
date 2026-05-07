@@ -248,15 +248,15 @@ export default {
             const publicEmbed = new EmbedBuilder()
                 .setTitle(strikeTitle)
                 .setDescription(`**Target:** <@${user.id}> (\`${user.id}\`)\n**Action:** Level ${totalStrikes} Strike\n\n${ansiContent}${demotionText}`)
-                .setColor(Colors.Red)
+                .setColor('#2B2D31')
                 .setThumbnail(user.displayAvatarURL())
-                .setTimestamp();
+                ;
 
             const clientAvatar = client.user?.displayAvatarURL();
             if (clientAvatar) {
-                publicEmbed.setFooter({ text: 'SkyAlert Network Automated Moderation System', iconURL: clientAvatar });
+                publicEmbed;
             } else {
-                publicEmbed.setFooter({ text: 'SkyAlert Network Automated Moderation System' });
+                publicEmbed;
             }
 
             // Log to specific channel (Includes Moderator ID)

@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { SkyClient } from '../structures/SkyClient';
 import { TextChannel, EmbedBuilder } from 'discord.js';
+import { CanvasUtils } from '../../utils/CanvasUtils';
 
 export class WeatherAlertService {
     private client: SkyClient;
@@ -63,19 +64,18 @@ export class WeatherAlertService {
                 for (const alert of relevantAlerts) {
                     const props = alert.properties;
                     
-                    const embed = new EmbedBuilder()
-                        .setTitle(`⚠️ Weather Alert: ${props.event}`)
-                        .setDescription(props.description.substring(0, 2048))
-                        .addFields(
-                            { name: 'Severity', value: props.severity, inline: true },
-                            { name: 'Urgency', value: props.urgency, inline: true },
-                            { name: 'Area', value: props.areaDesc }
-                        )
-                        .setColor(props.severity === 'Extreme' ? '#ff0000' : '#ffa500')
-                        .setTimestamp(new Date(props.effective))
-                        .setFooter({ text: 'SkySentinel Weather Monitor | NWS API' });
+                    const alertColor = props.severity === 'Extreme' ? '#FF0000' : (props.severity === 'Severe' ? '#FFA500' : '#FFD700');
+                    const banner = await CanvasUtils.createAlertBanner(
+                        props.event,
+                        `${props.severity} Alert | ${props.urgency}`,
+                        props.description.substring(0, 300) + '...', // Keep it concise for the image
+                        alertColor
+                    );
 
-                    await targetChannel.send({ embeds: [embed] }).catch(() => {});
+                    await targetChannel.send({ 
+                        content: props.severity === 'Extreme' ? '@everyone' : '',
+                        files: [banner] 
+                    }).catch(() => {});
                     this.seenAlerts.add(alert.id);
                 }
             }

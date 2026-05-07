@@ -93,11 +93,8 @@ export class CommandHandler {
             if (!hasClearance(interaction.member, command.clearanceLevel)) {
                 const userLevel = getMemberClearance(interaction.member);
                 const embed = new EmbedBuilder()
-                    .setColor(0xED4245)
-                    .setAuthor({ 
-                        name: 'SkyAlert Network Security', 
-                        iconURL: 'https://i.imgur.com/ODp0S0h.png' 
-                    })
+                    .setColor('#2B2D31')
+
                     .setTitle('❖ ACCESS DENIED')
                     .setThumbnail('https://i.imgur.com/ODp0S0h.png')
                     .setDescription(`Your current clearance level is insufficient to execute this directive.`)
@@ -105,8 +102,8 @@ export class CommandHandler {
                         { name: 'IDENTIFIED CLEARANCE', value: `\`${clearanceLabel(userLevel)}\``, inline: true },
                         { name: 'PROTOCOL REQUIREMENT', value: `\`${clearanceLabel(command.clearanceLevel)}\``, inline: true }
                     )
-                    .setTimestamp()
-                    .setFooter({ text: 'SkyAlert Intelligence Hub • Security Protocol 6-A' });
+
+                    ;
                 return interaction.reply({ embeds: [embed], ephemeral: true });
             }
         }
@@ -150,16 +147,13 @@ export class CommandHandler {
 
                     if (!protectedCommands.includes(command.name) && (disabledList.includes(command.name) || disabledList.includes('all'))) {
                         const embed = new EmbedBuilder()
-                            .setColor(0xED4245)
-                            .setAuthor({ 
-                                name: 'SkyAlert Network Protocol', 
-                                iconURL: 'https://i.imgur.com/ODp0S0h.png' 
-                            })
+                            .setColor('#2B2D31')
+
                             .setTitle('❖ COMMAND DEACTIVATED')
                             .setThumbnail('https://i.imgur.com/ODp0S0h.png')
                             .setDescription(`The \`${command.name}\` command has been administratively disabled in this sector.`)
-                            .setTimestamp()
-                            .setFooter({ text: 'SkyAlert Intelligence Hub • Directive 4-C' });
+
+                            ;
                         const msg = await message.reply({ embeds: [embed] });
                         setTimeout(() => msg.delete().catch(() => { }), 8000);
                         return;
@@ -183,11 +177,8 @@ export class CommandHandler {
             if (!hasClearance(message.member, command.clearanceLevel)) {
                 const userLevel = getMemberClearance(message.member);
                 const embed = new EmbedBuilder()
-                    .setColor(0xED4245)
-                    .setAuthor({ 
-                        name: 'SkyAlert Network Security', 
-                        iconURL: 'https://i.imgur.com/ODp0S0h.png' 
-                    })
+                    .setColor('#2B2D31')
+
                     .setTitle('❖ ACCESS DENIED')
                     .setThumbnail('https://i.imgur.com/ODp0S0h.png')
                     .setDescription(`Your current clearance level is insufficient to execute this directive.`)
@@ -195,8 +186,8 @@ export class CommandHandler {
                         { name: 'IDENTIFIED CLEARANCE', value: `\`${clearanceLabel(userLevel)}\``, inline: true },
                         { name: 'PROTOCOL REQUIREMENT', value: `\`${clearanceLabel(command.clearanceLevel)}\``, inline: true }
                     )
-                    .setTimestamp()
-                    .setFooter({ text: 'SkyAlert Intelligence Hub • Security Protocol 6-A' });
+
+                    ;
                 const msg = await message.reply({ embeds: [embed] });
                 setTimeout(() => msg.delete().catch(() => {}), 8000);
                 return;

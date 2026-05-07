@@ -28,7 +28,7 @@ export default {
             'If you believe you were falsely penalized (warned, muted, or kicked), you may submit a formal appeal directly to the Senior Enforcement Branch.\n\n***Protocol Notice:*** Providing false information or spamming this system will result in stricter enforcement actions.'
         )
             .setImage(selectedGif || null)
-            .setFooter({ text: 'SkySentinel AV • Appeals Directive' });
+            ;
 
         const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
             new ButtonBuilder()

@@ -104,7 +104,7 @@ if (!clientId) {
         if (guildId) {
             console.log('Clearing global commands just in case to prevent duplicates...');
             await rest.put(Routes.applicationCommands(clientId!), { body: [] });
-            
+
             console.log('Deploying to guild...');
             await rest.put(
                 Routes.applicationGuildCommands(clientId!, guildId),

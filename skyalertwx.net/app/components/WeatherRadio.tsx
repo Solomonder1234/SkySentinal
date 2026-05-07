@@ -10,16 +10,16 @@ interface Station {
 }
 
 const STATIONS: Station[] = [
-  { label: 'New York City, NY — KWO35', location: 'New York', url: 'https://wxradio.org/NY-NewYork-KWO35' },
-  { label: 'Miami, FL — KHB34', location: 'Florida', url: 'https://wxradio.org/FL-Miami-KHB34' },
-  { label: 'Jacksonville, FL — KHB39', location: 'Florida', url: 'https://wxradio.org/FL-Jacksonville-KHB39' },
-  { label: 'Chicago, IL — KZZ81', location: 'Illinois', url: 'https://wxradio.org/IL-Lockport-KZZ81' },
-  { label: 'Los Angeles, CA — KWO37', location: 'California', url: 'https://wxradio.org/CA-LosAngeles-KWO37' },
-  { label: 'Atlanta, GA — KEC80', location: 'Georgia', url: 'https://wxradio.org/GA-Atlanta-KEC80' },
-  { label: 'Kansas City, MO — KID77', location: 'Missouri', url: 'https://wxradio.org/MO-KansasCity-KID77' },
-  { label: 'Shreveport, LA — WXJ97', location: 'Louisiana', url: 'https://wxradio.org/LA-Shreveport-WXJ97' },
-  { label: 'Detroit, MI — KEC63', location: 'Michigan', url: 'https://wxradio.org/MI-Southfield-KEC63' },
-  { label: 'Grand Forks, ND — WWF83', location: 'North-Dakota', url: 'https://wxradio.org/ND-GrandForks-WWF83' },
+  { label: 'New York City, NY — KWO35', location: 'New York', url: 'https://stream.live.vc.noaaweatherradio.org/NY-NewYork-KWO35' },
+  { label: 'Miami, FL — KHB34', location: 'Florida', url: 'https://stream.live.vc.noaaweatherradio.org/FL-Miami-KHB34' },
+  { label: 'Jacksonville, FL — KHB39', location: 'Florida', url: 'https://stream.live.vc.noaaweatherradio.org/FL-Jacksonville-KHB39' },
+  { label: 'Chicago, IL — KZZ81', location: 'Illinois', url: 'https://stream.live.vc.noaaweatherradio.org/IL-Lockport-KZZ81' },
+  { label: 'Los Angeles, CA — KWO37', location: 'California', url: 'https://stream.live.vc.noaaweatherradio.org/CA-LosAngeles-KWO37' },
+  { label: 'Atlanta, GA — KEC80', location: 'Georgia', url: 'https://stream.live.vc.noaaweatherradio.org/GA-Atlanta-KEC80' },
+  { label: 'Kansas City, MO — KID77', location: 'Missouri', url: 'https://stream.live.vc.noaaweatherradio.org/MO-KansasCity-KID77' },
+  { label: 'Shreveport, LA — WXJ97', location: 'Louisiana', url: 'https://stream.live.vc.noaaweatherradio.org/LA-Shreveport-WXJ97' },
+  { label: 'Detroit, MI — KEC63', location: 'Michigan', url: 'https://stream.live.vc.noaaweatherradio.org/MI-Southfield-KEC63' },
+  { label: 'Grand Forks, ND — WWF83', location: 'North-Dakota', url: 'https://stream.live.vc.noaaweatherradio.org/ND-GrandForks-WWF83' },
 ];
 
 export default function WeatherRadio() {

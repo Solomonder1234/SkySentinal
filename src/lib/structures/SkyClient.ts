@@ -20,7 +20,6 @@ import { WeatherAlertService } from '../services/WeatherAlertService';
 import { StaffComplianceService } from '../services/StaffComplianceService';
 import { ReminderService } from '../services/ReminderService';
 import { AntinukeService } from '../services/AntinukeService';
-import { CaptchaService } from '../services/CaptchaService';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -46,7 +45,7 @@ export class SkyClient extends Client {
     public staffCompliance: StaffComplianceService;
     public reminders: ReminderService;
     public antinuke: AntinukeService;
-    public captcha: CaptchaService;
+    public snipes: Collection<string, any>;
 
     constructor() {
         super({
@@ -90,7 +89,7 @@ export class SkyClient extends Client {
         this.staffCompliance = new StaffComplianceService(this);
         this.reminders = new ReminderService(this);
         this.antinuke = new AntinukeService(this);
-        this.captcha = new CaptchaService(this);
+        this.snipes = new Collection();
     }
 
     public async start() {
@@ -109,79 +108,62 @@ export class SkyClient extends Client {
             this.logger.info(`Logged in as ${this.user?.tag}`);
             this.terminal.start();
 
+            // Start Background Services (Staggered to prevent rate limits)
+            this.staffCompliance.start();
+
+            setTimeout(() => this.activityEnforcer.start(), 5000);
+            setTimeout(() => this.weatherAlerts.start(), 10000);
+            setTimeout(() => this.reminders.start(), 15000);
+
             // Start 24-hour Staff Sync Task (User Choice 1,3)
-            this.startStaffSyncTask();
+            setTimeout(() => this.startStaffSyncTask(), 20000);
         } catch (error) {
             this.logger.error('Failed to login:', error);
             process.exit(1);
         }
     }
 
-    private startStaffSyncTask() {
+    public async startStaffSyncTask(manual = false) {
         const SYNC_INTERVAL = 24 * 60 * 60 * 1000; // 24 Hours
-        
+
         const runSync = async () => {
-            this.logger.info('[StaffSync] Starting automated 24-hour staff synchronization...');
+            if (!manual) this.logger.info('[StaffSync] Starting selective Main Server staff synchronization...');
             try {
-                // Since fullStaffSync.ts logic is already written, we'll re-implement the core logic here
-                const STAFF_GUILD_ID = '1386826411666309201';
-                const guild = await this.guilds.fetch(STAFF_GUILD_ID);
-                const members = await guild.members.fetch();
-                
-                const TIER_MAPPING: Record<string, { name: string, priority: number }> = {
-                    '1387636546261487770': { name: 'Founders', priority: 80 },
-                    '1387636614699679754': { name: 'Co-Founders', priority: 70 },
-                    '1387637435583828129': { name: 'Head of Staff', priority: 60 },
-                    '1387637479858901092': { name: 'Senior Admin', priority: 50 },
-                    '1387637516055613460': { name: 'Admin', priority: 40 },
-                    '1387637559282368655': { name: 'Senior Moderator', priority: 30 },
-                    '1387637616882487296': { name: 'Moderator', priority: 20 },
-                    '1387736757394473051': { name: 'Trial Staff', priority: 10 }
+                const MAIN_GUILD_ID = '1275838044531855433';
+                const STAFF_ROLE_ID = '1276037406696538112';
+                const EXCLUDED_PR_ROLE_IDS = [
+                    '1474510020350578778', // [PRM] | Public Relations Manager
+                    '1474509849218781204', // [PRA] | Public Relations Associate
+                    '1473861192941568271'  // Staffing - Public Relations Manager
+                ];
+
+                const PREFIX_MAPPING: Record<string, { name: string, priority: number }> = {
+                    '[F]': { name: 'Founders', priority: 80 },
+                    '[CF]': { name: 'Co-Founders', priority: 70 },
+                    '[CF/EB]': { name: 'Co-Founders', priority: 70 },
+                    '[EB]': { name: 'Executive Board', priority: 65 },
+                    '[HOS]': { name: 'Head of Staff', priority: 60 },
+                    '[HOS/S]': { name: 'Head of Staff', priority: 60 },
+                    '[SRA]': { name: 'Senior Admin', priority: 50 },
+                    '[A]': { name: 'Admin', priority: 40 },
+                    '[SRM]': { name: 'Senior Moderator', priority: 30 },
+                    '[MOD]': { name: 'Moderator', priority: 20 },
+                    '[TS]': { name: 'Trial Staff', priority: 10 }
                 };
 
-                const OWNER_IDS = ['753372101540577431', '559552595295731746'];
+                const OWNER_IDS = [
+                    '753372101540577431', // VixWx
+                    '559552595295731746', // Jasmine
+                    '1279672537873252405'  // equinoxicon.0 (GermanyIsCountry) - Co-Founder
+                ];
 
-                for (const [, member] of members) {
-                    if (member.user.bot) continue;
-                    let tier = '';
-                    let priority = 0;
-                    let roleName = null;
+                const guild = await this.guilds.fetch(MAIN_GUILD_ID);
+                const members = await guild.members.fetch();
 
-                    for (const [roleId, data] of Object.entries(TIER_MAPPING)) {
-                        if (member.roles.cache.has(roleId)) {
-                            if (data.priority > priority) {
-                                tier = data.name;
-                                priority = data.priority;
-                            }
-                        }
-                    }
+                let syncCount = 0;
 
-                    if (OWNER_IDS.includes(member.id)) {
-                        tier = 'Owners';
-                        priority = 90;
-                        roleName = 'Owner / Founder';
-                    }
-
-                    if (!tier) continue;
-                    
-                    await syncMember(member.user, tier, roleName, priority);
-                }
-
-                // Explicitly Sync Owners (Even if not in Staff Guild)
-                for (const ownerId of OWNER_IDS) {
-                    try {
-                        const ownerUser = await this.users.fetch(ownerId);
-                        if (ownerUser) {
-                            await syncMember(ownerUser, 'Owners', 'Owner / Founder', 90);
-                        }
-                    } catch (e) {
-                        this.logger.error(`[StaffSync] Failed to fetch owner ${ownerId}:`, e);
-                    }
-                }
-
-                async function syncMember(user: any, tier: string, roleName: string | null, priority: number) {
-                    // @ts-ignore
-                    await client.prisma.staffMember.upsert({
+                const syncMember = async (user: any, tier: string, roleName: string | null, priority: number) => {
+                    await this.prisma.staffMember.upsert({
                         where: { id: user.id },
                         update: {
                             username: user.username,
@@ -199,22 +181,77 @@ export class SkyClient extends Client {
                             priority,
                         }
                     });
+                };
+
+                for (const [, member] of members) {
+                    if (member.user.bot) continue;
+
+                    const isOwner = OWNER_IDS.includes(member.id);
+                    const isStaff = member.roles.cache.has(STAFF_ROLE_ID);
+                    const isPR = member.roles.cache.some(r =>
+                        EXCLUDED_PR_ROLE_IDS.includes(r.id) ||
+                        r.name.toLowerCase().includes("public relations")
+                    );
+
+                    // Membership Filter
+                    if (!isOwner && (!isStaff || isPR)) continue;
+
+                    let tier = 'Network Staff';
+                    let priority = 5;
+                    let roleDisplayName = 'Staff Member';
+
+                    const nickname = (member.nickname || member.user.username).toString();
+
+                    // Priority 1: Match Prefix
+                    for (const [prefix, data] of Object.entries(PREFIX_MAPPING)) {
+                        const cleanPrefix = prefix.replace(']', ''); // e.g., '[A'
+
+                        // Rule: If nickname has a /, the first prefix is the role
+                        if (nickname.includes(prefix) || (nickname.includes('/') && nickname.includes(cleanPrefix + '/'))) {
+                            tier = data.name;
+                            priority = data.priority;
+                            roleDisplayName = tier;
+                            break;
+                        }
+                    }
+
+                    // Priority 2: Hard-set Owners
+                    if (isOwner) {
+                        tier = 'Owners';
+                        priority = 90;
+                        roleDisplayName = 'Owner / Founder';
+                    }
+
+                    await syncMember(member.user, tier, roleDisplayName, priority);
+                    syncCount++;
                 }
 
-                // Export to JSON
+                // Explicitly Sync Owners
+                for (const ownerId of OWNER_IDS) {
+                    try {
+                        const ownerUser = await this.users.fetch(ownerId);
+                        if (ownerUser) {
+                            await syncMember(ownerUser, 'Owners', 'Owner / Founder', 90);
+                        }
+                    } catch (e) {
+                        this.logger.error(`[StaffSync] Failed to fetch owner ${ownerId}:`, e);
+                    }
+                }
+
+                // Export to JSON for website
                 const allStaff = await this.prisma.staffMember.findMany({
                     orderBy: [{ priority: 'desc' }, { username: 'asc' }]
                 });
 
                 const webData: Record<string, any[]> = {};
                 for (const s of allStaff) {
-                    if (!webData[s.tier]) {
-                        webData[s.tier] = [];
-                    }
+                    if (!webData[s.tier]) webData[s.tier] = [];
+
                     let color = 'gray';
                     if (s.tier === 'Owners') color = 'neonRed';
                     else if (s.tier === 'Founders') color = 'neonBlue';
                     else if (s.tier === 'Co-Founders') color = 'red';
+                    else if (s.tier === 'Executive Board') color = 'red';
                     else if (s.tier === 'Head of Staff' || s.tier === 'Senior Admin') color = 'yellow';
                     else if (s.tier === 'Admin' || s.tier === 'Senior Moderator' || s.tier === 'Moderator') color = 'blue';
 
@@ -224,25 +261,29 @@ export class SkyClient extends Client {
                         role: s.role,
                         clearance: `Level ${Math.floor(s.priority / 10) + 1}`,
                         color,
-                        avatar: s.avatarUrl
+                        avatar: s.avatarUrl,
+                        nda: s.hasSignedNDA
                     });
                 }
 
-                const tierOrder = ['Owners', 'Founders', 'Co-Founders', 'Executive Board', 'Head of Staff', 'Senior Admin', 'Admin', 'Senior Moderator', 'Moderator', 'Trial Staff'];
-                const result = tierOrder.filter(t => webData[t]).map(t => ({ title: t, members: webData[t] }));
+                const tierOrder = ['Owners', 'Founders', 'Co-Founders', 'Executive Board', 'Head of Staff', 'Senior Admin', 'Admin', 'Senior Moderator', 'Moderator', 'Trial Staff', 'Network Staff'];
+                const result = tierOrder.filter(t => webData[t] && webData[t].length > 0).map(t => ({ title: t, members: webData[t] }));
                 const outPath = path.join(process.cwd(), 'skyalertwx.net', 'data', 'staff.json');
                 fs.writeFileSync(outPath, JSON.stringify(result, null, 2));
 
-                this.logger.info('[StaffSync] Automated synchronization task completed successfully.');
+                if (!manual) this.logger.info(`[StaffSync] Selective sync completed. Processed ${syncCount} staff members.`);
             } catch (err) {
-                this.logger.error('[StaffSync] Task failed during automation cycle:', err);
+                this.logger.error('[StaffSync] Automation task failed:', err);
             }
         };
 
-        // Initial run
-        runSync();
-        // Periodic interval
-        setInterval(runSync, SYNC_INTERVAL);
+        // Initial run if not manual
+        if (!manual) {
+            runSync();
+            setInterval(runSync, SYNC_INTERVAL);
+        } else {
+            await runSync();
+        }
     }
 
     public get prisma() {

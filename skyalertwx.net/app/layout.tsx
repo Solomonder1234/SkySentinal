@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "./components/Navbar";
+import BottomDock from "./components/BottomDock";
 import LiveHUD from "./components/HUD/LiveHUD";
 
 export const metadata: Metadata = {
@@ -16,9 +17,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <LiveHUD />
         <Navbar />
         {children}
+        <BottomDock />
       </body>
     </html>
   );

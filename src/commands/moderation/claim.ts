@@ -39,8 +39,8 @@ export default {
         const claimEmbed = new EmbedBuilder()
             .setTitle(`✋ ${type} Claimed`)
             .setDescription(`This ${type.toLowerCase()} has been officially claimed by <@${message.author.id}>.\nThey will be taking the lead on this request.`)
-            .setColor(Colors.Orange)
-            .setTimestamp();
+            .setColor('#2B2D31')
+            ;
 
         const msg = await message.reply({ embeds: [claimEmbed] });
         await msg.pin().catch(() => { });

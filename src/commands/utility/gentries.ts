@@ -40,7 +40,7 @@ export default {
             return EmbedUtils.premium(
                 `Giveaway Participants ${chunks.length > 1 ? `(${index + 1}/${chunks.length})` : ''}`,
                 `**Prize:** ${giveaway.prize}\n**Total Entries:** \`${entries.length}\`\n\n${chunk}`
-            ).setColor(0x5865F2);
+            ).setColor('#2B2D31');
         });
 
         await message.reply({ embeds });

@@ -346,5 +346,6 @@ model StaffMember {
   tier      String   // Owners, Founders, Executive Board, etc.
   role      String?  
   priority  Int      @default(0) // Higher = Higher on page
+  hasSignedNDA Boolean  @default(false)
   updatedAt DateTime @updatedAt
 }

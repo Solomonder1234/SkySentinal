@@ -93,7 +93,7 @@ export default {
         const dmEmbed = EmbedUtils.premium(
             `Formal Appeal ${statusWord}`,
             `Your recent infraction appeal has been reviewed and **${statusWord}** by the Senior Enforcement Branch.\n\n**Staff Message:**\n${reason}`
-        ).setColor(statusColor);
+        ).setColor('#2B2D31');
 
         let dmSuccess = true;
         try {
@@ -106,7 +106,7 @@ export default {
         const staffResponseEmbed = EmbedUtils.success(
             `Appeal Processed: ${targetUser.tag}`,
             `The appeal for <@${targetUser.id}> was marked as **${statusWord}**.\n\n**Message Sent:**\n${reason}\n\n**User Notified:** ${dmSuccess ? '✅ Yes' : '❌ No (DMs Closed)'}`
-        ).setColor(statusColor);
+        ).setColor('#2B2D31');
 
         if (interaction instanceof Message) {
             await interaction.reply({ embeds: [staffResponseEmbed] });
@@ -126,7 +126,7 @@ export default {
                 const logEmbed = EmbedUtils.premium(
                     `Appeal Audit Log`,
                     `**Target:** <@${userId}> (\`${userId}\`)\n**Decision:** ${statusWord}\n**Processing Staff:** <@${interaction.member?.user.id}>\n\n**Sent Message:**\n${reason}`
-                ).setColor(statusColor).setTimestamp();
+                ).setColor('#2B2D31');
 
                 await logChannel.send({ embeds: [logEmbed] }).catch(() => null);
             }

@@ -59,7 +59,7 @@ export default {
 
             // Register them in the 7-day Auto-Demote Deadline engine natively tied into Prisma
             const expirationTime = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 1 Week from now
-            
+
             await client.database.prisma.pendingStaffJoin.create({
                 data: {
                     guildId: message.guild.id,
@@ -72,10 +72,10 @@ export default {
             // Dispatch Employment Briefing to their Direct Messages
             const dmEmbed = new EmbedBuilder()
                 .setTitle('🎉 You have been Hired!')
-                .setColor(0x00FF00)
+                .setColor('#2B2D31')
                 .setDescription(`Congratulations, you have been officially hired as a Staff Member in **${message.guild.name}**!\n\n⚠️ **MANDATORY REQUIREMENT:**\nYou will be fired within a week if you are **NOT IN** the staff server.\n\n🔗 **Join Here:** ${STAFF_SERVER_INVITE}`)
-                .setFooter({ text: 'Automated HR Operations' })
-                .setTimestamp();
+
+                ;
 
             let dmStatus = '`Status: Delivered`';
             try {

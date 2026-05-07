@@ -15,7 +15,7 @@ export class ReminderService {
         if (this.checkInterval) clearInterval(this.checkInterval);
         this.checkInterval = setInterval(() => this.runCheck(), this.CHECK_INTERVAL_MS);
         this.client.logger.info('[ReminderService] Heartbeat initialized.');
-        
+
         // Immediate check on startup
         this.runCheck();
     }
@@ -50,7 +50,7 @@ export class ReminderService {
         try {
             const guild = this.client.guilds.cache.get(reminder.guildId);
             const user = await this.client.users.fetch(reminder.userId).catch(() => null);
-            
+
             if (!user) {
                 // User left or vanished, just delete record
                 await (this.client.database.prisma as any).reminder.delete({ where: { id: reminder.id } });
@@ -59,10 +59,10 @@ export class ReminderService {
 
             const embed = new EmbedBuilder()
                 .setTitle('⏰ SkySentinel Reminder')
-                .setColor('#3498DB')
+                .setColor('#2B2D31')
                 .setDescription(`**You asked me to remind you about:**\n\n> ${reminder.message}`)
-                .setFooter({ text: 'Automated Logistical Reminder' })
-                .setTimestamp(reminder.createdAt);
+
+                ;
 
             let delivered = false;
 
@@ -81,7 +81,7 @@ export class ReminderService {
 
             // Always delete from DB after delivery attempt (or if all attempts failed)
             await (this.client.database.prisma as any).reminder.delete({ where: { id: reminder.id } });
-            
+
             if (delivered) {
                 this.client.logger.info(`[ReminderService] Delivered reminder to ${user.tag} (${reminder.id}).`);
             } else {

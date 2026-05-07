@@ -14,7 +14,7 @@ export default {
         const checkEmbed = EmbedUtils.premium(
             '🚨 ACTIVITY VERIFICATION CHECK 🚨',
             '**Attention Members & Staff:**\n\nTo ensure our community remains fully active and operational, please physically confirm your activity status by clicking the validation button below.\n\n*If you fail to validate your activity through this panel or through natural server engagement within 14 days, the automated HR system will systematically revoke your clearances (for staff) or flag your profile for cleanup (for members).*'
-        ).setColor(0xFF8800).setTimestamp();
+        ).setColor('#2B2D31');
 
         const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
             new ButtonBuilder()

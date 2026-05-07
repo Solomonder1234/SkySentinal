@@ -3,7 +3,6 @@ import { ApplicationCommandType, PermissionFlagsBits, Message, ChatInputCommandI
 import { OWNER_IDS } from '../../config';
 import { EmbedUtils, Colors } from '../../utils/EmbedUtils';
 
-
 export default {
     name: 'mod',
     description: 'Show the moderation menu.',
@@ -21,7 +20,7 @@ export default {
 
         const embed = EmbedUtils.info('Moderation Menu', 'Comprehensive suite of administrative and moderation tools.')
             .setThumbnail(client.user?.displayAvatarURL() || null)
-            .setFooter({ text: `SkySentinel • Total Mod Commands: ${modCommands.size} • AV Edition` });
+            ;
 
         // Group by type for better readability
         const standard = ['ban', 'kick', 'timeout', 'untimeout', 'warn', 'warnings', 'clearwarns', 'delwarn'];

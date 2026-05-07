@@ -50,10 +50,7 @@ export default {
                 .setThumbnail(guildIcon || null);
 
             if (interaction.guild) {
-                banDmEmbed.setAuthor({
-                    name: interaction.guild.name,
-                    iconURL: guildIcon as string
-                });
+                banDmEmbed;
             }
 
             await targetUser.send({ embeds: [banDmEmbed] });

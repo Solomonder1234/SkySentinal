@@ -24,7 +24,7 @@ export default {
         }
 
         const userMentions = verifiedUserIds.map(id => `<@${id}>`).join('\n');
-        
+
         // Split mentions into multiple embeds if the list is too long for one
         const chunks = [];
         for (let i = 0; i < verifiedUserIds.length; i += 20) {
@@ -35,7 +35,7 @@ export default {
             const embed = EmbedUtils.premium(
                 `Activity Check Results ${chunks.length > 1 ? `(${index + 1}/${chunks.length})` : ''}`,
                 `**ID:** \`${messageId}\`\n\n**Verified Members (${verifiedUserIds.length}):**\n${chunk}`
-            ).setColor(0x00FF00);
+            ).setColor('#2B2D31');
             return embed;
         });
 

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { Logo, StatusBadge } from './Branding';
 import styles from './Navbar.module.css';
 
 export default function Navbar() {
@@ -20,30 +21,24 @@ export default function Navbar() {
   return (
     <nav className={`${styles.navbar} ${scrolled ? styles.scrolled : ''}`}>
       <div className={styles.navContainer}>
-        <Link href="/" className={styles.logo}>
-          <span className={styles.logoIcon}>✦</span> SkyAlert
+        <Link href="/" className={styles.navBrand}>
+          <Logo />
         </Link>
         
-        <div className={styles.navLinks}>
-          <Link href="/" className={`${styles.navLink} ${pathname === '/' ? styles.active : ''}`}>
-            Dashboard
-          </Link>
-          <Link href="/radio" className={`${styles.navLink} ${pathname === '/radio' ? styles.active : ''}`}>
-            Radio
-          </Link>
-          <Link href="/staff" className={`${styles.navLink} ${pathname === '/staff' ? styles.active : ''}`}>
-            Roster
-          </Link>
-        </div>
+        <div className={styles.navActionsWrapper}>
+          <StatusBadge />
 
-        <a 
-          href="https://discord.gg/AtwfXDQquU" 
-          target="_blank" 
-          rel="noopener noreferrer" 
-          className={styles.btnDiscord}
-        >
-          Connect
-        </a>
+          <div className={styles.divider} />
+
+          <a 
+            href="https://discord.gg/AtwfXDQquU" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className={styles.btnDiscord}
+          >
+            Connect Hub
+          </a>
+        </div>
       </div>
     </nav>
   );

@@ -57,7 +57,7 @@ export default {
         let y = (1 - bNorm - k) / (1 - k) || 0;
 
         const embed = EmbedUtils.info(`Color: #${hex.toUpperCase()}`, `Visualizing your custom palette configuration.`)
-            .setColor(`#${hex}`)
+            .setColor('#2B2D31')
             .addFields(
                 { name: 'RGB', value: `\`rgb(${r}, ${g}, ${b})\``, inline: true },
                 { name: 'HSL', value: `\`${Math.round(h * 360)}°, ${Math.round(s * 100)}%, ${Math.round(l * 100)}%\``, inline: true },

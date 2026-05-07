@@ -28,7 +28,7 @@ export default {
         }
 
         const embed = EmbedUtils.info('📊 Poll', question)
-            .setFooter({ text: `Asked by ${interaction.member!.user.username}` });
+            ;
 
         const reply = await interaction.reply({ embeds: [embed], fetchReply: true });
 

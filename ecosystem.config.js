@@ -1,14 +1,20 @@
 module.exports = {
   apps: [
     {
-      name: 'SkySentinal',
-      script: 'dist/index.js',
-      env: {
-        NODE_ENV: 'production'
-      },
+      name: "SkyAlertBot",
+      script: "dist/index.js",
+      cwd: "/Users/leobernstein/SkyAlertBot",
       watch: false,
-      autorestart: true,
-      max_memory_restart: '1G'
+      env: {
+        NODE_ENV: "production"
+      }
+    },
+    {
+      name: "Fur-Bot",
+      script: "venv/bin/python",
+      args: "bot.py",
+      cwd: "/Users/leobernstein/Desktop/Fur-Bot",
+      watch: false
     }
   ]
 };

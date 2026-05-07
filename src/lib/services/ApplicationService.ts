@@ -431,7 +431,6 @@ export class ApplicationService {
             transcriptStr += `**Q${idx + 1}: ${qObj.question}**\n> ${qObj.answer}\n\n`;
         });
 
-
         const prompt = `
 You are the SkyAlertBot AI Lead Recruiter. Review the following ${appRecord.type} application transcript.
 
@@ -510,9 +509,9 @@ ${transcriptStr}
                         { name: '📄 AI Summary', value: gradingResult.substring(0, 1024), inline: false },
                         { name: '⚠️ Action Required', value: 'This is an AI-assisted baseline recommendation. A senior staff member or above must manually review the transcript and submit a final decision below. If ignored for **48 hours**, the AI decision will automatically execute.', inline: false }
                     )
-                    .setColor(passed ? '#2ecc71' : '#e74c3c')
-                    .setFooter({ text: 'SkySentinel Recruitment AI' })
-                    .setTimestamp();
+                    .setColor('#2B2D31')
+
+                    ;
 
                 const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
                     new ButtonBuilder().setCustomId(`staff_app_approve_${appRecord.id}`).setLabel('Approve').setStyle(ButtonStyle.Success),
@@ -526,7 +525,6 @@ ${transcriptStr}
             this.client.logger.error('Failed to log graded app:', err);
         }
     }
-
 
     private getRoleAndPrefixForType(type: string): { role: string, prefix: string } {
         switch (type) {
@@ -571,7 +569,7 @@ ${transcriptStr}
                 const dmEmbed = new EmbedBuilder()
                     .setTitle(`SkyAlert Network: ${statusTitle}`)
                     .setDescription(`Your application for **${app.type}** has been processed by our ${isAuto ? 'AI fallback system' : 'staff team'}.\n\n**Decision Analysis:**\n${gradingResult.substring(0, 3900)}\n\n${passed ? 'Congratulations, you have passed and been promoted.\n\n**⚠️ TIME SENSITIVE ACTION REQUIRED ⚠️**\nYou **MUST** join the Official Staff Server within **24 hours**, or your new staff roles will be automatically revoked.\n\n👉 **Join the Staff Server Here: https://discord.gg/RDRr4UaRSt**' : 'Unfortunately, you do not meet our requirements at this time.'}`)
-                    .setColor(statusColor);
+                    .setColor('#2B2D31');
 
                 await applicantUser.send({ embeds: [dmEmbed] }).catch(() => null);
             }

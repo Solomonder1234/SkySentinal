@@ -507,7 +507,7 @@ export class AIService {
             1. NSFW or suggestive content.
             2. Malicious links or QR codes.
             3. Harassment or toxic text within the image.
-            
+
             Respond in JSON format:
             {
                 "safe": boolean,

@@ -25,8 +25,8 @@ export default {
                 .setTitle('🔒 Modmail Thread Closed')
                 .setDescription(`Your support thread with **${message.guild?.name}** has been formally closed by the staff team.`)
                 .addFields({ name: 'Reason / Final Notes', value: reason })
-                .setColor(Colors.Red)
-                .setTimestamp();
+                .setColor('#2B2D31')
+                ;
 
             await targetUser.send({ embeds: [closeEmbed] }).catch(() => { });
         }

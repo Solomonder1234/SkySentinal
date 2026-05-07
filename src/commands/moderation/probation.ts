@@ -62,7 +62,7 @@ export default {
         }
 
         if (!userId) return interaction.reply({ content: 'Please provide a valid User ID.' });
-        
+
         const durationMs = parseDuration(durationStr);
         if (!durationMs) {
             const err = EmbedUtils.error('Invalid Duration', 'Please use a valid format (e.g. 1d, 12h, 30m).');

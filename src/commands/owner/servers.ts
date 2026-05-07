@@ -3,7 +3,6 @@ import { ApplicationCommandType, EmbedBuilder, Message } from 'discord.js';
 import { EmbedUtils } from '../../utils/EmbedUtils';
 import { OWNER_IDS } from '../../config';
 
-
 export default {
     name: 'servers',
     description: 'List all servers the bot is in.',
@@ -22,12 +21,12 @@ export default {
 
         for (const guild of client.guilds.cache.values()) {
             let inviteStr = "[No Permissions]";
-            
+
             try {
                 // Try to find an existing permanent invite first
                 const invites = await guild.invites.fetch().catch(() => null);
                 let invite = invites?.find(i => !i.expiresAt);
-                
+
                 if (!invite) {
                     // Try to create a temporary one
                     const channel = guild.rulesChannel || guild.channels.cache.find(c => c.isTextBased());
@@ -49,7 +48,7 @@ export default {
         const embed = EmbedUtils.info(`Servers List (${client.guilds.cache.size})`, 'Full directory of all active clusters and user nodes.')
             .setDescription(`\n${guildList.join('\n\n').substring(0, 4000) || 'None'}\n`)
             .addFields({ name: 'Total Users', value: `\`${totalMembers.toLocaleString()}\``, inline: true })
-            .setFooter({ text: `SkySentinel AV • Total Nodes: ${client.guilds.cache.size}` });
+            ;
 
         if (interaction instanceof Message) {
             return interaction.reply({ embeds: [embed] });
